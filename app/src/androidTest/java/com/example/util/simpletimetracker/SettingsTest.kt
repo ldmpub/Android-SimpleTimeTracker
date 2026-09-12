@@ -6,6 +6,8 @@ import androidx.test.espresso.Espresso.onData
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.scrollTo
+import androidx.test.espresso.assertion.PositionAssertions.isCompletelyAbove
+import androidx.test.espresso.assertion.PositionAssertions.isCompletelyLeftOf
 import androidx.test.espresso.contrib.PickerActions.setDate
 import androidx.test.espresso.contrib.PickerActions.setTime
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
@@ -23,6 +25,7 @@ import com.example.util.simpletimetracker.core.extension.setWeekToFirstDay
 import com.example.util.simpletimetracker.core.interactor.LanguageInteractor
 import com.example.util.simpletimetracker.domain.activityFilter.model.ActivityFilter
 import com.example.util.simpletimetracker.domain.base.DurationFormat
+import com.example.util.simpletimetracker.domain.complexRule.model.ComplexRule
 import com.example.util.simpletimetracker.domain.daysOfWeek.model.DayOfWeek
 import com.example.util.simpletimetracker.domain.extension.padDuration
 import com.example.util.simpletimetracker.domain.language.AppLanguage
@@ -53,6 +56,7 @@ import com.example.util.simpletimetracker.utils.longClickOnVisibleView
 import com.example.util.simpletimetracker.utils.recyclerItemCount
 import com.example.util.simpletimetracker.utils.tryAction
 import com.example.util.simpletimetracker.utils.typeTextIntoView
+import com.example.util.simpletimetracker.utils.withCardColor
 import com.example.util.simpletimetracker.utils.withPluralText
 import com.example.util.simpletimetracker.utils.withTag
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -73,6 +77,7 @@ import com.example.util.simpletimetracker.feature_change_record_type.R as change
 import com.example.util.simpletimetracker.feature_dialogs.R as dialogsR
 import com.example.util.simpletimetracker.feature_records.R as recordsR
 import com.example.util.simpletimetracker.feature_statistics_detail.R as statisticsDetailR
+import com.example.util.simpletimetracker.feature_settings.views.R as settingsViewsR
 import com.example.util.simpletimetracker.feature_tag_selection.R as tagSelectionR
 
 @HiltAndroidTest
@@ -97,12 +102,14 @@ class SettingsTest : BaseUiTest() {
         // Change setting
         NavUtils.openSettingsScreen()
         NavUtils.openSettingsDisplay()
-        scrollSettingsRecyclerToText(coreR.string.settings_show_untracked_time)
+        NavUtils.openSettingsUntrackedOptions()
+        scrollSettingsOptionsRecyclerToText(coreR.string.settings_show_untracked_time)
         checkCheckboxIsChecked(settingsCheckboxBesideText(coreR.string.settings_show_untracked_time))
         clickOnSettingsCheckboxBesideText(coreR.string.settings_show_untracked_time)
         checkCheckboxIsNotChecked(settingsCheckboxBesideText(coreR.string.settings_show_untracked_time))
 
         // Untracked is not shown
+        pressBack()
         NavUtils.openRecordsScreen()
         checkViewDoesNotExist(
             allOf(withText(coreR.string.untracked_time_name), isCompletelyDisplayed()),
@@ -110,12 +117,14 @@ class SettingsTest : BaseUiTest() {
 
         // Change setting
         NavUtils.openSettingsScreen()
-        scrollSettingsRecyclerToText(coreR.string.settings_show_untracked_time)
+        NavUtils.openSettingsUntrackedOptions()
+        scrollSettingsOptionsRecyclerToText(coreR.string.settings_show_untracked_time)
         checkCheckboxIsNotChecked(settingsCheckboxBesideText(coreR.string.settings_show_untracked_time))
         clickOnSettingsCheckboxBesideText(coreR.string.settings_show_untracked_time)
         checkCheckboxIsChecked(settingsCheckboxBesideText(coreR.string.settings_show_untracked_time))
 
         // Untracked is shown
+        pressBack()
         NavUtils.openRecordsScreen()
         checkViewIsDisplayed(allOf(withText(coreR.string.untracked_time_name), isCompletelyDisplayed()))
     }
@@ -138,12 +147,14 @@ class SettingsTest : BaseUiTest() {
         // Change setting
         NavUtils.openSettingsScreen()
         NavUtils.openSettingsDisplay()
-        scrollSettingsRecyclerToText(coreR.string.settings_show_untracked_time_statistics)
+        NavUtils.openSettingsUntrackedOptions()
+        scrollSettingsOptionsRecyclerToText(coreR.string.settings_show_untracked_time_statistics)
         checkCheckboxIsChecked(settingsCheckboxBesideText(coreR.string.settings_show_untracked_time_statistics))
         clickOnSettingsCheckboxBesideText(coreR.string.settings_show_untracked_time_statistics)
         checkCheckboxIsNotChecked(settingsCheckboxBesideText(coreR.string.settings_show_untracked_time_statistics))
 
         // Untracked is not shown
+        pressBack()
         NavUtils.openStatisticsScreen()
         checkViewDoesNotExist(allOf(withText(coreR.string.untracked_time_name), isCompletelyDisplayed()))
 
@@ -156,12 +167,14 @@ class SettingsTest : BaseUiTest() {
 
         // Change setting
         NavUtils.openSettingsScreen()
-        scrollSettingsRecyclerToText(coreR.string.settings_show_untracked_time_statistics)
+        NavUtils.openSettingsUntrackedOptions()
+        scrollSettingsOptionsRecyclerToText(coreR.string.settings_show_untracked_time_statistics)
         checkCheckboxIsNotChecked(settingsCheckboxBesideText(coreR.string.settings_show_untracked_time_statistics))
         clickOnSettingsCheckboxBesideText(coreR.string.settings_show_untracked_time_statistics)
         checkCheckboxIsChecked(settingsCheckboxBesideText(coreR.string.settings_show_untracked_time_statistics))
 
         // Untracked is shown
+        pressBack()
         NavUtils.openStatisticsScreen()
         checkViewIsDisplayed(allOf(withText(coreR.string.untracked_time_name), isCompletelyDisplayed()))
         checkViewIsDisplayed(allOf(withText(name), isCompletelyDisplayed()))
@@ -232,10 +245,11 @@ class SettingsTest : BaseUiTest() {
         // Check disabled
         NavUtils.openSettingsScreen()
         NavUtils.openSettingsDisplay()
-        scrollSettingsRecyclerToText(coreR.string.settings_ignore_short_untracked)
+        NavUtils.openSettingsUntrackedOptions()
+        scrollSettingsOptionsRecyclerToText(coreR.string.settings_ignore_short_untracked)
         clickOnSettingsSelectorBesideText(coreR.string.settings_ignore_short_untracked)
         clickOnViewWithText(coreR.string.duration_dialog_disable)
-        scrollSettingsRecyclerToText(coreR.string.settings_ignore_short_untracked)
+        scrollSettingsOptionsRecyclerToText(coreR.string.settings_ignore_short_untracked)
         checkViewIsDisplayed(
             settingsSelectorValueBesideText(
                 coreR.string.settings_ignore_short_untracked,
@@ -243,6 +257,7 @@ class SettingsTest : BaseUiTest() {
             ),
         )
 
+        pressBack()
         NavUtils.openRecordsScreen()
         clickOnPrevDate()
         checkItemCount(9)
@@ -253,7 +268,8 @@ class SettingsTest : BaseUiTest() {
 
         // Check 30 minutes
         NavUtils.openSettingsScreen()
-        scrollSettingsRecyclerToText(coreR.string.settings_ignore_short_untracked)
+        NavUtils.openSettingsUntrackedOptions()
+        scrollSettingsOptionsRecyclerToText(coreR.string.settings_ignore_short_untracked)
         clickOnSettingsSelectorBesideText(coreR.string.settings_ignore_short_untracked)
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard3)
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard0)
@@ -261,6 +277,7 @@ class SettingsTest : BaseUiTest() {
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard1)
         clickOnViewWithText(coreR.string.duration_dialog_save)
 
+        pressBack()
         NavUtils.openRecordsScreen()
         checkItemCount(6)
         checkRecordDuration(TimeUnit.HOURS.toMillis(20), displayed = true)
@@ -270,7 +287,8 @@ class SettingsTest : BaseUiTest() {
 
         // Check 1 minutes
         NavUtils.openSettingsScreen()
-        scrollSettingsRecyclerToText(coreR.string.settings_ignore_short_untracked)
+        NavUtils.openSettingsUntrackedOptions()
+        scrollSettingsOptionsRecyclerToText(coreR.string.settings_ignore_short_untracked)
         clickOnSettingsSelectorBesideText(coreR.string.settings_ignore_short_untracked)
         repeat(4) { clickOnViewWithId(dialogsR.id.btnNumberKeyboardDelete) }
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard1)
@@ -278,6 +296,7 @@ class SettingsTest : BaseUiTest() {
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard1)
         clickOnViewWithText(coreR.string.duration_dialog_save)
 
+        pressBack()
         NavUtils.openRecordsScreen()
         checkItemCount(7)
         checkRecordDuration(TimeUnit.HOURS.toMillis(20), displayed = true)
@@ -310,7 +329,8 @@ class SettingsTest : BaseUiTest() {
 
         NavUtils.openSettingsScreen()
         NavUtils.openSettingsDisplay()
-        scrollSettingsRecyclerToText(coreR.string.settings_show_records_calendar)
+        NavUtils.openSettingsUntrackedOptions()
+        scrollSettingsOptionsRecyclerToText(coreR.string.settings_untracked_range)
         checkCheckboxIsNotChecked(settingsCheckboxBesideText(coreR.string.settings_untracked_range))
         checkViewIsNotDisplayed(settingsRangeStartBesideText(coreR.string.settings_untracked_range))
         checkViewIsNotDisplayed(settingsRangeEndBesideText(coreR.string.settings_untracked_range))
@@ -341,6 +361,7 @@ class SettingsTest : BaseUiTest() {
             ),
         )
 
+        pressBack()
         NavUtils.openRecordsScreen()
         checkRecord(
             nameResId = coreR.string.untracked_time_name,
@@ -350,6 +371,8 @@ class SettingsTest : BaseUiTest() {
 
         // Check other range
         NavUtils.openSettingsScreen()
+        NavUtils.openSettingsUntrackedOptions()
+        scrollSettingsOptionsRecyclerToText(coreR.string.settings_untracked_range)
         startPreview = (startOfDay + TimeUnit.HOURS.toMillis(17)).toTimePreview()
         clickOnSettingsRangeStartBesideText(coreR.string.settings_untracked_range)
         onView(withClassName(equalTo(CustomTimePicker::class.java.name))).perform(setTime(17, 0))
@@ -371,6 +394,7 @@ class SettingsTest : BaseUiTest() {
             ),
         )
 
+        pressBack()
         NavUtils.openRecordsScreen()
         checkRecord(
             nameResId = coreR.string.untracked_time_name,
@@ -382,6 +406,98 @@ class SettingsTest : BaseUiTest() {
             timeStart = startPreview,
             timeEnd = startOfDay.toTimePreview(),
         )
+    }
+
+    @Test
+    fun untrackedDaysOfWeek() {
+        val name = "name"
+        val orderedDays = listOf(
+            DayOfWeek.MONDAY,
+            DayOfWeek.TUESDAY,
+            DayOfWeek.WEDNESDAY,
+            DayOfWeek.THURSDAY,
+            DayOfWeek.FRIDAY,
+            DayOfWeek.SATURDAY,
+            DayOfWeek.SUNDAY,
+        )
+        testUtils.setFirstDayOfWeek(DayOfWeek.MONDAY)
+        val previousDayStart = calendar.apply {
+            timeInMillis = System.currentTimeMillis()
+            add(Calendar.DAY_OF_MONTH, -1)
+            setToStartOfDay()
+        }.timeInMillis
+        val dayToDisable = timeMapper.getDayOfWeek(
+            timestamp = previousDayStart,
+            calendar = calendar,
+            startOfDayShift = 0,
+        )
+
+        // Add data
+        testUtils.addActivity(name)
+        val before = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(10)
+        testUtils.addRecord(name, timeStarted = before, timeEnded = before)
+
+        fun dayMatcher(dayOfWeek: DayOfWeek): Matcher<View> {
+            return allOf(
+                withId(baseR.id.btnDayOfWeekItem),
+                withText(timeMapper.toShortDayOfWeekName(dayOfWeek)),
+                isDescendantOfA(withId(settingsViewsR.id.rvItemSettingsWeekdays)),
+            )
+        }
+
+        fun checkDayColor(dayOfWeek: DayOfWeek, colorResId: Int) {
+            checkViewIsDisplayed(
+                allOf(
+                    withId(baseR.id.containerDayOfWeekItem),
+                    isDescendantOfA(withId(settingsViewsR.id.rvItemSettingsWeekdays)),
+                    hasDescendant(withCardColor(colorResId)),
+                    hasDescendant(withText(timeMapper.toShortDayOfWeekName(dayOfWeek))),
+                ),
+            )
+        }
+
+        fun openUntrackedOptions(expandDisplay: Boolean) {
+            NavUtils.openSettingsScreen()
+            if (expandDisplay) NavUtils.openSettingsDisplay()
+            NavUtils.openSettingsUntrackedOptions()
+            checkViewIsDisplayed(withText(coreR.string.settings_reminder_active_days))
+        }
+
+        // Check all days selected
+        NavUtils.openRecordsScreen()
+        clickOnPrevDate()
+        checkRecord(
+            nameResId = coreR.string.untracked_time_name,
+            timeStart = previousDayStart.toTimePreview(),
+            timeEnd = previousDayStart.toTimePreview(),
+        )
+
+        openUntrackedOptions(expandDisplay = true)
+        orderedDays.forEach { checkDayColor(it, coreR.color.colorActive) }
+        orderedDays.zipWithNext().forEach { (first, second) ->
+            onView(dayMatcher(first)).check(isCompletelyLeftOf(dayMatcher(second)))
+        }
+
+        clickOnView(dayMatcher(dayToDisable))
+        checkDayColor(dayToDisable, coreR.color.colorInactive)
+
+        pressBack()
+        NavUtils.openRecordsScreen()
+        checkViewDoesNotExist(
+            allOf(
+                withId(baseR.id.viewRecordItem),
+                hasDescendant(withText(coreR.string.untracked_time_name)),
+                isCompletelyDisplayed(),
+            ),
+        )
+
+        openUntrackedOptions(expandDisplay = false)
+        checkDayColor(dayToDisable, coreR.color.colorInactive)
+
+        pressBack()
+        activityScenarioRule.scenario.recreate()
+        openUntrackedOptions(expandDisplay = true)
+        checkDayColor(dayToDisable, coreR.color.colorInactive)
     }
 
     @Test
@@ -718,6 +834,7 @@ class SettingsTest : BaseUiTest() {
                 withText(coreR.string.settings_inactivity_reminder_disabled),
             ),
         )
+        checkViewIsNotDisplayed(settingsButtonBesideText(coreR.string.settings_inactivity_reminder))
         checkViewDoesNotExist(withText(coreR.string.settings_inactivity_reminder_recurrent))
 
         // 1s
@@ -727,11 +844,12 @@ class SettingsTest : BaseUiTest() {
         checkViewIsDisplayed(withText("1$secondString"))
 
         // Check recurrent
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
+        openReminderOptions(coreR.string.settings_inactivity_reminder)
         checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
         checkCheckboxIsNotChecked(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
         clickOnSettingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent)
         checkCheckboxIsChecked(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        pressBack()
 
         // 1m
         clickOnSettingsSelectorBesideText(coreR.string.settings_inactivity_reminder)
@@ -744,8 +862,7 @@ class SettingsTest : BaseUiTest() {
                 withText("1$minuteString"),
             ),
         )
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_inactivity_reminder)
 
         // 1h
         clickOnSettingsSelectorBesideText(coreR.string.settings_inactivity_reminder)
@@ -753,8 +870,7 @@ class SettingsTest : BaseUiTest() {
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard0)
         clickOnViewWithText(coreR.string.duration_dialog_save)
         checkViewIsDisplayed(withText("1$hourString"))
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_inactivity_reminder)
 
         // 1m 1s
         clickOnSettingsSelectorBesideText(coreR.string.settings_inactivity_reminder)
@@ -762,8 +878,7 @@ class SettingsTest : BaseUiTest() {
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard1)
         clickOnViewWithText(coreR.string.duration_dialog_save)
         checkViewIsDisplayed(withText("1$minuteString 01$secondString"))
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_inactivity_reminder)
 
         // 1h 1m 1s
         clickOnSettingsSelectorBesideText(coreR.string.settings_inactivity_reminder)
@@ -771,8 +886,7 @@ class SettingsTest : BaseUiTest() {
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard1)
         clickOnViewWithText(coreR.string.duration_dialog_save)
         checkViewIsDisplayed(withText("1$hourString 01$minuteString 01$secondString"))
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_inactivity_reminder)
 
         // 1h 30m
         clickOnSettingsSelectorBesideText(coreR.string.settings_inactivity_reminder)
@@ -783,8 +897,7 @@ class SettingsTest : BaseUiTest() {
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard0)
         clickOnViewWithText(coreR.string.duration_dialog_save)
         checkViewIsDisplayed(withText("1$hourString 30$minuteString"))
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_inactivity_reminder)
 
         // 99h 99m 99s
         clickOnSettingsSelectorBesideText(coreR.string.settings_inactivity_reminder)
@@ -792,8 +905,7 @@ class SettingsTest : BaseUiTest() {
         repeat(6) { clickOnViewWithId(dialogsR.id.tvNumberKeyboard9) }
         clickOnViewWithText(coreR.string.duration_dialog_save)
         checkViewIsDisplayed(withText("100$hourString 40$minuteString 39$secondString"))
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_inactivity_reminder)
 
         // Disable
         clickOnSettingsSelectorBesideText(coreR.string.settings_inactivity_reminder)
@@ -804,6 +916,7 @@ class SettingsTest : BaseUiTest() {
                 withText(coreR.string.settings_inactivity_reminder_disabled),
             ),
         )
+        checkViewIsNotDisplayed(settingsButtonBesideText(coreR.string.settings_inactivity_reminder))
         checkViewDoesNotExist(withText(coreR.string.settings_inactivity_reminder_recurrent))
     }
 
@@ -819,6 +932,7 @@ class SettingsTest : BaseUiTest() {
                 withText(coreR.string.settings_inactivity_reminder_disabled),
             ),
         )
+        checkViewIsNotDisplayed(settingsButtonBesideText(coreR.string.settings_activity_reminder))
         checkViewDoesNotExist(withText(coreR.string.settings_inactivity_reminder_recurrent))
 
         // 1s
@@ -828,11 +942,12 @@ class SettingsTest : BaseUiTest() {
         checkViewIsDisplayed(withText("1$secondString"))
 
         // Check recurrent
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
+        openReminderOptions(coreR.string.settings_activity_reminder)
         checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
         checkCheckboxIsNotChecked(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
         clickOnSettingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent)
         checkCheckboxIsChecked(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        pressBack()
 
         // 1m
         clickOnSettingsSelectorBesideText(coreR.string.settings_activity_reminder)
@@ -845,8 +960,7 @@ class SettingsTest : BaseUiTest() {
                 withText("1$minuteString"),
             ),
         )
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_activity_reminder)
 
         // 1h
         clickOnSettingsSelectorBesideText(coreR.string.settings_activity_reminder)
@@ -854,8 +968,7 @@ class SettingsTest : BaseUiTest() {
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard0)
         clickOnViewWithText(coreR.string.duration_dialog_save)
         checkViewIsDisplayed(withText("1$hourString"))
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_activity_reminder)
 
         // 1m 1s
         clickOnSettingsSelectorBesideText(coreR.string.settings_activity_reminder)
@@ -863,8 +976,7 @@ class SettingsTest : BaseUiTest() {
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard1)
         clickOnViewWithText(coreR.string.duration_dialog_save)
         checkViewIsDisplayed(withText("1$minuteString 01$secondString"))
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_activity_reminder)
 
         // 1h 1m 1s
         clickOnSettingsSelectorBesideText(coreR.string.settings_activity_reminder)
@@ -872,8 +984,7 @@ class SettingsTest : BaseUiTest() {
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard1)
         clickOnViewWithText(coreR.string.duration_dialog_save)
         checkViewIsDisplayed(withText("1$hourString 01$minuteString 01$secondString"))
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_activity_reminder)
 
         // 1h 30m
         clickOnSettingsSelectorBesideText(coreR.string.settings_activity_reminder)
@@ -884,8 +995,7 @@ class SettingsTest : BaseUiTest() {
         clickOnViewWithId(dialogsR.id.tvNumberKeyboard0)
         clickOnViewWithText(coreR.string.duration_dialog_save)
         checkViewIsDisplayed(withText("1$hourString 30$minuteString"))
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_activity_reminder)
 
         // 99h 99m 99s
         clickOnSettingsSelectorBesideText(coreR.string.settings_activity_reminder)
@@ -893,8 +1003,7 @@ class SettingsTest : BaseUiTest() {
         repeat(6) { clickOnViewWithId(dialogsR.id.tvNumberKeyboard9) }
         clickOnViewWithText(coreR.string.duration_dialog_save)
         checkViewIsDisplayed(withText("100$hourString 40$minuteString 39$secondString"))
-        scrollSettingsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
-        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        checkReminderOptionsDisplayed(coreR.string.settings_activity_reminder)
 
         // Disable
         clickOnSettingsSelectorBesideText(coreR.string.settings_activity_reminder)
@@ -905,6 +1014,7 @@ class SettingsTest : BaseUiTest() {
                 withText(coreR.string.settings_inactivity_reminder_disabled),
             ),
         )
+        checkViewIsNotDisplayed(settingsButtonBesideText(coreR.string.settings_activity_reminder))
         checkViewDoesNotExist(withText(coreR.string.settings_inactivity_reminder_recurrent))
     }
 
@@ -1144,7 +1254,7 @@ class SettingsTest : BaseUiTest() {
                 hasDescendant(withText(name)),
             ),
         )
-        clickOnView(withText(R.string.cancel))
+        pressBack()
         clickOnView(
             allOf(
                 withId(R.id.viewRecordShortcutItem),
@@ -1236,7 +1346,7 @@ class SettingsTest : BaseUiTest() {
                 hasDescendant(withText(name)),
             ),
         )
-        clickOnView(withText(R.string.cancel))
+        pressBack()
         longClickOnView(
             allOf(
                 withId(R.id.viewRecordShortcutItem),
@@ -1739,6 +1849,61 @@ class SettingsTest : BaseUiTest() {
         NavUtils.openRunningRecordsScreen()
         clickOnViewWithText(name)
         tryAction { clickOnView(allOf(isDescendantOfA(withId(baseR.id.viewRunningRecordItem)), withText(name))) }
+    }
+
+    @Test
+    fun showRecordTagSelectionPreselectedTags() {
+        val typeName = "PreselectType"
+        val defaultTag = "DefaultTag"
+        val ruleTag = "RuleTag"
+        val ruleTagValue = 1.2
+        val generalTag = "GeneralTag"
+        val fullTagName = "$ruleTag (1.2)"
+        val fullName = "$typeName - $defaultTag, $fullTagName"
+
+        runBlocking { prefsInteractor.setShowRecordTagSelection(true) }
+        testUtils.addActivity(typeName)
+        testUtils.addRecordTag(
+            tagName = defaultTag,
+            typeName = typeName,
+            defaultTypes = listOf(typeName),
+        )
+        testUtils.addRecordTag(
+            tagName = generalTag,
+        )
+        testUtils.addRecordTag(
+            tagName = ruleTag,
+            typeName = typeName,
+            hasTagValue = true,
+        )
+        testUtils.addComplexRule(
+            action = ComplexRule.Action.AssignTag,
+            startingTypeNames = listOf(typeName),
+            assignTagNames = listOf(ruleTag),
+            assignTagValues = mapOf(ruleTag to ruleTagValue),
+        )
+
+        Thread.sleep(1000)
+
+        // Check preselected
+        tryAction { clickOnViewWithText(typeName) }
+        checkViewIsDisplayed(withText(coreR.string.something_selected))
+        checkViewIsDisplayed(withText(fullTagName))
+        onView(withText(defaultTag))
+            .check(isCompletelyAbove(withText(generalTag)))
+        onView(withText(fullTagName))
+            .check(isCompletelyAbove(withText(generalTag)))
+
+        // Save
+        clickOnViewWithText(coreR.string.duration_dialog_save)
+        tryAction {
+            checkViewIsDisplayed(
+                allOf(
+                    withId(baseR.id.viewRunningRecordItem),
+                    hasDescendant(withText(fullName)),
+                ),
+            )
+        }
     }
 
     @Test
@@ -3124,6 +3289,19 @@ class SettingsTest : BaseUiTest() {
 
         clickOnSettingsCheckboxBesideText(coreR.string.settings_retroactive_tracking_mode)
         checkCheckboxIsNotChecked(settingsCheckboxBesideText(coreR.string.settings_retroactive_tracking_mode))
+    }
+
+    private fun openReminderOptions(reminderTitleResId: Int) {
+        scrollSettingsRecyclerToText(reminderTitleResId)
+        clickOnSettingsButtonBesideText(reminderTitleResId)
+        scrollSettingsOptionsRecyclerToText(coreR.string.settings_inactivity_reminder_recurrent)
+    }
+
+    private fun checkReminderOptionsDisplayed(reminderTitleResId: Int) {
+        checkViewIsDisplayed(settingsButtonBesideText(reminderTitleResId))
+        openReminderOptions(reminderTitleResId)
+        checkViewIsDisplayed(settingsCheckboxBesideText(coreR.string.settings_inactivity_reminder_recurrent))
+        pressBack()
     }
 
     private fun clearDuration() {

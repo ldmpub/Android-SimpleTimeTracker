@@ -21,14 +21,15 @@ class RecordTagSelectionViewDataInteractor @Inject constructor(
     suspend fun getViewData(
         extra: RecordTagSelectionParams,
         selectedTags: List<RecordBase.Tag>,
-        showAllTags: Boolean,
         multipleChoiceAvailable: Boolean,
         comment: String,
+        tagSearch: String,
         fromCommentChange: Boolean,
+        fromSearchChange: Boolean,
     ): List<ViewHolderType> {
         val typeId = extra.typeId
-        val shouldShowCommentSelection = RecordTagSelectionParams.Field.Comment in extra.fields
-        val shouldShowTagSelection = RecordTagSelectionParams.Field.Tags in extra.fields
+        val shouldShowCommentSelection = RecordTagSelectionParams.FieldParam.Comment in extra.fields
+        val shouldShowTagSelection = RecordTagSelectionParams.FieldParam.Tags in extra.fields
 
         val result: MutableList<ViewHolderType> = mutableListOf()
 
@@ -49,6 +50,7 @@ class RecordTagSelectionViewDataInteractor @Inject constructor(
             result += recordCommentSearchViewDataInteractor.getViewData(
                 comment = comment,
                 typeId = typeId,
+                isSettingsAvailable = false,
             )
         }
 
@@ -74,12 +76,17 @@ class RecordTagSelectionViewDataInteractor @Inject constructor(
             result += recordTagViewDataInteractor.getViewData(
                 selectedTags = selectedTags,
                 typeIds = listOf(typeId),
-                showAllTags = showAllTags,
                 multipleChoiceAvailable = multipleChoiceAvailable,
-                showAddButton = false,
+                showBigEmptyHint = false,
+                showHint = false,
                 showArchived = false,
-                showUntaggedButton = true,
-                showAllTagsButton = true,
+                searchText = tagSearch,
+                fromSearchChange = fromSearchChange,
+                buttons = listOf(
+                    RecordTagViewDataInteractor.Button.UNTAGGED,
+                    RecordTagViewDataInteractor.Button.SEARCH,
+                    RecordTagViewDataInteractor.Button.ALL_TAGS,
+                ),
             ).data
         }
 

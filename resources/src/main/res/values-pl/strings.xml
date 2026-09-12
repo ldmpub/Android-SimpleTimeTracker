@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Tagi aktywności</string>
     <string name="record_tag_hint_short">Tagi</string>
     <string name="nothing_selected">Nic nie wybrano</string>
-    <string name="something_selected">Wybrane:</string>
+    <string name="something_selected">Wybrane</string>
+    <string name="something_available">Dostępne</string>
+    <string name="something_preselected">Wstępnie wybrane</string>
     <string name="select_all">Wybierz wszystko</string>
     <string name="select_nothing">Odznacz wszystko</string>
     <string name="no_data">Brak danych</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Cele zostaną wyświetlone tutaj</string>
+    <string name="all_goals_finished">Wszystkie cele zostały ukończone</string>
+    <string name="hide_finished_goals">Ukryj ukończone cele</string>
     <string name="goal_add_hint">Edytuj aktywność lub kategorię, aby przypisać cel</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Przypisz różne tagi do zapisów, aby je rozróżnić</string>
     <string name="categories_add_category">Dodaj kategorię</string>
     <string name="categories_add_record_tag">Dodaj tag dla aktywności</string>
+    <string name="categories_show_relations">Pokaż powiązania</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>Kategorie</b> pomagają Ci grupować powiązane ze sobą aktywności. Na przykład:<br><br>
 • Kategoria <custom-color-3>Produktywna</custom-color-3> może obejmować <custom-color-3>Czytanie</custom-color-3> i <custom-color-3>Siłownię</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@ Pozwala to zobaczyć, ile czasu spędzasz na produktywnych i nieproduktywnych ak
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Tag zarchiwizowany</string>
     <string name="change_record_tag_default_hint">Przypisany domyślnie</string>
+    <string name="change_record_tag_type_general">Wspólny</string>
     <string name="change_record_tag_type_general_hint">Można przypisać do zapisów dowolnej aktywności</string>
     <string name="change_record_tag_type_typed_hint">Można je przypisać wyłącznie do zapisów określonej aktywności</string>
     <string name="change_record_tag_select_activity_hint">Przypisz kolor i ikonę z aktywności</string>
@@ -142,6 +148,7 @@ Pozwala to zobaczyć, ile czasu spędzasz na produktywnych i nieproduktywnych ak
     <string name="change_record_last_comments_hint">Ostatni komentarz</string>
     <string name="change_record_favourite_comments_hint">Ulubione</string>
     <string name="change_record_favourite_comments_hint_long">Ulubione komentarze</string>
+    <string name="change_record_favourite_activity_selection">Ulubione tylko dla wybranych aktywności</string>
     <string name="change_record_similar_comments_hint">Podobne komentarze</string>
     <string name="change_record_categories_empty">Brak dodanych tagów</string>
     <string name="change_record_save">Zapisz</string>
@@ -230,6 +237,8 @@ Pozwala to zobaczyć, ile czasu spędzasz na produktywnych i nieproduktywnych ak
     <string name="change_complex_rule_removed">Reguła usunięta</string>
     <string name="change_complex_rule_choose_action">Wybrać działanie</string>
     <string name="change_complex_rule_choose_condition">Wybierz warunki</string>
+    <string name="change_complex_tag_value_dialog_message">Wybierz, kiedy ustawić wartość</string>
+    <string name="change_complex_tag_value_set_later">Przy starcie</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Pokazuje sugestie dotyczące następnej aktywności na podstawie bieżącej lub ostatniej aktywności</string>
@@ -289,6 +298,7 @@ Pozwala to zobaczyć, ile czasu spędzasz na produktywnych i nieproduktywnych ak
     <string name="records_all_sort_order">Posortuj rekordy</string>
     <string name="records_all_sort_time_started">Czas rozpoczęcia</string>
     <string name="records_all_sort_duration">Czas trwania</string>
+    <string name="records_all_days_without_records">Dni bez wpisów - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">Aby rozpocząć śledzenie, dodaj aktywność, klikając przycisk %s lub użyj domyślnych, klikając przycisk %s</string>
@@ -309,7 +319,7 @@ Pozwala to zobaczyć, ile czasu spędzasz na produktywnych i nieproduktywnych ak
     <string name="settings_display_title">Ustawienia wyświetlania</string>
     <string name="settings_additional_title">Dodatkowe ustawienia</string>
     <string name="settings_notification_title">Ustawienia powiadomień</string>
-    <string name="settings_backup_title">Ustawienia kopii zapasowej</string>
+    <string name="settings_backup_title">Kopia zapasowa</string>
     <string name="settings_export_title">Eksport i import</string>
     <string name="settings_sort_order">Sortowanie aktywności</string>
     <string name="settings_sort_order_category">Sortowanie kategorii</string>
@@ -327,6 +337,7 @@ Pozwala to zobaczyć, ile czasu spędzasz na produktywnych i nieproduktywnych ak
     <string name="settings_show_untracked_time_statistics">Pokaż nieśledzony czas w statystykach</string>
     <string name="settings_ignore_short_untracked">Ignoruj krótki czas braku śledzenia</string>
     <string name="settings_ignore_short_untracked_hint">Nie pokazuj nieśledzonego czasu, który jest krótszy od wskazanego.</string>
+    <string name="settings_untracked_days_hint">Uwzględniaj czas bez śledzenia tylko w wybrane dni.</string>
     <string name="settings_untracked_range">Zakres dla czasu nieśledzonego</string>
     <string name="settings_untracked_range_hint">Pokazuj czas nieśledzony tylko w wybranym zakresie.</string>
     <string name="settings_show_records_calendar">Pokaż rekordy w widoku kalendarza</string>
@@ -360,11 +371,14 @@ Pozwala to zobaczyć, ile czasu spędzasz na produktywnych i nieproduktywnych ak
     <string name="settings_inactivity_reminder">Pokaż przypomnienie o braku aktywności</string>
     <string name="settings_inactivity_reminder_hint">Pokaż powiadomienie po określonym czasie, jeśli nie są uruchomione żadne liczniki.</string>
     <string name="settings_inactivity_reminder_recurrent">Cykliczny</string>
+    <string name="settings_reminder_active_days">Aktywne dni</string>
     <string name="settings_activity_reminder">Pokaż przypomnienie o aktywności</string>
     <string name="settings_activity_reminder_hint">Pokaż powiadomienie po określonym czasie, jeśli są uruchomione liczniki.</string>
     <string name="settings_do_not_disturb">Nie przeszkadzać</string>
     <string name="settings_notifications_system_settings">Ustawienia systemowe</string>
     <string name="settings_notifications_system_settings_hint">Dźwięk, wibracje, lampa błyskowa i inne</string>
+    <string name="settings_reminders_title">Przypomnienia</string>
+    <string name="settings_reminders_hint">Zarządzaj zaplanowanymi przypomnieniami</string>
     <string name="settings_ignore_short_records">Ignoruj krótkie rekordy</string>
     <string name="settings_ignore_short_records_hint">Nie śledź aktywności krótszych niż podany czas.</string>
     <string name="settings_inactivity_reminder_disabled">Wyłączony</string>
@@ -527,6 +541,7 @@ Przykład:<br/>
     <string name="statistics_detail_record_time">Zapisy</string>
     <string name="statistics_detail_first_record">Pierwszy</string>
     <string name="statistics_detail_last_record">Ostatni</string>
+    <string name="statistics_detail_record_span">Okres</string>
     <string name="statistics_detail_time_since">Czas, który upłynął</string>
     <string name="statistics_detail_streaks">Serie</string>
     <string name="statistics_detail_streaks_longest">Najdłuższa</string>
@@ -549,6 +564,8 @@ Przykład:<br/>
     <string name="statistics_detail_goals_deficit">Deficyt</string>
     <string name="statistics_detail_tag_values_hint">Wartości tagu</string>
     <string name="statistics_detail_tag_values_multiply_duration">Pomnóż przez czas trwania</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Wypełnij puste okresy poprzednimi danymi</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Powiększ oś Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">rekordów</item>-->
@@ -673,6 +690,33 @@ Przykład:<br/>
     <string name="shortcut_navigation_records">Rekordy</string>
     <string name="shortcut_navigation_statistics">Statystyki</string>
     <string name="shortcut_navigation_settings">Ustawienia</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Codziennie</string>
+    <string name="reminders_schedule_weekly">Co tydzień</string>
+    <string name="reminders_schedule_one_time">Jednorazowo</string>
+    <string name="reminders_schedule_monthly">Co miesiąc</string>
+    <string name="reminders_schedule_hourly">Co godzinę</string>
+    <string name="reminders_condition_activity_not_tracked">Gdy aktywność nie została dziś zarejestrowana</string>
+    <string name="activity_reminders_hint">Zastępuje globalne ustawienie przypomnienia o aktywności</string>
+    <string name="activity_reminder_mode">Tryb przypomnienia</string>
+    <string name="activity_reminder_mode_disabled">Wyłączone</string>
+    <string name="activity_reminder_mode_custom">Niestandardowe</string>
+    <string name="activity_reminder_disabled_summary">Przypomnienia są wyłączone dla tej aktywności</string>
+    <string name="activity_reminder_positive_duration_required">Ustaw czas przypomnienia większy niż zero</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Wiadomość</string>
+    <string name="change_reminder_schedule">Harmonogram</string>
+    <string name="change_reminder_day_of_month">Dzień miesiąca</string>
+    <string name="change_reminder_interval">Interwał</string>
+    <string name="change_reminder_condition">Warunek wyświetlania</string>
+    <string name="change_reminder_condition_always">Zawsze</string>
+    <string name="change_reminder_message_prefill">Nie zapomnij zrobić %s.</string>
+    <string name="change_reminder_message_required">Wpisz wiadomość przypomnienia</string>
+    <string name="change_reminder_future_required">Wybierz czas w przyszłości</string>
+    <string name="change_reminder_interval_required">Ustaw interwał większy od zera</string>
+    <string name="change_reminder_removed">Przypomnienie usunięte</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Sprawdź połączenie i spróbuj ponownie</string>

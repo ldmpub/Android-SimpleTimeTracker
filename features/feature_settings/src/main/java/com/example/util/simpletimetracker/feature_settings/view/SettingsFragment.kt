@@ -5,20 +5,23 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LiveData
 import com.example.util.simpletimetracker.core.base.BaseFragment
 import com.example.util.simpletimetracker.core.di.BaseViewModelFactory
-import com.example.util.simpletimetracker.core.dialog.DataExportSettingsDialogListener
-import com.example.util.simpletimetracker.core.dialog.DateTimeDialogListener
-import com.example.util.simpletimetracker.core.dialog.DurationDialogListener
-import com.example.util.simpletimetracker.core.dialog.OptionsListDialogListener
-import com.example.util.simpletimetracker.core.dialog.StandardDialogListener
-import com.example.util.simpletimetracker.core.dialog.TypesSelectionDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DataExportSettingsDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DateTimeDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DurationDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OptionsListDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.StandardDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.TypesSelectionDialogListener
 import com.example.util.simpletimetracker.core.sharedViewModel.MainTabsViewModel
 import com.example.util.simpletimetracker.core.utils.InsetConfiguration
 import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.feature_base_adapter.BaseRecyclerAdapter
+import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
+import com.example.util.simpletimetracker.feature_base_adapter.dayOfWeek.DayOfWeekViewData
 import com.example.util.simpletimetracker.feature_settings.api.SettingsBlock
-import com.example.util.simpletimetracker.feature_settings.model.AdvancedOptionsBlockClickListener
+import com.example.util.simpletimetracker.feature_settings.model.SettingsOptionsBlockClickListener
 import com.example.util.simpletimetracker.feature_settings.viewModel.SettingsViewModel
 import com.example.util.simpletimetracker.feature_settings.views.getSettingsAdapterDelegates
 import com.example.util.simpletimetracker.navigation.params.screen.DataExportSettingsResult
@@ -36,7 +39,7 @@ class SettingsFragment :
     DataExportSettingsDialogListener,
     TypesSelectionDialogListener,
     OptionsListDialogListener,
-    AdvancedOptionsBlockClickListener {
+    SettingsOptionsBlockClickListener {
 
     override val inflater: (LayoutInflater, ViewGroup?, Boolean) -> Binding =
         Binding::inflate
@@ -56,6 +59,7 @@ class SettingsFragment :
                 onBlockClicked = viewModel::onBlockClicked,
                 onBlockClickedThrottled = throttle(viewModel::onBlockClicked),
                 onSpinnerPositionSelected = viewModel::onSpinnerPositionSelected,
+                onDayOfWeekClick = viewModel::onDayOfWeekClicked,
             ).toTypedArray(),
         )
     }
@@ -111,9 +115,10 @@ class SettingsFragment :
     }
 
     override fun onDataSelected(
-        tag: String?,
+        tag: String,
         dataIds: List<Long>,
         tagValues: List<RecordBase.Tag>,
+        selectValueOnStartTagIds: List<Long>,
     ) {
         viewModel.onTypesSelected(dataIds, tag)
     }
@@ -122,12 +127,20 @@ class SettingsFragment :
         viewModel.onOptionsItemClick(id)
     }
 
-    override fun onAdvancedOptionsBlockClicked(block: SettingsBlock) {
+    override fun getOptionsContent(): LiveData<List<ViewHolderType>> {
+        return viewModel.optionsContent
+    }
+
+    override fun onOptionsBlockClicked(block: SettingsBlock) {
         viewModel.onBlockClicked(block)
     }
 
-    override fun onAdvancedOptionsSpinnerPositionSelected(block: SettingsBlock, position: Int) {
+    override fun onOptionsSpinnerPositionSelected(block: SettingsBlock, position: Int) {
         viewModel.onSpinnerPositionSelected(block, position)
+    }
+
+    override fun onOptionsDayOfWeekClicked(block: SettingsBlock, data: DayOfWeekViewData) {
+        viewModel.onDayOfWeekClicked(block, data)
     }
 
     private fun setKeepScreenOn(keepScreenOn: Boolean) {

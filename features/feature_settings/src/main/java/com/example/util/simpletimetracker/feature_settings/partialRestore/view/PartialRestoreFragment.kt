@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseBottomSheetFragment
-import com.example.util.simpletimetracker.core.dialog.StandardDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.StandardDialogListener
 import com.example.util.simpletimetracker.core.extension.setSkipCollapsed
 import com.example.util.simpletimetracker.feature_base_adapter.BaseRecyclerAdapter
 import com.example.util.simpletimetracker.feature_base_adapter.hint.createHintAdapterDelegate
@@ -36,7 +36,7 @@ class PartialRestoreFragment :
             createHintAdapterDelegate(),
             createFilterAdapterDelegate(
                 onClick = viewModel::onFilterClick,
-                onRemoveClick = viewModel::onFilterRemoveClick,
+                onButtonClick = viewModel::onFilterRemoveClick,
             ),
         )
     }

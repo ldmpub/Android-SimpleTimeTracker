@@ -3,6 +3,8 @@ package com.example.util.simpletimetracker.feature_change_record_type.interactor
 import com.example.util.simpletimetracker.core.mapper.CategoryViewDataMapper
 import com.example.util.simpletimetracker.core.mapper.CommonViewDataMapper
 import com.example.util.simpletimetracker.domain.category.interactor.CategoryInteractor
+import com.example.util.simpletimetracker.domain.extension.addBetweenEach
+import com.example.util.simpletimetracker.domain.extension.plusAssign
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
 import com.example.util.simpletimetracker.feature_base_adapter.divider.DividerViewData
@@ -25,35 +27,62 @@ class ChangeRecordTypeViewDataInteractor @Inject constructor(
         return if (categories.isNotEmpty()) {
             val selected = categories.filter { it.id in selectedCategories }
             val available = categories.filter { it.id !in selectedCategories }
-            val viewData = mutableListOf<ViewHolderType>()
 
-            categoryViewDataMapper.mapToCategoryHint().let(viewData::add)
+            // Main hint
+            val hintData = if (selected.isEmpty()) {
+                listOf(categoryViewDataMapper.mapToCategoryHint())
+            } else {
+                emptyList()
+            }
 
-            DividerViewData("divider_hint".hashCode().toLong())
-                .let(viewData::add)
+            // Selected
+            val selectedData = mutableListOf<ViewHolderType>()
+            if (selected.isNotEmpty()) {
+                selectedData += commonViewDataMapper.mapSelected()
+                selectedData += selected.map {
+                    categoryViewDataMapper.mapCategory(
+                        category = it,
+                        isDarkTheme = isDarkTheme,
+                    )
+                }
+            }
 
-            commonViewDataMapper.mapSelectedHint(
-                isEmpty = selected.isEmpty(),
-            ).let(viewData::add)
+            // Available
+            val availableData = mutableListOf<ViewHolderType>()
+            if (available.isNotEmpty()) {
+                availableData += commonViewDataMapper.mapAvailable()
+                availableData += available.map {
+                    categoryViewDataMapper.mapCategory(
+                        category = it,
+                        isDarkTheme = isDarkTheme,
+                    )
+                }
+            }
 
-            selected.map {
-                categoryViewDataMapper.mapCategory(
-                    category = it,
+            // Buttons
+            val buttonsViewData = mutableListOf<ViewHolderType>()
+            if (selected.isNotEmpty()) {
+                buttonsViewData += categoryViewDataMapper.mapToUncategorizedItem(
+                    isFiltered = false,
                     isDarkTheme = isDarkTheme,
                 )
-            }.let(viewData::addAll)
+            }
+            buttonsViewData += categoryViewDataMapper.mapToTypeTagAddItem(
+                useShortName = true,
+                isDarkTheme = isDarkTheme,
+            )
 
-            DividerViewData("divider_available".hashCode().toLong())
-                .let(viewData::add)
-
-            available.map {
-                categoryViewDataMapper.mapCategory(
-                    category = it,
-                    isDarkTheme = isDarkTheme,
-                )
-            }.let(viewData::addAll)
-
-            categoryViewDataMapper.mapToTypeTagAddItem(isDarkTheme).let(viewData::add)
+            // All
+            val viewData = listOf(
+                hintData,
+                selectedData,
+                availableData,
+                buttonsViewData,
+            ).filter {
+                it.isNotEmpty()
+            }.addBetweenEach { index ->
+                listOf(DividerViewData(index.toLong()))
+            }.flatten()
 
             ChangeRecordTypeCategoriesViewData(
                 selectedCount = selected.size,
@@ -64,7 +93,10 @@ class ChangeRecordTypeViewDataInteractor @Inject constructor(
                 selectedCount = 0,
                 viewData = listOf(
                     categoryViewDataMapper.mapToCategoriesFirstHint(),
-                    categoryViewDataMapper.mapToTypeTagAddItem(isDarkTheme),
+                    categoryViewDataMapper.mapToTypeTagAddItem(
+                        useShortName = true,
+                        isDarkTheme = isDarkTheme,
+                    ),
                 ),
             )
         }

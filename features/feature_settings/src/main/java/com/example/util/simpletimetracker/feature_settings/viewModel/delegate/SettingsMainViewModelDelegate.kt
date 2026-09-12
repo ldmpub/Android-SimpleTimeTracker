@@ -5,8 +5,7 @@ import com.example.util.simpletimetracker.core.base.ViewModelDelegate
 import com.example.util.simpletimetracker.core.extension.set
 import com.example.util.simpletimetracker.core.interactor.LanguageInteractor
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
-import com.example.util.simpletimetracker.domain.notifications.interactor.UpdateExternalViewsInteractor
-import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
+import com.example.util.simpletimetracker.feature_settings.api.OnSettingChangedInteractor
 import com.example.util.simpletimetracker.feature_settings.api.SettingsBlock
 import com.example.util.simpletimetracker.feature_settings.interactor.SettingsMainViewDataInteractor
 import com.example.util.simpletimetracker.feature_settings.mapper.SettingsMapper
@@ -21,23 +20,26 @@ class SettingsMainViewModelDelegate @Inject constructor(
     private val prefsInteractor: PrefsInteractor,
     private val languageInteractor: LanguageInteractor,
     private val settingsMapper: SettingsMapper,
-    private val externalViewsInteractor: UpdateExternalViewsInteractor,
+    private val onSettingChangedInteractor: OnSettingChangedInteractor,
     private val settingsMainViewDataInteractor: SettingsMainViewDataInteractor,
-) : ViewModelDelegate() {
+) : SettingsDelegate, ViewModelDelegate() {
 
     val themeChanged: SingleLiveEvent<Boolean> = SingleLiveEvent()
 
     private var parent: SettingsParent? = null
 
-    fun init(parent: SettingsParent) {
+    override fun init(parent: SettingsParent) {
         this.parent = parent
     }
 
-    suspend fun getViewData(): List<ViewHolderType> {
-        return settingsMainViewDataInteractor.execute()
+    override suspend fun getViewData(): SettingsDelegate.ViewData {
+        return SettingsDelegate.ViewData(
+            key = Companion,
+            data = settingsMainViewDataInteractor.execute(),
+        )
     }
 
-    fun onBlockClicked(block: SettingsBlock) {
+    override fun onBlockClicked(block: SettingsBlock) {
         when (block) {
             SettingsBlock.Categories -> onEditCategoriesClick()
             SettingsBlock.Archive -> onArchiveClick()
@@ -48,7 +50,7 @@ class SettingsMainViewModelDelegate @Inject constructor(
         }
     }
 
-    fun onSpinnerPositionSelected(block: SettingsBlock, position: Int) {
+    override fun onSpinnerPositionSelected(block: SettingsBlock, position: Int) {
         when (block) {
             SettingsBlock.DarkMode -> onDarkModeSelected(position)
             SettingsBlock.Language -> onLanguageSelected(position)
@@ -70,7 +72,7 @@ class SettingsMainViewModelDelegate @Inject constructor(
         delegateScope.launch {
             val newValue = !prefsInteractor.getAllowMultitasking()
             prefsInteractor.setAllowMultitasking(newValue)
-            externalViewsInteractor.onAllowMultitaskingChange()
+            onSettingChangedInteractor.onAllowMultitaskingChange()
             parent?.updateContent()
         }
     }
@@ -95,4 +97,6 @@ class SettingsMainViewModelDelegate @Inject constructor(
             router.restartApp()
         }
     }
+
+    companion object : SettingsDelegate.Key
 }

@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Etichette registrazioni</string>
     <string name="record_tag_hint_short">Etichette</string>
     <string name="nothing_selected">Niente selezionato</string>
-    <string name="something_selected">Selezionata:</string>
+    <string name="something_selected">Selezionata</string>
+    <string name="something_available">Disponibile</string>
+    <string name="something_preselected">Preselezionato</string>
     <string name="select_all">Seleziona tutto</string>
     <string name="select_nothing">Non selezionare nulla</string>
     <string name="no_data">Nessun dato</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Gli obiettivi verranno mostrati qui</string>
+    <string name="all_goals_finished">Tutti gli obiettivi sono completati</string>
+    <string name="hide_finished_goals">Nascondi gli obiettivi completati</string>
     <string name="goal_add_hint">Modifica l\'attività o la categoria per assegnarle un obiettivo</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Assegna diverse etichette alle registrazioni per differenziarle tra loro</string>
     <string name="categories_add_category">Aggiungi categoria</string>
     <string name="categories_add_record_tag">Aggiungi etichetta alla registrazione</string>
+    <string name="categories_show_relations">Mostra relazioni</string>
     <string name="categories_and_tags_hint"><![CDATA[
 Le <b>categorie</b> ti aiutano a raggruppare attività correlate. Ad esempio:<br><br>
 • La categoria <custom-color-3>Produttiva</custom-color-3> potrebbe includere <custom-color-3>Lettura</custom-color-3> e <custom-color-3>Palestra</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@ I <b>tag</b> ti permettono di aggiungere maggiori dettagli a un\'attività speci
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Etichetta archiviata</string>
     <string name="change_record_tag_default_hint">Assegnato per impostazione predefinita</string>
+    <string name="change_record_tag_type_general">Comune</string>
     <string name="change_record_tag_type_general_hint">Può essere assegnato a registrazioni di qualunque attività</string>
     <string name="change_record_tag_type_typed_hint">Può essere assegnato solo a registrazioni di una specifica attività</string>
     <string name="change_record_tag_select_activity_hint">Prendi il colore e l\'icona dall\'attività</string>
@@ -142,6 +148,7 @@ I <b>tag</b> ti permettono di aggiungere maggiori dettagli a un\'attività speci
     <string name="change_record_last_comments_hint">Ultimi commenti</string>
     <string name="change_record_favourite_comments_hint">Preferito</string>
     <string name="change_record_favourite_comments_hint_long">Commenti preferiti</string>
+    <string name="change_record_favourite_activity_selection">Preferito solo per le attività selezionate</string>
     <string name="change_record_similar_comments_hint">Commenti simili</string>
     <string name="change_record_categories_empty">Nessuna etichetta aggiunta alla registrazione</string>
     <string name="change_record_save">Salva</string>
@@ -230,6 +237,8 @@ I <b>tag</b> ti permettono di aggiungere maggiori dettagli a un\'attività speci
     <string name="change_complex_rule_removed">Regola rimossa</string>
     <string name="change_complex_rule_choose_action">Scegli un\'azione</string>
     <string name="change_complex_rule_choose_condition">Scegli le condizioni</string>
+    <string name="change_complex_tag_value_dialog_message">Scegli quando impostare il valore</string>
+    <string name="change_complex_tag_value_set_later">All\'avvio</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Mostra suggerimenti per l\'attività successiva in base all\'attività corrente o all\'ultima attività</string>
@@ -289,6 +298,7 @@ I <b>tag</b> ti permettono di aggiungere maggiori dettagli a un\'attività speci
     <string name="records_all_sort_order">Ordina le registrazioni</string>
     <string name="records_all_sort_time_started">Ora di inizio</string>
     <string name="records_all_sort_duration">Durata</string>
+    <string name="records_all_days_without_records">Giorni senza registrazioni - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">Per avviare il tracciamento, aggiungi attività facendo clic sul pulsante %s o utilizza i preset predefiniti facendo clic sul pulsante %s</string>
@@ -309,7 +319,7 @@ I <b>tag</b> ti permettono di aggiungere maggiori dettagli a un\'attività speci
     <string name="settings_display_title">Impostazioni di visualizzazione</string>
     <string name="settings_additional_title">Altre impostazioni</string>
     <string name="settings_notification_title">Impostazioni di notifica</string>
-    <string name="settings_backup_title">Impostazioni di backup</string>
+    <string name="settings_backup_title">Backup</string>
     <string name="settings_export_title">Esportare e importare</string>
     <string name="settings_sort_order">Ordina attività</string>
     <string name="settings_sort_order_category">Ordina le categorie</string>
@@ -327,6 +337,7 @@ I <b>tag</b> ti permettono di aggiungere maggiori dettagli a un\'attività speci
     <string name="settings_show_untracked_time_statistics">Mostra tempo non tracciato nelle statistiche</string>
     <string name="settings_ignore_short_untracked">Ignora il breve tempo non tracciato</string>
     <string name="settings_ignore_short_untracked_hint">Non mostrare il tempo non tracciato che è più breve del tempo specificato.</string>
+    <string name="settings_untracked_days_hint">Conta il tempo non tracciato solo nei giorni selezionati.</string>
     <string name="settings_untracked_range">Gamma non tracciata</string>
     <string name="settings_untracked_range_hint">Mostra il tempo non tracciato solo nell\'intervallo selezionato.</string>
     <string name="settings_show_records_calendar">Mostra i record nella vista calendario</string>
@@ -360,11 +371,14 @@ I <b>tag</b> ti permettono di aggiungere maggiori dettagli a un\'attività speci
     <string name="settings_inactivity_reminder">Mostra avviso per inattività</string>
     <string name="settings_inactivity_reminder_hint">Mostra una notifica dopo un certo tempo se non ci sono timer in esecuzione.</string>
     <string name="settings_inactivity_reminder_recurrent">Ricorrente</string>
+    <string name="settings_reminder_active_days">Giorni attivi</string>
     <string name="settings_activity_reminder">Mostra avviso per attività</string>
     <string name="settings_activity_reminder_hint">Mostra la notifica dopo l\'ora specificata se i timer sono in esecuzione.</string>
     <string name="settings_do_not_disturb">Non disturbare</string>
     <string name="settings_notifications_system_settings">Impostazioni di sistema</string>
     <string name="settings_notifications_system_settings_hint">Suono, vibrazione, flash e altro</string>
+    <string name="settings_reminders_title">Promemoria</string>
+    <string name="settings_reminders_hint">Gestisci i promemoria programmati</string>
     <string name="settings_ignore_short_records">Ignora i record brevi</string>
     <string name="settings_ignore_short_records_hint">Non tenere traccia delle attività più brevi del tempo specificato.</string>
     <string name="settings_inactivity_reminder_disabled">Disabilitato</string>
@@ -527,6 +541,7 @@ Esempio:<br/>
     <string name="statistics_detail_record_time">Tempo di registrazione</string>
     <string name="statistics_detail_first_record">Prima</string>
     <string name="statistics_detail_last_record">Ultima</string>
+    <string name="statistics_detail_record_span">Intervallo</string>
     <string name="statistics_detail_time_since">Tempo trascorso</string>
     <string name="statistics_detail_streaks">Serie</string>
     <string name="statistics_detail_streaks_longest">Più lunga</string>
@@ -549,6 +564,8 @@ Esempio:<br/>
     <string name="statistics_detail_goals_deficit">Deficit</string>
     <string name="statistics_detail_tag_values_hint">Valori del tag</string>
     <string name="statistics_detail_tag_values_multiply_duration">Moltiplica per la durata</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Riempi i periodi vuoti con i dati precedenti</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Zoom asse Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">Registrazioni</item>-->
@@ -673,6 +690,33 @@ Esempio:<br/>
     <string name="shortcut_navigation_records">Registrazioni</string>
     <string name="shortcut_navigation_statistics">Statistiche</string>
     <string name="shortcut_navigation_settings">Impostazioni</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Giornalmente</string>
+    <string name="reminders_schedule_weekly">Settimanale</string>
+    <string name="reminders_schedule_one_time">Una volta</string>
+    <string name="reminders_schedule_monthly">Mensilmente</string>
+    <string name="reminders_schedule_hourly">Ogni ora</string>
+    <string name="reminders_condition_activity_not_tracked">Quando l\'attività non è stata registrata oggi</string>
+    <string name="activity_reminders_hint">Sostituisce l\'impostazione globale del promemoria attività</string>
+    <string name="activity_reminder_mode">Modalità promemoria</string>
+    <string name="activity_reminder_mode_disabled">Disattivato</string>
+    <string name="activity_reminder_mode_custom">Personalizzato</string>
+    <string name="activity_reminder_disabled_summary">I promemoria sono disattivati per questa attività</string>
+    <string name="activity_reminder_positive_duration_required">Imposta una durata del promemoria maggiore di zero</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Messaggio</string>
+    <string name="change_reminder_schedule">Programmazione</string>
+    <string name="change_reminder_day_of_month">Giorno del mese</string>
+    <string name="change_reminder_interval">Intervallo</string>
+    <string name="change_reminder_condition">Condizione di visualizzazione</string>
+    <string name="change_reminder_condition_always">Sempre</string>
+    <string name="change_reminder_message_prefill">Non dimenticare di fare %s.</string>
+    <string name="change_reminder_message_required">Inserisci un messaggio di promemoria</string>
+    <string name="change_reminder_future_required">Seleziona un orario futuro</string>
+    <string name="change_reminder_interval_required">Imposta un intervallo maggiore di zero</string>
+    <string name="change_reminder_removed">Promemoria rimosso</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Controlla la connessione e riprova</string>

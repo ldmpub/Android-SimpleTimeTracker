@@ -5,8 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.util.simpletimetracker.core.base.SingleLiveEvent
-import com.example.util.simpletimetracker.core.delegates.dateSelector.mapper.DateSelectorMapper
-import com.example.util.simpletimetracker.core.delegates.dateSelector.viewModelDelegate.DateSelectorViewModelDelegate
 import com.example.util.simpletimetracker.core.extension.set
 import com.example.util.simpletimetracker.core.extension.shiftTimeStamp
 import com.example.util.simpletimetracker.core.interactor.StatisticsDetailNavigationInteractor
@@ -16,16 +14,21 @@ import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteracto
 import com.example.util.simpletimetracker.domain.recordType.extension.toRangeLength
 import com.example.util.simpletimetracker.domain.recordType.interactor.RecordTypeGoalInteractor
 import com.example.util.simpletimetracker.domain.statistics.model.RangeLength
+import com.example.util.simpletimetracker.feature_base_adapter.InfiniteRecyclerAdapter
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
 import com.example.util.simpletimetracker.feature_base_adapter.loader.LoaderViewData
 import com.example.util.simpletimetracker.feature_base_adapter.statisticsGoal.StatisticsGoalViewData
+import com.example.util.simpletimetracker.feature_date_selection.api.DateSelectorMapper
+import com.example.util.simpletimetracker.feature_date_selection.api.DateSelectorViewModelDelegate
 import com.example.util.simpletimetracker.feature_goals.interactor.GoalsViewDataInteractor
+import com.example.util.simpletimetracker.feature_goals.mapper.GoalsOptionsListMapper
+import com.example.util.simpletimetracker.feature_goals.model.GoalsOptionsListItem
 import com.example.util.simpletimetracker.navigation.Router
 import com.example.util.simpletimetracker.navigation.params.screen.DateTimeDialogParams
 import com.example.util.simpletimetracker.navigation.params.screen.DateTimeDialogType
+import com.example.util.simpletimetracker.navigation.params.screen.OptionsListParams
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -39,6 +42,7 @@ class GoalsViewModel @Inject constructor(
     private val prefsInteractor: PrefsInteractor,
     private val timeMapper: TimeMapper,
     private val recordTypeGoalInteractor: RecordTypeGoalInteractor,
+    private val goalsOptionsListMapper: GoalsOptionsListMapper,
     val dateSelectorViewModelDelegate: DateSelectorViewModelDelegate,
 ) : ViewModel() {
 
@@ -55,16 +59,28 @@ class GoalsViewModel @Inject constructor(
 
     private var isVisible: Boolean = false
     private var timerJob: Job? = null
+    private var lastRenderedDateItem: InfiniteRecyclerAdapter.Data? = null
 
     fun initialize() {
         viewModelScope.launch {
             dateSelectorViewModelDelegate.initialize(currentShift)
+            lastRenderedDateItem = dateSelectorViewModelDelegate.dataProvider.getItem(currentShift)
         }
     }
 
     fun onVisible() {
         isVisible = true
         startUpdate()
+        val dataProvider = dateSelectorViewModelDelegate.dataProvider
+        if (!dataProvider.isInitialized()) return
+
+        // System date-change events refresh it at midnight, but a custom
+        // logical boundary such as 04:00 produces no system event.
+        // This will update date selector on date change.
+        viewModelScope.launch {
+            dateSelectorViewModelDelegate.setup()
+            updateDateSelectorPosition(currentShift)
+        }
     }
 
     fun onHidden() {
@@ -93,6 +109,21 @@ class GoalsViewModel @Inject constructor(
             shift = rangeShift,
             range = goal.range.toRangeLength() ?: return@launch,
         )
+    }
+
+    fun onOptionsClick() = viewModelScope.launch {
+        router.navigate(OptionsListParams(goalsOptionsListMapper.map()))
+    }
+
+    fun onOptionsItemClick(id: OptionsListParams.Item.Id) = viewModelScope.launch {
+        if (id !is GoalsOptionsListItem) return@launch
+        when (id) {
+            is GoalsOptionsListItem.HideFinished -> {
+                val newValue = !prefsInteractor.getHideFinishedGoals()
+                prefsInteractor.setHideFinishedGoals(newValue)
+                updateStatistics()
+            }
+        }
     }
 
     fun onDateTimeSet(timestamp: Long, tag: String?) = viewModelScope.launch {
@@ -140,8 +171,8 @@ class GoalsViewModel @Inject constructor(
     }
 
     private fun startUpdate() {
+        timerJob?.cancel()
         timerJob = viewModelScope.launch {
-            timerJob?.cancelAndJoin()
             while (isActive) {
                 updateStatistics()
                 delay(TIMER_UPDATE)
@@ -150,15 +181,21 @@ class GoalsViewModel @Inject constructor(
     }
 
     private fun stopUpdate() {
-        viewModelScope.launch {
-            timerJob?.cancelAndJoin()
-        }
+        timerJob?.cancel()
     }
 
     private fun updatePosition(newPosition: Int) {
         currentShift = newPosition
-        dateSelectorViewModelDelegate.updatePosition(newPosition)
+        updateDateSelectorPosition(newPosition)
         updateStatistics()
+    }
+
+    private fun updateDateSelectorPosition(newPosition: Int) {
+        val currentItem = dateSelectorViewModelDelegate.dataProvider.getItem(currentShift)
+        if (lastRenderedDateItem != currentItem) {
+            dateSelectorViewModelDelegate.updatePosition(newPosition)
+            lastRenderedDateItem = dateSelectorViewModelDelegate.dataProvider.getItem(newPosition)
+        }
     }
 
     private fun getDateSelectorDelegateParent(): DateSelectorViewModelDelegate.Parent {
@@ -176,7 +213,9 @@ class GoalsViewModel @Inject constructor(
 
             override suspend fun getSetupData(): DateSelectorMapper.SetupData.Type {
                 return DateSelectorMapper.SetupData.Type.Statistics(
-                    optionsButton = DateSelectorMapper.SetupData.Button.Hidden,
+                    optionsButton = dateSelectorViewModelDelegate.getOptionsButton(
+                        options = goalsOptionsListMapper.map(),
+                    ),
                     rangeLength = RangeLength.Day,
                 )
             }

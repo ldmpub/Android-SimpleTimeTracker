@@ -2,46 +2,39 @@ package com.example.util.simpletimetracker.feature_change_running_record.viewMod
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.example.util.simpletimetracker.core.base.BaseViewModel
 import com.example.util.simpletimetracker.core.extension.set
-import com.example.util.simpletimetracker.core.interactor.RecordCommentSearchViewDataInteractor
-import com.example.util.simpletimetracker.core.interactor.RecordTagViewDataInteractor
-import com.example.util.simpletimetracker.core.interactor.RecordTypesViewDataInteractor
-import com.example.util.simpletimetracker.core.interactor.SnackBarMessageNavigationInteractor
 import com.example.util.simpletimetracker.core.interactor.StatisticsDetailNavigationInteractor
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.domain.extension.orZero
 import com.example.util.simpletimetracker.domain.record.interactor.AddRunningRecordMediator
-import com.example.util.simpletimetracker.domain.favourite.interactor.FavouriteCommentInteractor
-import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
-import com.example.util.simpletimetracker.domain.record.interactor.RecordInteractor
-import com.example.util.simpletimetracker.domain.recordTag.interactor.RecordTypeToTagInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.RemoveRunningRecordMediator
 import com.example.util.simpletimetracker.domain.record.interactor.RunningRecordInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.UpdateRunningRecordsInteractor
 import com.example.util.simpletimetracker.domain.record.model.RecordBase
-import com.example.util.simpletimetracker.domain.statistics.model.ChartFilterType
 import com.example.util.simpletimetracker.domain.record.model.RunningRecord
 import com.example.util.simpletimetracker.domain.recordTag.interactor.AddTagToTypeIfNotExistMediator
-import com.example.util.simpletimetracker.domain.recordTag.interactor.NeedTagValueSelectionInteractor
-import com.example.util.simpletimetracker.domain.recordTag.interactor.RecordTagInteractor
-import com.example.util.simpletimetracker.feature_change_record.interactor.ChangeRecordViewDataInteractor
-import com.example.util.simpletimetracker.feature_change_record.viewData.ChangeRecordChooserState
-import com.example.util.simpletimetracker.feature_change_record.viewModel.ChangeRecordActionsDelegateImpl
-import com.example.util.simpletimetracker.feature_change_record.viewModel.ChangeRecordBaseViewModel
+import com.example.util.simpletimetracker.domain.statistics.model.ChartFilterType
+import com.example.util.simpletimetracker.feature_change_record.api.ChangeRecordConfig
+import com.example.util.simpletimetracker.feature_change_record.api.viewData.ChangeRecordChooserState
+import com.example.util.simpletimetracker.feature_change_record.api.ChangeRecordEditorDelegate
+import com.example.util.simpletimetracker.feature_change_record.api.ChangeRecordEditorMode
+import com.example.util.simpletimetracker.feature_change_record.api.model.ChangeRecordEditorState
 import com.example.util.simpletimetracker.feature_change_running_record.R
 import com.example.util.simpletimetracker.feature_change_running_record.interactor.ChangeRunningRecordViewDataInteractor
 import com.example.util.simpletimetracker.feature_change_running_record.mapper.ChangeRunningRecordMapper
 import com.example.util.simpletimetracker.feature_change_running_record.viewData.ChangeRunningRecordViewData
 import com.example.util.simpletimetracker.navigation.Router
 import com.example.util.simpletimetracker.navigation.params.notification.SnackBarParams
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRecordTagFromChangeRunningRecordParams
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRecordTagFromScreen
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRunningRecordParams
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeTagData
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -49,18 +42,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChangeRunningRecordViewModel @Inject constructor(
-    recordTypesViewDataInteractor: RecordTypesViewDataInteractor,
-    recordTagViewDataInteractor: RecordTagViewDataInteractor,
-    prefsInteractor: PrefsInteractor,
-    changeRecordViewDataInteractor: ChangeRecordViewDataInteractor,
-    changeRecordActionsDelegate: ChangeRecordActionsDelegateImpl,
-    recordInteractor: RecordInteractor,
-    recordTagInteractor: RecordTagInteractor,
-    recordTypeToTagInteractor: RecordTypeToTagInteractor,
-    favouriteCommentInteractor: FavouriteCommentInteractor,
-    snackBarMessageNavigationInteractor: SnackBarMessageNavigationInteractor,
-    needTagValueSelectionInteractor: NeedTagValueSelectionInteractor,
-    recordCommentSearchViewDataInteractor: RecordCommentSearchViewDataInteractor,
+    savedStateHandle: SavedStateHandle,
+    val editorDelegate: ChangeRecordEditorDelegate,
     private val router: Router,
     private val addRunningRecordMediator: AddRunningRecordMediator,
     private val removeRunningRecordMediator: RemoveRunningRecordMediator,
@@ -71,36 +54,37 @@ class ChangeRunningRecordViewModel @Inject constructor(
     private val changeRunningRecordMapper: ChangeRunningRecordMapper,
     private val updateRunningRecordsInteractor: UpdateRunningRecordsInteractor,
     private val addTagToTypeIfNotExistMediator: AddTagToTypeIfNotExistMediator,
-) : ChangeRecordBaseViewModel(
-    router = router,
-    snackBarMessageNavigationInteractor = snackBarMessageNavigationInteractor,
-    prefsInteractor = prefsInteractor,
-    recordTypesViewDataInteractor = recordTypesViewDataInteractor,
-    recordTagViewDataInteractor = recordTagViewDataInteractor,
-    changeRecordViewDataInteractor = changeRecordViewDataInteractor,
-    recordInteractor = recordInteractor,
-    recordTagInteractor = recordTagInteractor,
-    recordTypeToTagInteractor = recordTypeToTagInteractor,
-    favouriteCommentInteractor = favouriteCommentInteractor,
-    changeRecordActionsDelegate = changeRecordActionsDelegate,
-    needTagValueSelectionInteractor = needTagValueSelectionInteractor,
-    recordCommentSearchViewDataInteractor = recordCommentSearchViewDataInteractor,
-) {
+) : BaseViewModel() {
 
-    lateinit var extra: ChangeRunningRecordParams
+    private val extra: ChangeRunningRecordParams = savedStateHandle[ARGS_PARAMS]
+        ?: ChangeRunningRecordParams.Empty
 
-    override val forceSecondsInDurationDialog: Boolean get() = true
-    override val mergeAvailable: Boolean = false
-    override val previewTimeEnded: Long get() = System.currentTimeMillis()
-    override val showTimeEndedOnSplitPreview: Boolean get() = false
-    override val adjustNextRecordAvailable: Boolean get() = false
-    override val adjustPreviewTimeEnded: Long get() = System.currentTimeMillis()
-    override val adjustPreviewOriginalTimeEnded: Long get() = System.currentTimeMillis()
-    override val showTimeEndedOnAdjustPreview: Boolean get() = false
-    override val isTimeEndedAvailable: Boolean get() = false
-    override val isAdditionalActionsAvailable: Boolean get() = false
-    override val isDeleteButtonVisible: Boolean get() = true
-    override val isStatisticsButtonVisible: Boolean get() = true
+    private val mode: ChangeRecordEditorMode = ChangeRecordEditorMode(
+        config = ChangeRecordConfig(
+            forceSecondsInDurationDialog = true,
+            showTimeEndedOnSplitPreview = false,
+            showTimeEndedOnAdjustPreview = false,
+            adjustNextRecordAvailable = false,
+            isTimeEndedAvailable = false,
+            isAdditionalActionsAvailable = false,
+            isDuplicateActionAvailable = true,
+            isDeleteButtonVisible = true,
+            isStatisticsButtonVisible = true,
+        ),
+        mergeAvailable = { false },
+        previewTimeEnded = { System.currentTimeMillis() },
+        adjustPreviewTimeEnded = { System.currentTimeMillis() },
+        adjustPreviewOriginalTimeEnded = { System.currentTimeMillis() },
+        updatePreview = ::updatePreview,
+        getChangeCategoryParams = ::getChangeCategoryParams,
+        onSaveClickDelegate = ::onSaveClickDelegate,
+        sendPreviewUpdate = ::sendPreviewUpdate,
+        initializePreviewViewData = ::initializePreviewViewData,
+        onDeleteClick = ::onDeleteClickMode,
+        onStatisticsClick = ::onStatisticsClickMode,
+        onTimeStartedChanged = ::onTimeStartedChanged,
+        onTimeEndedChanged = {},
+    )
 
     val record: LiveData<ChangeRunningRecordViewData> by lazy {
         return@lazy MutableLiveData<ChangeRunningRecordViewData>().let { initial ->
@@ -115,75 +99,17 @@ class ChangeRunningRecordViewModel @Inject constructor(
 
     private var timerJob: Job? = null
 
-    fun onDeleteClick() {
-        (deleteButtonEnabled as MutableLiveData).value = false
-        viewModelScope.launch {
-            removeRunningRecordMediator.remove(extra.id)
-            showMessage(R.string.change_running_record_removed)
-            router.back()
-        }
+    init {
+        editorDelegate.attach(mode)
     }
 
-    fun onStatisticsClick() = viewModelScope.launch {
-        val preview = record.value?.recordPreview ?: return@launch
-
-        statisticsDetailNavigationInteractor.navigate(
-            transitionName = "",
-            filterType = ChartFilterType.ACTIVITY,
-            shift = 0,
-            overrideStatisticsRange = null,
-            sharedElements = emptyMap(),
-            itemId = newTypeId,
-            itemName = preview.name,
-            itemIcon = preview.iconId,
-            itemColor = preview.color,
-        )
-    }
-
-    override suspend fun onSaveClickDelegate(
-        doAfter: suspend () -> Unit,
-    ) {
-        // Widgets will update on adding.
-        removeRunningRecordMediator.remove(
-            typeId = extra.id,
-            updateWidgets = false,
-            updateNotificationSwitch = false,
-            checkPomodoroStop = extra.id != newTypeId,
-        )
-        addRunningRecordMediator.addAfterChange(
-            typeId = newTypeId,
-            timeStarted = newTimeStarted,
-            comment = newComment,
-            tags = newTags,
-        )
-        if (showAllTags) {
-            addTagToTypeIfNotExistMediator.execute(
-                typeId = newTypeId,
-                tagIds = newTags.map(RecordBase.Tag::tagId),
-            )
-        }
-        doAfter()
-        sendPreviewUpdate(fullUpdate = true)
-        router.back()
-    }
-
-    override suspend fun sendPreviewUpdate(fullUpdate: Boolean) {
-        val recordPreview = record.value?.recordPreview ?: return
-        val update = changeRunningRecordMapper.map(
-            fullUpdate = fullUpdate,
-            recordPreview = recordPreview,
-        )
-        updateRunningRecordsInteractor.send(update)
-    }
-
-    override fun getChangeCategoryParams(data: ChangeTagData): ChangeRecordTagFromScreen {
-        return ChangeRecordTagFromChangeRunningRecordParams(data)
+    override fun onCleared() {
+        editorDelegate.clear()
+        super.onCleared()
     }
 
     fun onVisible() {
-        viewModelScope.launch {
-            updateCategoriesViewData()
-        }
+        editorDelegate.onVisible()
         startUpdate()
     }
 
@@ -195,66 +121,137 @@ class ChangeRunningRecordViewModel @Inject constructor(
         message.set(null)
     }
 
-    override suspend fun onTimeStartedChanged() {
-        if (newTimeStarted > System.currentTimeMillis()) {
-            newTimeStarted = System.currentTimeMillis()
+    private fun onDeleteClickMode() {
+        (deleteButtonEnabled as MutableLiveData).value = false
+        viewModelScope.launch {
+            removeRunningRecordMediator.remove(extra.id)
+            editorDelegate.showMessage(R.string.change_running_record_removed)
+            router.back()
+        }
+    }
+
+    private fun onStatisticsClickMode() = viewModelScope.launch {
+        val preview = record.value?.recordPreview ?: return@launch
+
+        statisticsDetailNavigationInteractor.navigate(
+            transitionName = "",
+            filterType = ChartFilterType.ACTIVITY,
+            shift = 0,
+            overrideStatisticsRange = null,
+            sharedElements = emptyMap(),
+            itemId = editorDelegate.recordState.newTypeId,
+            itemName = preview.name,
+            itemIcon = preview.iconId,
+            itemColor = preview.color,
+        )
+    }
+
+    private suspend fun onSaveClickDelegate(
+        doAfter: suspend () -> Unit,
+    ) {
+        val recordState = editorDelegate.recordState
+        // Widgets will update on adding.
+        removeRunningRecordMediator.remove(
+            typeId = extra.id,
+            updateWidgets = false,
+            updateNotificationSwitch = false,
+            checkPomodoroStop = extra.id != recordState.newTypeId,
+        )
+        addRunningRecordMediator.addAfterChange(
+            typeId = recordState.newTypeId,
+            timeStarted = recordState.newTimeStarted,
+            comment = editorDelegate.commentSelectionViewModelDelegate.newComment,
+            tags = recordState.newTags,
+        )
+        addTagToTypeIfNotExistMediator.execute(
+            typeId = recordState.newTypeId,
+            tagIds = recordState.newTags.map(RecordBase.Tag::tagId),
+        )
+        doAfter()
+        sendPreviewUpdate(fullUpdate = true)
+        router.back()
+    }
+
+    private suspend fun sendPreviewUpdate(fullUpdate: Boolean) {
+        val recordPreview = record.value?.recordPreview ?: return
+        val update = changeRunningRecordMapper.map(
+            fullUpdate = fullUpdate,
+            recordPreview = recordPreview,
+        )
+        updateRunningRecordsInteractor.send(update)
+    }
+
+    private fun getChangeCategoryParams(data: ChangeTagData): ChangeRecordTagFromScreen {
+        return ChangeRecordTagFromChangeRunningRecordParams(data)
+    }
+
+    private suspend fun onTimeStartedChanged() {
+        val recordState = editorDelegate.recordState
+        if (recordState.newTimeStarted > System.currentTimeMillis()) {
+            recordState.newTimeStarted = System.currentTimeMillis()
 
             SnackBarParams(
                 message = resourceRepo.getString(R.string.cannot_be_in_the_future),
                 duration = SnackBarParams.Duration.Short,
             ).let(message::set)
         }
-        if (newTimeStarted > newTimeSplit) newTimeSplit = newTimeStarted
-        super.onTimeStartedChanged()
+        editorDelegate.afterTimeStartedChanged()
     }
 
-    override suspend fun updatePreview() {
+    private fun mapRecordModel(
+        comment: String,
+        recordState: ChangeRecordEditorState,
+    ): RunningRecord {
+        return RunningRecord(
+            id = recordState.newTypeId,
+            timeStarted = recordState.newTimeStarted,
+            comment = comment,
+            tags = recordState.newTags,
+        )
+    }
+
+    private suspend fun updatePreview() {
         record.set(loadPreviewViewData())
     }
 
-    override suspend fun initializePreviewViewData() {
+    private suspend fun initializePreviewViewData() {
+        val recordState = editorDelegate.recordState
         if (extra.id != 0L) {
             runningRecordInteractor.get(extra.id)?.let { record ->
-                newTypeId = record.id.orZero()
-                newTimeStarted = record.timeStarted
-                newTimeEnded = System.currentTimeMillis()
-                newComment = record.comment
-                newTags = record.tags.toMutableList()
+                recordState.newTypeId = record.id.orZero()
+                recordState.newTimeStarted = record.timeStarted
+                recordState.newTimeEnded = System.currentTimeMillis()
+                recordState.newTags = record.tags.toMutableList()
+                editorDelegate.commentSelectionViewModelDelegate.newComment = record.comment
             }
-            newTimeSplit = newTimeStarted
-            originalTypeId = newTypeId
-            originalTagIds = newTags.map(RecordBase.Tag::tagId)
-            originalTimeStarted = newTimeStarted
-            originalTimeEnded = newTimeEnded
-            super.initializePreviewViewData()
+            editorDelegate.afterInitializePreviewViewData()
         }
     }
 
     private suspend fun loadPreviewViewData(): ChangeRunningRecordViewData {
-        if (newTypeId == 0L) initializePreviewViewData()
+        val recordState = editorDelegate.recordState
+        if (recordState.newTypeId == 0L) initializePreviewViewData()
 
-        val record = RunningRecord(
-            id = newTypeId,
-            timeStarted = newTimeStarted,
-            comment = newComment,
-            tags = newTags,
+        val record = mapRecordModel(
+            comment = editorDelegate.commentSelectionViewModelDelegate.newComment,
+            recordState = recordState,
         )
 
         return changeRunningRecordViewDataInteractor.getPreviewViewData(
             record = record,
             params = extra,
-            dateTimeFieldState = dateTimeState,
+            dateTimeFieldState = editorDelegate.dateTimeState,
         )
     }
 
     private fun startUpdate() {
+        timerJob?.cancel()
         timerJob = viewModelScope.launch {
-            timerJob?.cancelAndJoin()
             while (isActive) {
                 updatePreview()
                 // Update split preview only if it is visible
-                if (chooserState.value?.current is ChangeRecordChooserState.State.Action) {
-                    updateActionsData()
+                if (editorDelegate.chooserState.value?.current is ChangeRecordChooserState.State.Action) {
+                    editorDelegate.updateActionsData()
                 }
                 delay(TIMER_UPDATE)
             }
@@ -262,9 +259,7 @@ class ChangeRunningRecordViewModel @Inject constructor(
     }
 
     private fun stopUpdate() {
-        viewModelScope.launch {
-            timerJob?.cancelAndJoin()
-        }
+        timerJob?.cancel()
     }
 
     companion object {

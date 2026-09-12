@@ -12,6 +12,7 @@ import com.example.util.simpletimetracker.domain.extension.orZero
 import com.example.util.simpletimetracker.domain.complexRule.interactor.ComplexRuleInteractor
 import com.example.util.simpletimetracker.domain.complexRule.interactor.ComplexRulesDataUpdateInteractor
 import com.example.util.simpletimetracker.domain.complexRule.model.ComplexRule
+import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.daysOfWeek.model.DayOfWeek
 import com.example.util.simpletimetracker.feature_base_adapter.dayOfWeek.DayOfWeekViewData
 import com.example.util.simpletimetracker.feature_base_adapter.recordType.RecordTypeViewData
@@ -60,8 +61,9 @@ class ChangeComplexRuleViewModel @Inject constructor(
     private val ruleId: Long get() = (extra as? ChangeComplexRuleParams.Change)?.id.orZero()
     private var initialized: Boolean = false
     private var newAction: ComplexRule.Action? = null
-    private var newAssignTagIds: Set<Long> = emptySet()
-    private var originalAssignTagIds: Set<Long> = emptySet()
+    private var newAssignTagValues: List<RecordBase.Tag> = emptyList()
+    private var originalAssignTagValues: List<RecordBase.Tag> = emptyList()
+    private var newAssignTagValueOnStartIds: Set<Long> = emptySet()
     private var newStartingTypeIds: Set<Long> = emptySet()
     private var originalStartingTypeIds: Set<Long> = emptySet()
     private var newCurrentTypeIds: Set<Long> = emptySet()
@@ -100,13 +102,15 @@ class ChangeComplexRuleViewModel @Inject constructor(
     fun onActionClick(item: ChangeComplexRuleActionViewData) {
         when (item.type) {
             ChangeComplexRuleActionViewData.Type.AllowMultitasking -> {
-                newAssignTagIds = emptySet()
+                newAssignTagValues = emptyList()
+                newAssignTagValueOnStartIds = emptySet()
                 newAction = changeComplexRuleViewDataMapper.mapAction(item.type)
                 updateActionViewData()
                 onActionTypeChooserClick()
             }
             ChangeComplexRuleActionViewData.Type.DisallowMultitasking -> {
-                newAssignTagIds = emptySet()
+                newAssignTagValues = emptyList()
+                newAssignTagValueOnStartIds = emptySet()
                 newAction = changeComplexRuleViewDataMapper.mapAction(item.type)
                 updateActionViewData()
                 onActionTypeChooserClick()
@@ -117,12 +121,19 @@ class ChangeComplexRuleViewModel @Inject constructor(
                     title = "",
                     subtitle = "",
                     type = TypesSelectionDialogParams.Type.Tag.All,
-                    selectedTypeIds = newAssignTagIds.toList(),
-                    selectedTagValues = emptyList(),
+                    selectedTypeIds = newAssignTagValues.map(RecordBase.Tag::tagId),
+                    selectedTagValues = newAssignTagValues.map {
+                        TypesSelectionDialogParams.TagData(
+                            tagId = it.tagId,
+                            numericValue = it.numericValue,
+                        )
+                    },
+                    selectedTagValueOnStart = newAssignTagValueOnStartIds.toList(),
                     isMultiSelectAvailable = true,
-                    idsShouldBeVisible = originalAssignTagIds.toList(),
+                    idsShouldBeVisible = originalAssignTagValues.map(RecordBase.Tag::tagId),
                     showHints = true,
-                    allowTagValueSelection = false, // TODO TAG value selection?
+                    allowTagValueSelection = true,
+                    allowSelectTagValueOnStart = true,
                 ).let(router::navigate)
             }
         }
@@ -148,15 +159,28 @@ class ChangeComplexRuleViewModel @Inject constructor(
         updateDisallowOnlyPreviousState()
     }
 
-    fun onDataSelected(dataIds: List<Long>, tag: String?) {
+    fun onDataSelected(
+        dataIds: List<Long>,
+        tagValues: List<RecordBase.Tag>,
+        tag: String,
+        selectValueOnStartTagIds: List<Long>,
+    ) {
         when (tag) {
             RECORD_TAG_SELECTION_DIALOG_TAG -> {
                 if (dataIds.isNotEmpty()) {
                     newAction = ComplexRule.Action.AssignTag
-                    newAssignTagIds = dataIds.toSet()
+                    val tagValuesMap = tagValues.associateBy(RecordBase.Tag::tagId)
+                    newAssignTagValues = dataIds.map {
+                        RecordBase.Tag(
+                            tagId = it,
+                            numericValue = tagValuesMap[it]?.numericValue,
+                        )
+                    }
+                    newAssignTagValueOnStartIds = selectValueOnStartTagIds.toSet()
                 } else {
                     newAction = ComplexRule.Action.AllowMultitasking
-                    newAssignTagIds = emptySet()
+                    newAssignTagValues = emptyList()
+                    newAssignTagValueOnStartIds = emptySet()
                 }
                 updateActionViewData()
                 onActionTypeChooserClick()
@@ -215,7 +239,8 @@ class ChangeComplexRuleViewModel @Inject constructor(
             disabled = newDisabled,
             action = action,
             actionDisallowOnlyPrevious = newDisallowOnlyPrevious,
-            actionAssignTagIds = newAssignTagIds,
+            actionAssignTagValues = newAssignTagValues,
+            actionAssignTagValueOnStartIds = newAssignTagValueOnStartIds,
             conditionStartingTypeIds = newStartingTypeIds,
             conditionCurrentTypeIds = newCurrentTypeIds,
             conditionDaysOfWeek = newDaysOfWeek,
@@ -248,8 +273,9 @@ class ChangeComplexRuleViewModel @Inject constructor(
     private suspend fun initializeData() {
         val rule = complexRuleInteractor.get(ruleId) ?: return
         newAction = rule.action
-        newAssignTagIds = rule.actionAssignTagIds
-        originalAssignTagIds = rule.actionAssignTagIds
+        newAssignTagValues = rule.actionAssignTagValues
+        originalAssignTagValues = rule.actionAssignTagValues
+        newAssignTagValueOnStartIds = rule.actionAssignTagValueOnStartIds
         newStartingTypeIds = rule.conditionStartingTypeIds
         originalStartingTypeIds = rule.conditionStartingTypeIds
         newCurrentTypeIds = rule.conditionCurrentTypeIds
@@ -268,7 +294,7 @@ class ChangeComplexRuleViewModel @Inject constructor(
     private fun loadActionViewData(): ChangeComplexRuleActionChooserViewData {
         return changeComplexRuleViewDataInteractor.getActionViewData(
             newActionType = newAction,
-            newAssignTagIds = newAssignTagIds,
+            newAssignTagValues = newAssignTagValues,
         )
     }
 

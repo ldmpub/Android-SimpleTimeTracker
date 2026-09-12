@@ -6,9 +6,9 @@ import com.example.util.simpletimetracker.core.extension.lazySuspend
 import com.example.util.simpletimetracker.core.extension.set
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
 import com.example.util.simpletimetracker.feature_base_adapter.button.ButtonViewData
-import com.example.util.simpletimetracker.feature_change_record.adapter.ChangeRecordChangePreviewViewData
-import com.example.util.simpletimetracker.feature_change_record.adapter.ChangeRecordTimeDoublePreviewViewData
-import com.example.util.simpletimetracker.feature_change_record.model.ChangeRecordActionsBlock
+import com.example.util.simpletimetracker.feature_change_record.api.model.ChangeRecordActionsBlock
+import com.example.util.simpletimetracker.feature_change_record.api.viewData.ChangeRecordChangePreviewViewData
+import com.example.util.simpletimetracker.feature_change_record.api.viewData.ChangeRecordTimeDoublePreviewViewData
 import com.example.util.simpletimetracker.feature_change_record.viewData.ChangeRecordQuickActionsButtonViewData
 import com.example.util.simpletimetracker.feature_change_record.viewModel.base.ChangeRecordActionsDelegateHolder
 import com.example.util.simpletimetracker.feature_change_record.viewModel.base.ChangeRecordDelegateBridge
@@ -138,18 +138,21 @@ class ChangeRecordActionsDelegateImpl @Inject constructor(
     private suspend fun onSplitClick() {
         onRecordChangeButtonClick(
             onProceed = delegateHolder.splitDelegate::onSplitClickDelegate,
+            checkSplitTypeSelected = true,
         )
     }
 
     private suspend fun onRecordChangeButtonClick(
         onProceed: suspend () -> Unit,
         checkTypeSelected: Boolean = true,
+        checkSplitTypeSelected: Boolean = false,
         delayBlock: Boolean = false,
     ) {
         bridge?.send(
             ChangeRecordDelegateBridge.Action.OnRecordChangeButtonClick(
                 onProceed = onProceed,
                 checkTypeSelected = checkTypeSelected,
+                checkSplitTypeSelected = checkSplitTypeSelected,
                 delayBlock = delayBlock,
             ),
         )

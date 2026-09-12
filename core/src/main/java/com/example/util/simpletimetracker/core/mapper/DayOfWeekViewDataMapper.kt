@@ -1,7 +1,6 @@
 package com.example.util.simpletimetracker.core.mapper
 
 import com.example.util.simpletimetracker.domain.daysOfWeek.model.DayOfWeek
-import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
 import com.example.util.simpletimetracker.feature_base_adapter.dayOfWeek.DayOfWeekViewData
 import javax.inject.Inject
 
@@ -16,7 +15,7 @@ class DayOfWeekViewDataMapper @Inject constructor(
         firstDayOfWeek: DayOfWeek,
         width: DayOfWeekViewData.Width,
         paddingHorizontalDp: Int,
-    ): List<ViewHolderType> {
+    ): List<DayOfWeekViewData> {
         return timeMapper.getWeekOrder(firstDayOfWeek).map {
             val selected = it in selectedDaysOfWeek
             DayOfWeekViewData(

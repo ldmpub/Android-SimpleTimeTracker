@@ -1,20 +1,32 @@
 package com.example.util.simpletimetracker.data_local.complexRule
 
-import com.example.util.simpletimetracker.data_local.daysOfWeek.DaysOfWeekDataLocalMapper
 import com.example.util.simpletimetracker.domain.complexRule.model.ComplexRule
+import com.example.util.simpletimetracker.domain.daysOfWeek.mapper.DaysOfWeekDataLocalMapper
+import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import javax.inject.Inject
 
 class ComplexRuleDataLocalMapper @Inject constructor(
     private val daysOfWeekDataLocalMapper: DaysOfWeekDataLocalMapper,
+    private val complexRuleTagValuesMapper: ComplexRuleTagValuesMapper,
 ) {
 
     fun map(dbo: ComplexRuleDBO): ComplexRule {
+        val assignTagIds = mapIds(dbo.actionSetTagIds)
+        val parsedValues = complexRuleTagValuesMapper.parse(dbo.actionSetTagValues)
+        val assignTagValues = parsedValues.tagsWithValues.associateBy { it.tagId }
+        val assignTagValueOnStartIds = assignTagIds
+            .filter { parsedValues.tagIdsToSelectValueOnStart.contains(it) }
+            .toSet()
+
         return ComplexRule(
             id = dbo.id,
             disabled = dbo.disabled,
             action = mapActionType(dbo.action),
             actionDisallowOnlyPrevious = dbo.actionDisallowOnlyPrevious,
-            actionAssignTagIds = mapIds(dbo.actionSetTagIds),
+            actionAssignTagValues = assignTagIds.map {
+                RecordBase.Tag(tagId = it, numericValue = assignTagValues[it]?.numericValue)
+            },
+            actionAssignTagValueOnStartIds = assignTagValueOnStartIds,
             conditionStartingTypeIds = mapIds(dbo.conditionStartingTypeIds),
             conditionCurrentTypeIds = mapIds(dbo.conditionCurrentTypeIds),
             conditionDaysOfWeek = daysOfWeekDataLocalMapper
@@ -29,6 +41,10 @@ class ComplexRuleDataLocalMapper @Inject constructor(
             action = mapActionType(domain.action),
             actionDisallowOnlyPrevious = domain.actionDisallowOnlyPrevious,
             actionSetTagIds = mapIds(domain.actionAssignTagIds),
+            actionSetTagValues = complexRuleTagValuesMapper.serialize(
+                data = domain.actionAssignTagValues,
+                tagIdsToSelectValueOnStart = domain.actionAssignTagValueOnStartIds,
+            ),
             conditionStartingTypeIds = mapIds(domain.conditionStartingTypeIds),
             conditionCurrentTypeIds = mapIds(domain.conditionCurrentTypeIds),
             conditionDaysOfWeek = daysOfWeekDataLocalMapper

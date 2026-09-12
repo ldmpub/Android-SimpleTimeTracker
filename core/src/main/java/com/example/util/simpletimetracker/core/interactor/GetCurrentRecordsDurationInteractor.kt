@@ -1,6 +1,7 @@
 package com.example.util.simpletimetracker.core.interactor
 
 import com.example.util.simpletimetracker.domain.record.interactor.RecordInteractor
+import com.example.util.simpletimetracker.domain.record.interactor.RecordInteractor.GetParam
 import com.example.util.simpletimetracker.domain.record.mapper.RangeMapper
 import com.example.util.simpletimetracker.domain.record.model.Range
 import com.example.util.simpletimetracker.domain.statistics.model.RangeLength
@@ -24,7 +25,7 @@ class GetCurrentRecordsDurationInteractor @Inject constructor(
     }
 
     suspend fun getAllCurrents(
-        typeIds: List<Long>,
+        typeIds: Set<Long>,
         runningRecords: List<RunningRecord>,
         rangeLength: RangeLength,
     ): Map<Long, Result> {
@@ -54,7 +55,7 @@ class GetCurrentRecordsDurationInteractor @Inject constructor(
         val rangeRecords = getRangeRecords(
             rangeLength = rangeLength,
             range = range,
-            typeIds = recordTypeCategories.values.flatten().distinct(),
+            typeIds = recordTypeCategories.values.flatten().toSet(),
         )
 
         return recordTypeCategories.mapValues { (_, typeIds) ->
@@ -74,7 +75,7 @@ class GetCurrentRecordsDurationInteractor @Inject constructor(
     ): Map<Long, Result> {
         val range = getRange(rangeLength)
         // TODO TAG GOAL improve records load for big ranges (month)?
-        val rangeRecords = recordInteractor.getFromRange(range)
+        val rangeRecords = recordInteractor.getWithParams(GetParam.FromRange(range))
 
         return tagIds.associateWith { tagId ->
             getRangeCurrent(
@@ -87,7 +88,7 @@ class GetCurrentRecordsDurationInteractor @Inject constructor(
     }
 
     suspend fun getAllDailyCurrents(
-        typeIds: List<Long>,
+        typeIds: Set<Long>,
         runningRecords: List<RunningRecord>,
     ): Map<Long, Result> {
         return getAllCurrents(
@@ -106,7 +107,7 @@ class GetCurrentRecordsDurationInteractor @Inject constructor(
         val rangeRecords = getRangeRecords(
             rangeLength = rangeLength,
             range = range,
-            typeIds = listOf(typeId),
+            typeIds = setOf(typeId),
         )
 
         return getRangeCurrent(
@@ -154,19 +155,15 @@ class GetCurrentRecordsDurationInteractor @Inject constructor(
     private suspend fun getRangeRecords(
         rangeLength: RangeLength,
         range: Range,
-        typeIds: List<Long>,
+        typeIds: Set<Long>,
     ): List<Record> {
         // Use getFromRange to hit cache.
-        return if (rangeLength is RangeLength.Day) {
-            recordInteractor.getFromRange(
-                range = range,
-            )
+        val params = if (rangeLength is RangeLength.Day) {
+            GetParam.FromRange(range)
         } else {
-            recordInteractor.getFromRangeByType(
-                typeIds = typeIds,
-                range = range,
-            )
+            GetParam.FromRangeByType(typeIds, range)
         }
+        return recordInteractor.getWithParams(params)
     }
 
     data class Result(

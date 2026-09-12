@@ -3,6 +3,7 @@ package com.example.util.simpletimetracker.data_local.backup
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_ACTIVITY_REMINDER_DND_END
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_ACTIVITY_REMINDER_DND_START
+import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_ACTIVITY_REMINDER_DAYS_OF_WEEK
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_ACTIVITY_REMINDER_DURATION
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_ACTIVITY_REMINDER_RECURRENT
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_ALLOW_MULTIPLE_ACTIVITY_FILTERS
@@ -30,15 +31,18 @@ import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Compani
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_FILE_EXPORT_RANGE_CUSTOM_START
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_FILE_EXPORT_RANGE_LAST_DAYS
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_FIRST_DAY_OF_WEEK
+import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_HIDE_FINISHED_GOALS
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_ICS_EXPORT_CUSTOM_FILENAME
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_IGNORE_SHORT_RECORDS_DURATION
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_IGNORE_SHORT_UNTRACKED_DURATION
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_INACTIVITY_REMINDER_DND_END
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_INACTIVITY_REMINDER_DND_START
+import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_INACTIVITY_REMINDER_DAYS_OF_WEEK
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_INACTIVITY_REMINDER_DURATION
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_INACTIVITY_REMINDER_RECURRENT
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_IS_ACTIVITY_FILTERS_COLLAPSED
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_IS_ARCHIVE_SEARCH_ENABLED
+import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_IS_CATEGORIES_RELATIONS_ENABLED
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_IS_CATEGORIES_SEARCH_ENABLED
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_IS_NAV_BAR_AT_THE_BOTTOM
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_KEEP_SCREEN_ON
@@ -76,6 +80,7 @@ import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Compani
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_STATISTICS_DETAIL_RANGE_CUSTOM_END
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_STATISTICS_DETAIL_RANGE_CUSTOM_START
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_STATISTICS_DETAIL_RANGE_LAST_DAYS
+import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_STATISTICS_DETAIL_TAG_VALUE_SETTINGS
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_STATISTICS_DETAIL_STREAK_TYPE
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_STATISTICS_RANGE
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_STATISTICS_RANGE_CUSTOM_END
@@ -90,9 +95,12 @@ import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Compani
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_ENABLE_SEARCH_ON_MAIN
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_HIDDEN_COMMENT_FILTERS
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_HIDDEN_CONTAINER_OPTIONS
+import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_IS_SHOW_ALL_TAG_ENABLED
+import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_IS_TAG_SEARCH_ENABLED
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_START_TIMER_BY_LONG_CLICK
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_POMODORO_SHOW_MORE_CONTROLS
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_TYPE_ADDITIONAL_FIELDS_SHOWN
+import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_UNTRACKED_DAYS_OF_WEEK
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_UNTRACKED_RANGE_ENABLED
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_UNTRACKED_RANGE_END
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl.Companion.KEY_UNTRACKED_RANGE_START
@@ -172,6 +180,7 @@ class BackupPrefsRepo @Inject constructor(
             PrefsProcessor(KEY_STATISTICS_DETAIL_RANGE_CUSTOM_START, ::statisticsDetailRangeCustomStart),
             PrefsProcessor(KEY_STATISTICS_DETAIL_RANGE_CUSTOM_END, ::statisticsDetailRangeCustomEnd),
             PrefsProcessor(KEY_STATISTICS_DETAIL_RANGE_LAST_DAYS, ::statisticsDetailRangeLastDays),
+            PrefsProcessor(KEY_STATISTICS_DETAIL_TAG_VALUE_SETTINGS, ::statisticsDetailTagValueSettings),
             PrefsProcessor(KEY_FILE_EXPORT_RANGE, ::fileExportRange),
             PrefsProcessor(KEY_FILE_EXPORT_RANGE_CUSTOM_START, ::fileExportRangeCustomStart),
             PrefsProcessor(KEY_FILE_EXPORT_RANGE_CUSTOM_END, ::fileExportRangeCustomEnd),
@@ -202,20 +211,24 @@ class BackupPrefsRepo @Inject constructor(
             PrefsProcessor(KEY_POMODORO_PERIODS_UNTIL_LONG_BREAK, ::pomodoroPeriodsUntilLongBreak),
             PrefsProcessor(KEY_POMODORO_SHOW_MORE_CONTROLS, ::pomodoroShowMoreControls),
             PrefsProcessor(KEY_SHOW_GOALS_SEPARATELY, ::showGoalsSeparately),
+            PrefsProcessor(KEY_HIDE_FINISHED_GOALS, ::hideFinishedGoals),
             PrefsProcessor(KEY_ALLOW_MULTITASKING, ::allowMultitasking),
             PrefsProcessor(KEY_SHOW_NOTIFICATIONS, ::showNotifications),
             PrefsProcessor(KEY_SHOW_NOTIFICATIONS_CONTROLS, ::showNotificationsControls),
             PrefsProcessor(KEY_SHOW_NOTIFICATION_EVEN_WITH_NO_TIMERS, ::showNotificationEvenWithNoTimers),
             PrefsProcessor(KEY_INACTIVITY_REMINDER_DURATION, ::inactivityReminderDuration),
             PrefsProcessor(KEY_INACTIVITY_REMINDER_RECURRENT, ::inactivityReminderRecurrent),
+            PrefsProcessor(KEY_INACTIVITY_REMINDER_DAYS_OF_WEEK, ::inactivityReminderDaysOfWeek),
             PrefsProcessor(KEY_INACTIVITY_REMINDER_DND_START, ::inactivityReminderDoNotDisturbStart),
             PrefsProcessor(KEY_INACTIVITY_REMINDER_DND_END, ::inactivityReminderDoNotDisturbEnd),
             PrefsProcessor(KEY_ACTIVITY_REMINDER_DURATION, ::activityReminderDuration),
             PrefsProcessor(KEY_ACTIVITY_REMINDER_RECURRENT, ::activityReminderRecurrent),
+            PrefsProcessor(KEY_ACTIVITY_REMINDER_DAYS_OF_WEEK, ::activityReminderDaysOfWeek),
             PrefsProcessor(KEY_ACTIVITY_REMINDER_DND_START, ::activityReminderDoNotDisturbStart),
             PrefsProcessor(KEY_ACTIVITY_REMINDER_DND_END, ::activityReminderDoNotDisturbEnd),
             PrefsProcessor(KEY_IGNORE_SHORT_RECORDS_DURATION, ::ignoreShortRecordsDuration),
             PrefsProcessor(KEY_IGNORE_SHORT_UNTRACKED_DURATION, ::ignoreShortUntrackedDuration),
+            PrefsProcessor(KEY_UNTRACKED_DAYS_OF_WEEK, ::untrackedDaysOfWeek),
             PrefsProcessor(KEY_UNTRACKED_RANGE_ENABLED, ::untrackedRangeEnabled),
             PrefsProcessor(KEY_UNTRACKED_RANGE_START, ::untrackedRangeStart),
             PrefsProcessor(KEY_UNTRACKED_RANGE_END, ::untrackedRangeEnd),
@@ -240,7 +253,10 @@ class BackupPrefsRepo @Inject constructor(
             PrefsProcessor(KEY_DEFAULT_TYPES_HIDDEN, ::defaultTypesHidden),
             PrefsProcessor(KEY_IS_NAV_BAR_AT_THE_BOTTOM, ::isNavBarAtTheBottom),
             PrefsProcessor(KEY_IS_CATEGORIES_SEARCH_ENABLED, ::isCategoriesSearchEnabled),
+            PrefsProcessor(KEY_IS_CATEGORIES_RELATIONS_ENABLED, ::isCategoriesRelationsEnabled),
             PrefsProcessor(KEY_IS_ARCHIVE_SEARCH_ENABLED, ::isArchiveSearchEnabled),
+            PrefsProcessor(KEY_IS_TAG_SEARCH_ENABLED, ::isTagSearchEnabled),
+            PrefsProcessor(KEY_IS_SHOW_ALL_TAG_ENABLED, ::isShowAllTagsEnabled),
             PrefsProcessor(KEY_HIDDEN_COMMENT_FILTERS, ::hiddenCommentFilters),
             PrefsProcessor(KEY_DURATION_SUGGESTIONS_WAS_PREPOPULATED, ::durationSuggestionsWasPrepopulated),
             PrefsProcessor(KEY_TYPE_ADDITIONAL_FIELDS_SHOWN, ::typeAdditionalFieldsShown),

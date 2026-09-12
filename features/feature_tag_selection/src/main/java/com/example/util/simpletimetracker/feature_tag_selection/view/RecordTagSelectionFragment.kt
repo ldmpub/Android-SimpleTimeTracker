@@ -8,15 +8,15 @@ import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseFragment
-import com.example.util.simpletimetracker.core.dialog.OnTagSelectedListener
-import com.example.util.simpletimetracker.core.dialog.OnTagValueSelectedListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OnTagSelectedListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OnTagValueSelectedListener
 import com.example.util.simpletimetracker.core.extension.findListeners
 import com.example.util.simpletimetracker.core.manager.KeyboardVisibilityManager
 import com.example.util.simpletimetracker.core.utils.InsetConfiguration
 import com.example.util.simpletimetracker.core.utils.fragmentArgumentDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.BaseRecyclerAdapter
 import com.example.util.simpletimetracker.feature_base_adapter.category.createCategoryAdapterDelegate
-import com.example.util.simpletimetracker.feature_base_adapter.category.createCategoryShowAllAdapterDelegate
+import com.example.util.simpletimetracker.feature_base_adapter.category.createCategoryAddAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.commentField.createCommentFieldAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.divider.createDividerAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.empty.createEmptyAdapterDelegate
@@ -31,6 +31,7 @@ import com.example.util.simpletimetracker.feature_tag_selection.viewModel.Record
 import com.example.util.simpletimetracker.feature_views.extension.safeUpdateLayoutParams
 import com.example.util.simpletimetracker.feature_views.extension.setOnClick
 import com.example.util.simpletimetracker.feature_views.extension.visible
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.RecordTagSelectionParams
 import com.example.util.simpletimetracker.navigation.params.screen.RecordTagValueSelectionParams
 import com.google.android.flexbox.FlexDirection
@@ -57,13 +58,13 @@ class RecordTagSelectionFragment :
         BaseRecyclerAdapter(
             createLoaderAdapterDelegate(),
             createCategoryAdapterDelegate(viewModel::onCategoryClick),
-            createCategoryShowAllAdapterDelegate { viewModel.onShowAllTagsClick() },
+            createCategoryAddAdapterDelegate(viewModel::onCategorySpecialClick),
             createDividerAdapterDelegate(),
             createInfoAdapterDelegate(),
             createHintAdapterDelegate(),
             createEmptyAdapterDelegate(),
             createEmptySpaceAdapterDelegate(),
-            createCommentFieldAdapterDelegate(viewModel::onCommentChange),
+            createCommentFieldAdapterDelegate(afterTextChangeWithViewData = viewModel::onCommentChange),
             createRecordTagSelectionTextAdapterDelegate(),
             createRecordCommentAdapterDelegate(viewModel::onCommentClick),
             createFilterAdapterDelegate(viewModel::onCommentFilterClick),
@@ -136,8 +137,6 @@ class RecordTagSelectionFragment :
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
-
         fun newInstance(data: RecordTagSelectionParams) = RecordTagSelectionFragment().apply {
             arguments = Bundle().apply {
                 putParcelable(ARGS_PARAMS, data)

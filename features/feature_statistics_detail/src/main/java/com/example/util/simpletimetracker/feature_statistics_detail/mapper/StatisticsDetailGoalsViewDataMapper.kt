@@ -7,6 +7,7 @@ import com.example.util.simpletimetracker.domain.daysOfWeek.model.DayOfWeek
 import com.example.util.simpletimetracker.domain.extension.orZero
 import com.example.util.simpletimetracker.domain.record.mapper.RangeMapper
 import com.example.util.simpletimetracker.domain.record.model.RecordBase
+import com.example.util.simpletimetracker.domain.recordType.extension.isReached
 import com.example.util.simpletimetracker.domain.recordType.extension.value
 import com.example.util.simpletimetracker.domain.recordType.model.RecordTypeGoal
 import com.example.util.simpletimetracker.domain.statistics.model.RangeLength
@@ -123,6 +124,7 @@ class StatisticsDetailGoalsViewDataMapper @Inject constructor(
             goal = 0, // Don't show goal on goal graph.
             rangeLength = rangeLength,
             chartMode = chartMode,
+            yAxisZoomed = false,
             showSelectedBarOnStart = true,
             useSingleColor = false,
             drawRoundCaps = true,
@@ -154,17 +156,17 @@ class StatisticsDetailGoalsViewDataMapper @Inject constructor(
             showSeconds = showSeconds,
         )
 
-        if (chartData.visible) {
+        if (chartData != null) {
             items += StatisticsDetailHintViewData(
                 block = StatisticsDetailBlock.GoalExcessDeficitHint,
                 text = resourceRepo.getString(R.string.statistics_detail_goals_hint),
             )
         }
 
-        if (chartData.visible) {
+        if (chartData != null) {
             items += StatisticsDetailBarChartViewData(
                 block = StatisticsDetailBlock.GoalChartData,
-                singleColor = null,
+                singleColor = null, // Replaced later.
                 marginTopDp = 0,
                 data = chartData,
             )
@@ -198,7 +200,7 @@ class StatisticsDetailGoalsViewDataMapper @Inject constructor(
             )
         }
 
-        if (chartData.visible) {
+        if (chartData != null) {
             items += StatisticsDetailCardViewData(
                 block = StatisticsDetailBlock.GoalTotals,
                 title = "",
@@ -304,7 +306,11 @@ class StatisticsDetailGoalsViewDataMapper @Inject constructor(
             } else {
                 totalDuration - goalValue
             }
-            val color = if (goalDuration >= 0) positiveColor else negativeColor
+            val isReached = goalSubtype.isReached(
+                current = goalDuration,
+                goalValue = 0L,
+            )
+            val color = if (isReached) positiveColor else negativeColor
             ChartBarDataDuration(
                 rangeStart = dataPart.rangeStart,
                 legend = dataPart.legend,
@@ -344,7 +350,7 @@ class StatisticsDetailGoalsViewDataMapper @Inject constructor(
             firstDayOfWeek = firstDayOfWeek,
             startOfDayShift = startOfDayShift,
         )
-        val recordsFromRange = if (range.timeStarted == 0L && range.timeEnded == 0L) {
+        val recordsFromRange = if (range.isUndefined) {
             records
         } else {
             rangeMapper.getRecordsFromRange(records, range)

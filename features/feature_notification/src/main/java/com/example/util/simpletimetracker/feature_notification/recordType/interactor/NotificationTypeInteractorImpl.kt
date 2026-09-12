@@ -59,6 +59,7 @@ class NotificationTypeInteractorImpl @Inject constructor(
         editingTagId: Long?,
         editingTagValueInput: String?,
         isMultipleTagAvailable: Boolean,
+        requiredValueSelectionTagIds: List<Long>,
     ) {
         if (!prefsInteractor.getShowNotifications()) return
 
@@ -102,7 +103,7 @@ class NotificationTypeInteractorImpl @Inject constructor(
             ).groupBy { it.idData.value }
             val allDailyCurrents = if (goals.isNotEmpty()) {
                 getCurrentRecordsDurationInteractor.getAllDailyCurrents(
-                    typeIds = recordTypes.keys.toList(),
+                    typeIds = recordTypes.keys,
                     runningRecords = runningRecords,
                 )
             } else {
@@ -122,6 +123,7 @@ class NotificationTypeInteractorImpl @Inject constructor(
                 selectedTags = selectedTags,
                 editingTagId = editingTagId,
                 editingTagValueInput = editingTagValueInput,
+                requiredValueSelectionTagIds = requiredValueSelectionTagIds,
                 goals = goals,
                 allDailyCurrents = allDailyCurrents,
             )
@@ -178,7 +180,7 @@ class NotificationTypeInteractorImpl @Inject constructor(
         val controls = if (showControls) {
             val allDailyCurrents = if (goals.isNotEmpty()) {
                 getCurrentRecordsDurationInteractor.getAllDailyCurrents(
-                    typeIds = recordTypes.keys.toList(),
+                    typeIds = recordTypes.keys,
                     runningRecords = runningRecords,
                 )
             } else {
@@ -198,6 +200,7 @@ class NotificationTypeInteractorImpl @Inject constructor(
                 selectedTags = emptyList(),
                 editingTagId = null,
                 editingTagValueInput = null,
+                requiredValueSelectionTagIds = emptyList(),
                 goals = goals,
                 allDailyCurrents = allDailyCurrents,
             )

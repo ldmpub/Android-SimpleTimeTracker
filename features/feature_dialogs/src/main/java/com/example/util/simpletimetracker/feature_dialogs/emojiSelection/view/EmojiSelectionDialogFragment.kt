@@ -5,17 +5,17 @@ import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseBottomSheetFragment
-import com.example.util.simpletimetracker.core.dialog.EmojiSelectionDialogListener
-import com.example.util.simpletimetracker.core.extension.getAllFragments
+import com.example.util.simpletimetracker.core.extension.findListeners
+import com.example.util.simpletimetracker.feature_dialogs.api.EmojiSelectionDialogListener
 import com.example.util.simpletimetracker.core.extension.setSkipCollapsed
 import com.example.util.simpletimetracker.core.utils.fragmentArgumentDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.BaseRecyclerAdapter
 import com.example.util.simpletimetracker.feature_base_adapter.emoji.createEmojiAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.loader.createLoaderAdapterDelegate
 import com.example.util.simpletimetracker.feature_dialogs.emojiSelection.viewModel.EmojiSelectionViewModel
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.EmojiSelectionDialogParams
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
@@ -39,23 +39,13 @@ class EmojiSelectionDialogFragment : BaseBottomSheetFragment<Binding>() {
     }
 
     private val params: EmojiSelectionDialogParams by fragmentArgumentDelegate(
-        key = ARGS_PARAMS, default = EmojiSelectionDialogParams(),
+        key = ARGS_PARAMS, default = EmojiSelectionDialogParams.Empty,
     )
-    private var emojiSelectionDialogListener: EmojiSelectionDialogListener? = null
+    private var listeners: List<EmojiSelectionDialogListener> = emptyList()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        when (context) {
-            is EmojiSelectionDialogListener -> {
-                emojiSelectionDialogListener = context
-                return
-            }
-            is AppCompatActivity -> {
-                context.getAllFragments()
-                    .firstOrNull { it is EmojiSelectionDialogListener && it.isResumed }
-                    ?.let { emojiSelectionDialogListener = it as? EmojiSelectionDialogListener }
-            }
-        }
+        listeners = context.findListeners()
     }
 
     override fun initDialog() {
@@ -80,13 +70,11 @@ class EmojiSelectionDialogFragment : BaseBottomSheetFragment<Binding>() {
     }
 
     private fun onEmojiSelected(emojiText: String) {
-        emojiSelectionDialogListener?.onEmojiSelected(emojiText)
+        listeners.forEach { it.onEmojiSelected(tag = params.tag, emojiText = emojiText) }
         dismiss()
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
-
         fun createBundle(data: EmojiSelectionDialogParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

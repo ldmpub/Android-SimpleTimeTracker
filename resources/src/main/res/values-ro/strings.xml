@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Etichete</string>
     <string name="record_tag_hint_short">Etichete</string>
     <string name="nothing_selected">Nimic selectat</string>
-    <string name="something_selected">Selectat:</string>
+    <string name="something_selected">Selectat</string>
+    <string name="something_available">Disponibil</string>
+    <string name="something_preselected">Preselectat</string>
     <string name="select_all">Selectează toate</string>
     <string name="select_nothing">Nu selecta nimic</string>
     <string name="no_data">Nu există informații</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Obiectivele vor fi afișate aici</string>
+    <string name="all_goals_finished">Toate obiectivele sunt finalizate</string>
+    <string name="hide_finished_goals">Ascunde obiectivele finalizate</string>
     <string name="goal_add_hint">Editează activitatea sau categoria pentru a-i atribui un obiectiv</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Atribuiți diferite etichete înregistrărilor pentru a le diferenția</string>
     <string name="categories_add_category">Adaugă categorie</string>
     <string name="categories_add_record_tag">Adaugă etichetă</string>
+    <string name="categories_show_relations">Afișează relațiile</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>Categoriile</b> te ajută să grupezi activități înrudite. De exemplu:<br><br>
 • Categoria <custom-color-3>Productivă</custom-color-3> poate include <custom-color-3>Citit</custom-color-3> și <custom-color-3>Sală de sport</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@ Acest lucru îți permite să vezi cât timp petreci în activități productive
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Etichetă arhivată</string>
     <string name="change_record_tag_default_hint">Atribuit implicit</string>
+    <string name="change_record_tag_type_general">Comun</string>
     <string name="change_record_tag_type_general_hint">Poate fi atribuit înregistrărilor oricărei activități</string>
     <string name="change_record_tag_type_typed_hint">Poate fi atribuit înregistrărilor unei activități specifice</string>
     <string name="change_record_tag_select_activity_hint">Luați culoarea și pictograma din activitate</string>
@@ -142,6 +148,7 @@ Acest lucru îți permite să vezi cât timp petreci în activități productive
     <string name="change_record_last_comments_hint">Ultimele comentarii</string>
     <string name="change_record_favourite_comments_hint">Favorite</string>
     <string name="change_record_favourite_comments_hint_long">Comentarii preferate</string>
+    <string name="change_record_favourite_activity_selection">Favorit doar pentru activitățile selectate</string>
     <string name="change_record_similar_comments_hint">Comentarii similare</string>
     <string name="change_record_categories_empty">Nu au fost adăugate etichete</string>
     <string name="change_record_save">Salvează</string>
@@ -230,6 +237,8 @@ Acest lucru îți permite să vezi cât timp petreci în activități productive
     <string name="change_complex_rule_removed">Regulă stearsă</string>
     <string name="change_complex_rule_choose_action">Alege ațiunea</string>
     <string name="change_complex_rule_choose_condition">Alege condițiile</string>
+    <string name="change_complex_tag_value_dialog_message">Alege când să setezi valoarea</string>
+    <string name="change_complex_tag_value_set_later">La pornire</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Afișează sugestii pentru următoarea activitate pe baza activității curente sau ultimei</string>
@@ -289,6 +298,7 @@ Acest lucru îți permite să vezi cât timp petreci în activități productive
     <string name="records_all_sort_order">Sortează înregistrările</string>
     <string name="records_all_sort_time_started">Ora de început</string>
     <string name="records_all_sort_duration">Durata</string>
+    <string name="records_all_days_without_records">Zile fără înregistrări - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">Pentru a începe urmărirea, adaugă activitatea prin apăsarea butonului %s sau folosește setările de bază apăsând butonul %s</string>
@@ -309,7 +319,7 @@ Acest lucru îți permite să vezi cât timp petreci în activități productive
     <string name="settings_display_title">Afișează setările</string>
     <string name="settings_additional_title">Setări adiționale</string>
     <string name="settings_notification_title">Setări notificări</string>
-    <string name="settings_backup_title">Setări Backup</string>
+    <string name="settings_backup_title">Backup</string>
     <string name="settings_export_title">Exportă și importă</string>
     <string name="settings_sort_order">Sortează activitățile</string>
     <string name="settings_sort_order_category">Sortați categoriile</string>
@@ -327,6 +337,7 @@ Acest lucru îți permite să vezi cât timp petreci în activități productive
     <string name="settings_show_untracked_time_statistics">Arată timpul neurmărit în statistici</string>
     <string name="settings_ignore_short_untracked">Ignoră timpul scurt neurmărit</string>
     <string name="settings_ignore_short_untracked_hint">Nu arăta timpul neurmărit care este mai scurt decât timpul specificat.</string>
+    <string name="settings_untracked_days_hint">Calculează timpul fără urmărire numai în zilele selectate.</string>
     <string name="settings_untracked_range">Interval neurmărit</string>
     <string name="settings_untracked_range_hint">Afișează timpul neînregistrat doar în intervalul selectat.</string>
     <string name="settings_show_records_calendar">Arată înregistrările în vederea calendar</string>
@@ -360,11 +371,14 @@ Acest lucru îți permite să vezi cât timp petreci în activități productive
     <string name="settings_inactivity_reminder">Arată memento de inactivitate</string>
     <string name="settings_inactivity_reminder_hint">Arată notificare după intervalul specificat dacă nu este nici un cronometru activ.</string>
     <string name="settings_inactivity_reminder_recurrent">Recurent</string>
+    <string name="settings_reminder_active_days">Zile active</string>
     <string name="settings_activity_reminder">Arată memento de activitate</string>
     <string name="settings_activity_reminder_hint">Arată notificare după intervalul specificat dacă sunt cronometre active.</string>
     <string name="settings_do_not_disturb">Nu deranja</string>
     <string name="settings_notifications_system_settings">Setări de sistem</string>
     <string name="settings_notifications_system_settings_hint">Sunet, vibrație, flash și altele</string>
+    <string name="settings_reminders_title">Mementouri</string>
+    <string name="settings_reminders_hint">Gestionează mementourile programate</string>
     <string name="settings_ignore_short_records">Ignoră înregistrările scurte</string>
     <string name="settings_ignore_short_records_hint">Nu urmări activități care sunt mai scurte decât timpul specificat.</string>
     <string name="settings_inactivity_reminder_disabled">Dezactivează</string>
@@ -527,6 +541,7 @@ Examplu:<br/>
     <string name="statistics_detail_record_time">Timpul înregistrării</string>
     <string name="statistics_detail_first_record">Primul</string>
     <string name="statistics_detail_last_record">Ultimul</string>
+    <string name="statistics_detail_record_span">Perioadă</string>
     <string name="statistics_detail_time_since">Timp de la</string>
     <string name="statistics_detail_streaks">Serie</string>
     <string name="statistics_detail_streaks_longest">Cel mai lung</string>
@@ -549,6 +564,8 @@ Examplu:<br/>
     <string name="statistics_detail_goals_deficit">Deficit</string>
     <string name="statistics_detail_tag_values_hint">Valori etichetă</string>
     <string name="statistics_detail_tag_values_multiply_duration">Înmulțește cu durata</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Completează perioadele goale cu datele anterioare</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Mărește axa Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">Înregistrări</item>-->
@@ -673,6 +690,33 @@ Examplu:<br/>
     <string name="shortcut_navigation_records">Înregistrări</string>
     <string name="shortcut_navigation_statistics">Statistică</string>
     <string name="shortcut_navigation_settings">Setări</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Zilnic</string>
+    <string name="reminders_schedule_weekly">Săptămânal</string>
+    <string name="reminders_schedule_one_time">O singură dată</string>
+    <string name="reminders_schedule_monthly">Lunar</string>
+    <string name="reminders_schedule_hourly">La fiecare oră</string>
+    <string name="reminders_condition_activity_not_tracked">Când activitatea nu a fost înregistrată astăzi</string>
+    <string name="activity_reminders_hint">Suprascrie setarea globală a mementoului de activitate</string>
+    <string name="activity_reminder_mode">Mod memento</string>
+    <string name="activity_reminder_mode_disabled">Dezactivat</string>
+    <string name="activity_reminder_mode_custom">Personalizat</string>
+    <string name="activity_reminder_disabled_summary">Mementourile sunt dezactivate pentru această activitate</string>
+    <string name="activity_reminder_positive_duration_required">Setează o durată a mementoului mai mare decât zero</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Mesaj</string>
+    <string name="change_reminder_schedule">Programare</string>
+    <string name="change_reminder_day_of_month">Ziua lunii</string>
+    <string name="change_reminder_interval">Interval</string>
+    <string name="change_reminder_condition">Condiție de afișare</string>
+    <string name="change_reminder_condition_always">Întotdeauna</string>
+    <string name="change_reminder_message_prefill">Nu uita să faci %s.</string>
+    <string name="change_reminder_message_required">Introdu un mesaj pentru memento</string>
+    <string name="change_reminder_future_required">Selectează o oră din viitor</string>
+    <string name="change_reminder_interval_required">Setează un interval mai mare decât zero</string>
+    <string name="change_reminder_removed">Memento eliminat</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Verifică conexiunea și încearcă din nou</string>

@@ -8,6 +8,7 @@ import com.example.util.simpletimetracker.domain.base.REPEAT_BUTTON_ITEM_ID
 import com.example.util.simpletimetracker.domain.record.interactor.AddRunningRecordMediator
 import com.example.util.simpletimetracker.domain.record.interactor.RemoveRunningRecordMediator
 import com.example.util.simpletimetracker.domain.record.interactor.RunningRecordInteractor
+import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.record.model.RecordDataSelectionDialogResult
 import com.example.util.simpletimetracker.domain.recordType.interactor.RecordTypeInteractor
 import com.example.util.simpletimetracker.feature_widget.single.WidgetSingleTagSelectionActivity
@@ -74,7 +75,12 @@ class WidgetTypeClickManager @Inject constructor(
 
         WidgetSingleTagSelectionActivity.getStartIntent(
             context = context,
-            data = RecordTagSelectionParams(typeId, result.toParams()),
+            data = RecordTagSelectionParams(
+                typeId = typeId,
+                fields = result.fields.toParams(),
+                preselectedTags = result.preselectedTags.map(RecordBase.Tag::toParams),
+                requiredValueSelectionTagIds = result.requiredValueSelectionTagIds,
+            ),
         ).let(context::startActivity)
     }
 }

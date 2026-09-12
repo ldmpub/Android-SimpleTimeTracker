@@ -163,8 +163,11 @@ class SettingsAdditionalViewDataInteractor @Inject constructor(
                     dividerIsVisible = false,
                 ),
                 buttonBlock = SettingsBlock.AdditionalShiftStartOfDayButton,
-                isButtonVisible = startOfDayViewData.startOfDaySign.isNotEmpty(),
-                buttonText = startOfDayViewData.startOfDaySign,
+                buttonContent = if (startOfDayViewData.startOfDaySign.isNotEmpty()) {
+                    SettingsSelectorWithButtonViewData.Button.Text(text = startOfDayViewData.startOfDaySign)
+                } else {
+                    null
+                },
             )
             result += SettingsHintViewData(
                 block = SettingsBlock.AdditionalShiftStartOfDayHint,
@@ -201,6 +204,11 @@ class SettingsAdditionalViewDataInteractor @Inject constructor(
             result += SettingsTextViewData(
                 block = SettingsBlock.AdditionalActivitySuggestions,
                 title = resourceRepo.getString(R.string.settings_activity_suggestions),
+                subtitle = "",
+            )
+            result += SettingsTextViewData(
+                block = SettingsBlock.AdditionalShortcuts,
+                title = resourceRepo.getString(R.string.change_record_shortcut),
                 subtitle = "",
                 dividerIsVisible = false,
             )

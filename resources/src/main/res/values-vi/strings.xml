@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Thẻ bản ghi</string>
     <string name="record_tag_hint_short">Thẻ</string>
     <string name="nothing_selected">Chưa chọn gì</string>
-    <string name="something_selected">Đã chọn:</string>
+    <string name="something_selected">Đã chọn</string>
+    <string name="something_available">Có sẵn</string>
+    <string name="something_preselected">Đã chọn trước</string>
     <string name="select_all">Chọn tất cả</string>
     <string name="select_nothing">Không chọn gì</string>
     <string name="no_data">Không dữ liệu</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Mục tiêu sẽ được hiển thị ở đây</string>
+    <string name="all_goals_finished">Tất cả mục tiêu đã hoàn thành</string>
+    <string name="hide_finished_goals">Ẩn các mục tiêu đã hoàn thành</string>
     <string name="goal_add_hint">Chỉnh sửa hoạt động hoặc danh mục để gán mục tiêu</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Gán các thẻ khác nhau cho các bản ghi để phân biệt giữa chúng</string>
     <string name="categories_add_category">Thêm danh mục</string>
     <string name="categories_add_record_tag">Thêm thẻ bản ghi</string>
+    <string name="categories_show_relations">Hiển thị mối liên hệ</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>Danh mục</b> giúp bạn nhóm các hoạt động liên quan lại với nhau. Ví dụ:<br><br>
 • Danh mục <custom-color-3>Năng suất</custom-color-3> có thể bao gồm <custom-color-3>Đọc sách</custom-color-3> và <custom-color-3>Phòng tập thể dục</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Đã lưu trữ thẻ</string>
     <string name="change_record_tag_default_hint">Được chỉ định theo mặc định</string>
+    <string name="change_record_tag_type_general">Chung</string>
     <string name="change_record_tag_type_general_hint">Có thể được gán cho bản ghi của bất kỳ hoạt động nào</string>
     <string name="change_record_tag_type_typed_hint">Chỉ có thể được gán cho các bản ghi của một hoạt động cụ thể</string>
     <string name="change_record_tag_select_activity_hint">Lấy màu sắc và biểu tượng từ hoạt động</string>
@@ -142,6 +148,7 @@
     <string name="change_record_last_comments_hint">Nhận xét cuối cùng</string>
     <string name="change_record_favourite_comments_hint">Yêu thích</string>
     <string name="change_record_favourite_comments_hint_long">Bình luận yêu thích</string>
+    <string name="change_record_favourite_activity_selection">Yêu thích chỉ cho các hoạt động đã chọn</string>
     <string name="change_record_similar_comments_hint">Nhận xét tương tự</string>
     <string name="change_record_categories_empty">Không có thẻ bản ghi nào được thêm vào</string>
     <string name="change_record_save">Lưu</string>
@@ -230,6 +237,8 @@
     <string name="change_complex_rule_removed">Đã xóa quy tắc</string>
     <string name="change_complex_rule_choose_action">Chọn hành động</string>
     <string name="change_complex_rule_choose_condition">Chọn điều kiện</string>
+    <string name="change_complex_tag_value_dialog_message">Chọn thời điểm đặt giá trị</string>
+    <string name="change_complex_tag_value_set_later">Khi bắt đầu</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Hiển thị các gợi ý cho hoạt động tiếp theo dựa trên hoạt động hiện tại hoặc hoạt động cuối cùng</string>
@@ -289,6 +298,7 @@
     <string name="records_all_sort_order">Sắp xếp bản ghi</string>
     <string name="records_all_sort_time_started">Thời gian bắt đầu</string>
     <string name="records_all_sort_duration">Thời lượng</string>
+    <string name="records_all_days_without_records">Số ngày không có bản ghi - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">Để bắt đầu theo dõi, hãy thêm hoạt động bằng cách nhấp vào nút %s hoặc sử dụng thiết đặt trước mặc định bằng cách nhấp vào nút %s</string>
@@ -309,7 +319,7 @@
     <string name="settings_display_title">Thiết đặt hiển thị</string>
     <string name="settings_additional_title">Thiết đặt bổ sung</string>
     <string name="settings_notification_title">Thiết đặt thông báo</string>
-    <string name="settings_backup_title">Thiết đặt sao lưu</string>
+    <string name="settings_backup_title">Sao lưu</string>
     <string name="settings_export_title">Xuất và nhập</string>
     <string name="settings_sort_order">Sắp xếp hoạt động</string>
     <string name="settings_sort_order_category">Sắp xếp danh mục</string>
@@ -327,6 +337,7 @@
     <string name="settings_show_untracked_time_statistics">Hiển thị thời gian không được theo dõi trong thống kê</string>
     <string name="settings_ignore_short_untracked">Bỏ qua thời gian ngắn không được theo dõi</string>
     <string name="settings_ignore_short_untracked_hint">Không hiển thị thời gian không được theo dõi ngắn hơn thời gian đã chỉ định.</string>
+    <string name="settings_untracked_days_hint">Chỉ tính thời gian không được theo dõi vào những ngày đã chọn.</string>
     <string name="settings_untracked_range">Phạm vi không bị theo dõi</string>
     <string name="settings_untracked_range_hint">Chỉ hiển thị thời gian chưa được theo dõi trong phạm vi đã chọn.</string>
     <string name="settings_show_records_calendar">Hiển thị bản ghi trong chế độ xem lịch</string>
@@ -360,11 +371,14 @@
     <string name="settings_inactivity_reminder">Hiển thị lời nhắc không hoạt động</string>
     <string name="settings_inactivity_reminder_hint">Hiển thị thông báo sau thời gian được chỉ định nếu không có đồng hồ hẹn giờ nào đang chạy.</string>
     <string name="settings_inactivity_reminder_recurrent">Định kỳ</string>
+    <string name="settings_reminder_active_days">Ngày hoạt động</string>
     <string name="settings_activity_reminder">Hiển thị lời nhắc hoạt động</string>
     <string name="settings_activity_reminder_hint">Hiển thị thông báo sau thời gian được chỉ định nếu bộ hẹn giờ đang chạy.</string>
     <string name="settings_do_not_disturb">Đừng làm phiền</string>
     <string name="settings_notifications_system_settings">Cài đặt hệ thống</string>
     <string name="settings_notifications_system_settings_hint">Âm thanh, độ rung, đèn flash và các tính năng khác</string>
+    <string name="settings_reminders_title">Lời nhắc</string>
+    <string name="settings_reminders_hint">Quản lý lời nhắc đã lên lịch</string>
     <string name="settings_ignore_short_records">Bỏ qua các bản ghi ngắn</string>
     <string name="settings_ignore_short_records_hint">Không theo dõi các hoạt động ngắn hơn thời gian quy định.</string>
     <string name="settings_inactivity_reminder_disabled">Đã tắt</string>
@@ -527,6 +541,7 @@ Ví dụ:<br/>
     <string name="statistics_detail_record_time">Thời gian bản ghi</string>
     <string name="statistics_detail_first_record">Đầu tiên</string>
     <string name="statistics_detail_last_record">Cuối cùng</string>
+    <string name="statistics_detail_record_span">Khoảng thời gian</string>
     <string name="statistics_detail_time_since">Thời gian kể từ</string>
     <string name="statistics_detail_streaks">Loạt</string>
     <string name="statistics_detail_streaks_longest">Dài nhất</string>
@@ -549,6 +564,8 @@ Ví dụ:<br/>
     <string name="statistics_detail_goals_deficit">Thâm hụt</string>
     <string name="statistics_detail_tag_values_hint">Giá trị thẻ</string>
     <string name="statistics_detail_tag_values_multiply_duration">Nhân với thời lượng</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Điền các kỳ trống bằng dữ liệu trước đó</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Phóng to trục Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">Bản ghi</item>-->
@@ -673,6 +690,33 @@ Ví dụ:<br/>
     <string name="shortcut_navigation_records">Bản ghi</string>
     <string name="shortcut_navigation_statistics">Thống kê</string>
     <string name="shortcut_navigation_settings">Thiết đặt</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Hàng ngày</string>
+    <string name="reminders_schedule_weekly">Hàng tuần</string>
+    <string name="reminders_schedule_one_time">Một lần</string>
+    <string name="reminders_schedule_monthly">Hàng tháng</string>
+    <string name="reminders_schedule_hourly">Hàng giờ</string>
+    <string name="reminders_condition_activity_not_tracked">Khi hoạt động chưa được theo dõi hôm nay</string>
+    <string name="activity_reminders_hint">Ghi đè cài đặt lời nhắc hoạt động chung</string>
+    <string name="activity_reminder_mode">Chế độ nhắc nhở</string>
+    <string name="activity_reminder_mode_disabled">Đã tắt</string>
+    <string name="activity_reminder_mode_custom">Tùy chỉnh</string>
+    <string name="activity_reminder_disabled_summary">Lời nhắc đã bị tắt cho hoạt động này</string>
+    <string name="activity_reminder_positive_duration_required">Đặt thời lượng nhắc nhở lớn hơn 0</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Tin nhắn</string>
+    <string name="change_reminder_schedule">Lịch</string>
+    <string name="change_reminder_day_of_month">Ngày trong tháng</string>
+    <string name="change_reminder_interval">Khoảng thời gian</string>
+    <string name="change_reminder_condition">Điều kiện hiển thị</string>
+    <string name="change_reminder_condition_always">Luôn luôn</string>
+    <string name="change_reminder_message_prefill">Đừng quên thực hiện %s.</string>
+    <string name="change_reminder_message_required">Nhập nội dung nhắc nhở</string>
+    <string name="change_reminder_future_required">Chọn thời gian trong tương lai</string>
+    <string name="change_reminder_interval_required">Đặt khoảng thời gian lớn hơn 0</string>
+    <string name="change_reminder_removed">Đã xóa lời nhắc</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Kiểm tra kết nối của bạn và thử lại</string>

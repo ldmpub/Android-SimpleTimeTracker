@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Record tags</string>
     <string name="record_tag_hint_short">Tags</string>
     <string name="nothing_selected">Nothing selected</string>
-    <string name="something_selected">Selected:</string>
+    <string name="something_selected">Selected</string>
+    <string name="something_available">Available</string>
+    <string name="something_preselected">Preselected</string>
     <string name="select_all">Select all</string>
     <string name="select_nothing">Select nothing</string>
     <string name="no_data">No data</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Goals will be shown here</string>
+    <string name="all_goals_finished">All goals are finished</string>
+    <string name="hide_finished_goals">Hide finished goals</string>
     <string name="goal_add_hint">Edit activity or category to assign goal to it</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Assign different tags to records to differentiate between them</string>
     <string name="categories_add_category">Add category</string>
     <string name="categories_add_record_tag">Add record tag</string>
+    <string name="categories_show_relations">Show relations</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>Categories</b> help you group related activities. For example:<br><br>
 • The <custom-color-3>Productive</custom-color-3> category might include <custom-color-3>Reading</custom-color-3> and <custom-color-3>Gym</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@ This allows you to see how much time you\'re spending on productive versus unpro
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Tag archived</string>
     <string name="change_record_tag_default_hint">Assigned by default</string>
+    <string name="change_record_tag_type_general">Common</string>
     <string name="change_record_tag_type_general_hint">Can be assigned to records of any activity</string>
     <string name="change_record_tag_type_typed_hint">Can only be assigned to records of a specific activity</string>
     <string name="change_record_tag_select_activity_hint">Take color and icon from activity</string>
@@ -142,6 +148,7 @@ This allows you to see how much time you\'re spending on productive versus unpro
     <string name="change_record_last_comments_hint">Last comments</string>
     <string name="change_record_favourite_comments_hint">Favourite</string>
     <string name="change_record_favourite_comments_hint_long">Favourite comments</string>
+    <string name="change_record_favourite_activity_selection">Favourite only for selected activities</string>
     <string name="change_record_similar_comments_hint">Similar comments</string>
     <string name="change_record_categories_empty">No record tags added</string>
     <string name="change_record_save">Save</string>
@@ -230,6 +237,8 @@ This allows you to see how much time you\'re spending on productive versus unpro
     <string name="change_complex_rule_removed">Rule removed</string>
     <string name="change_complex_rule_choose_action">Choose action</string>
     <string name="change_complex_rule_choose_condition">Choose conditions</string>
+    <string name="change_complex_tag_value_dialog_message">Choose when to set the value</string>
+    <string name="change_complex_tag_value_set_later">On start</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Shows suggestions for the next activity based on current or last activity</string>
@@ -289,6 +298,7 @@ This allows you to see how much time you\'re spending on productive versus unpro
     <string name="records_all_sort_order">Sort records</string>
     <string name="records_all_sort_time_started">Time started</string>
     <string name="records_all_sort_duration">Duration</string>
+    <string name="records_all_days_without_records">Days without records - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">To start tracking, add activities by clicking on %s button or use default presets by clicking on %s button</string>
@@ -309,7 +319,7 @@ This allows you to see how much time you\'re spending on productive versus unpro
     <string name="settings_display_title">Display settings</string>
     <string name="settings_additional_title">Additional settings</string>
     <string name="settings_notification_title">Notification settings</string>
-    <string name="settings_backup_title">Backup settings</string>
+    <string name="settings_backup_title">Backup</string>
     <string name="settings_export_title">Export and import</string>
     <string name="settings_sort_order">Sort activities</string>
     <string name="settings_sort_order_category">Sort categories</string>
@@ -327,6 +337,7 @@ This allows you to see how much time you\'re spending on productive versus unpro
     <string name="settings_show_untracked_time_statistics">Show untracked time in statistics</string>
     <string name="settings_ignore_short_untracked">Ignore short untracked time</string>
     <string name="settings_ignore_short_untracked_hint">Do not show untracked time that is shorter than the specified time.</string>
+    <string name="settings_untracked_days_hint">Only count untracked time on the selected days.</string>
     <string name="settings_untracked_range">Untracked range</string>
     <string name="settings_untracked_range_hint">Show untracked time only within the selected range.</string>
     <string name="settings_show_records_calendar">Show records in calendar view</string>
@@ -360,11 +371,14 @@ This allows you to see how much time you\'re spending on productive versus unpro
     <string name="settings_inactivity_reminder">Show inactivity reminder</string>
     <string name="settings_inactivity_reminder_hint">Show notification after specified time if no timers are running.</string>
     <string name="settings_inactivity_reminder_recurrent">Recurrent</string>
+    <string name="settings_reminder_active_days">Active days</string>
     <string name="settings_activity_reminder">Show activity reminder</string>
     <string name="settings_activity_reminder_hint">Show notification after specified time if timers are running.</string>
     <string name="settings_do_not_disturb">Do not disturb</string>
     <string name="settings_notifications_system_settings">System settings</string>
     <string name="settings_notifications_system_settings_hint">Sound, vibration, flash and other</string>
+    <string name="settings_reminders_title">Reminders</string>
+    <string name="settings_reminders_hint">Manage scheduled reminders</string>
     <string name="settings_ignore_short_records">Ignore short records</string>
     <string name="settings_ignore_short_records_hint">Do not track activities that are shorter than the specified time.</string>
     <string name="settings_inactivity_reminder_disabled">Disabled</string>
@@ -527,6 +541,7 @@ Example:<br/>
     <string name="statistics_detail_record_time">Record time</string>
     <string name="statistics_detail_first_record">First</string>
     <string name="statistics_detail_last_record">Last</string>
+    <string name="statistics_detail_record_span">Span</string>
     <string name="statistics_detail_time_since">Time since</string>
     <string name="statistics_detail_streaks">Series</string>
     <string name="statistics_detail_streaks_longest">Longest</string>
@@ -549,6 +564,8 @@ Example:<br/>
     <string name="statistics_detail_goals_deficit">Deficit</string>
     <string name="statistics_detail_tag_values_hint">Tag values</string>
     <string name="statistics_detail_tag_values_multiply_duration">Multiply by duration</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Fill empty periods with previous data</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Zoom Y axis</string>
 
     <plurals name="statistics_detail_times_tracked">
         <item quantity="zero">Records</item>
@@ -673,6 +690,33 @@ Example:<br/>
     <string name="shortcut_navigation_records">Records</string>
     <string name="shortcut_navigation_statistics">Statistics</string>
     <string name="shortcut_navigation_settings">Settings</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Daily</string>
+    <string name="reminders_schedule_weekly">Weekly</string>
+    <string name="reminders_schedule_one_time">Once</string>
+    <string name="reminders_schedule_monthly">Monthly</string>
+    <string name="reminders_schedule_hourly">Hourly</string>
+    <string name="reminders_condition_activity_not_tracked">When activity is not tracked today</string>
+    <string name="activity_reminders_hint">Overrides the global activity reminder setting</string>
+    <string name="activity_reminder_mode">Reminder mode</string>
+    <string name="activity_reminder_mode_disabled">Disabled</string>
+    <string name="activity_reminder_mode_custom">Custom</string>
+    <string name="activity_reminder_disabled_summary">Reminders are suppressed for this activity</string>
+    <string name="activity_reminder_positive_duration_required">Set a reminder duration greater than zero</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Message</string>
+    <string name="change_reminder_schedule">Schedule</string>
+    <string name="change_reminder_day_of_month">Day of month</string>
+    <string name="change_reminder_interval">Interval</string>
+    <string name="change_reminder_condition">Display condition</string>
+    <string name="change_reminder_condition_always">Always</string>
+    <string name="change_reminder_message_prefill">Don\'t forget to do %s.</string>
+    <string name="change_reminder_message_required">Enter a reminder message</string>
+    <string name="change_reminder_future_required">Select a time in the future</string>
+    <string name="change_reminder_interval_required">Set an interval greater than zero</string>
+    <string name="change_reminder_removed">Reminder removed</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Check your connection and try again</string>

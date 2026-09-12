@@ -8,19 +8,23 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseFragment
 import com.example.util.simpletimetracker.core.di.BaseViewModelFactory
-import com.example.util.simpletimetracker.core.dialog.DateTimeDialogListener
-import com.example.util.simpletimetracker.core.dialog.DurationDialogListener
-import com.example.util.simpletimetracker.core.dialog.OnTagValueSelectedListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DateTimeDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DurationDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OnTagValueSelectedListener
+import com.example.util.simpletimetracker.feature_dialogs.api.TypesSelectionDialogListener
 import com.example.util.simpletimetracker.core.extension.setSharedTransitions
 import com.example.util.simpletimetracker.core.extension.toViewData
 import com.example.util.simpletimetracker.core.sharedViewModel.RemoveRecordViewModel
 import com.example.util.simpletimetracker.core.utils.InsetConfiguration
 import com.example.util.simpletimetracker.core.utils.fragmentArgumentDelegate
+import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.feature_base_adapter.record.RecordViewData
+import com.example.util.simpletimetracker.feature_change_record.api.view.ChangeRecordViewDelegateProvider
 import com.example.util.simpletimetracker.feature_change_record.viewData.ChangeRecordViewData
 import com.example.util.simpletimetracker.feature_change_record.viewModel.ChangeRecordViewModel
+import com.example.util.simpletimetracker.feature_comment_selection.api.CommentSelectionViewDelegateProvider
 import com.example.util.simpletimetracker.feature_views.extension.animateColor
-import com.example.util.simpletimetracker.feature_views.extension.setOnClick
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRecordParams
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRecordsFromScreen
 import com.example.util.simpletimetracker.navigation.params.screen.RecordTagValueSelectionParams
@@ -33,6 +37,7 @@ class ChangeRecordFragment :
     BaseFragment<Binding>(),
     DateTimeDialogListener,
     DurationDialogListener,
+    TypesSelectionDialogListener,
     OnTagValueSelectedListener {
 
     override val inflater: (LayoutInflater, ViewGroup?, Boolean) -> Binding =
@@ -44,13 +49,21 @@ class ChangeRecordFragment :
     @Inject
     lateinit var removeRecordViewModelFactory: BaseViewModelFactory<RemoveRecordViewModel>
 
+    @Inject
+    lateinit var commentDelegateProvider: CommentSelectionViewDelegateProvider
+
+    @Inject
+    lateinit var changeRecordViewDelegateProvider: ChangeRecordViewDelegateProvider
+
     private val viewModel: ChangeRecordViewModel by viewModels()
     private val removeRecordViewModel: RemoveRecordViewModel by activityViewModels(
         factoryProducer = { removeRecordViewModelFactory },
     )
 
     private var typeColorAnimator: ValueAnimator? = null
-    private val core by lazy { ChangeRecordCore(viewModel = viewModel) }
+    private val core by lazy {
+        changeRecordViewDelegateProvider.provide(viewModel.editorDelegate, commentDelegateProvider)
+    }
 
     private val extra: ChangeRecordParams by fragmentArgumentDelegate(
         key = ARGS_PARAMS, default = ChangeRecordParams.New(0),
@@ -77,15 +90,12 @@ class ChangeRecordFragment :
         }
     }
 
-    override fun initUx() = with(binding) {
+    override fun initUx(): Unit = with(binding) {
         core.initUx(this@ChangeRecordFragment, layoutChangeRecordCore)
-        layoutChangeRecordCore.btnChangeRecordStatistics.setOnClick(viewModel::onStatisticsClick)
-        layoutChangeRecordCore.btnChangeRecordDelete.setOnClick(viewModel::onDeleteClick)
     }
 
     override fun initViewModel() = with(binding) {
         with(viewModel) {
-            extra = this@ChangeRecordFragment.extra
             record.observe(::updatePreview)
             removeRecordId.observe {
                 removeRecordViewModel.onDeleteClick(
@@ -112,15 +122,24 @@ class ChangeRecordFragment :
     }
 
     override fun onDateTimeSet(timestamp: Long, tag: String?) {
-        viewModel.onDateTimeSet(timestamp, tag)
+        viewModel.editorDelegate.onDateTimeSet(timestamp, tag)
     }
 
     override fun onDurationSet(durationSeconds: Long, tag: String?) {
-        viewModel.onDurationSet(durationSeconds, tag)
+        viewModel.editorDelegate.onDurationSet(durationSeconds, tag)
     }
 
     override fun onTagValueSelected(params: RecordTagValueSelectionParams, data: Double) {
-        viewModel.onCategoryValueSelected(params, data)
+        viewModel.editorDelegate.onCategoryValueSelected(params, data)
+    }
+
+    override fun onDataSelected(
+        tag: String,
+        dataIds: List<Long>,
+        tagValues: List<RecordBase.Tag>,
+        selectValueOnStartTagIds: List<Long>,
+    ) {
+        viewModel.editorDelegate.onDataSelected(tag, dataIds)
     }
 
     private fun setPreview() = when (extra) {
@@ -138,6 +157,7 @@ class ChangeRecordFragment :
                 timeStarted = preview.timeStarted,
                 timeFinished = preview.timeFinished,
                 duration = preview.duration,
+                durationTotal = preview.durationTotal,
                 iconId = preview.iconId.toViewData(),
                 color = preview.color,
                 comment = preview.comment,
@@ -164,6 +184,7 @@ class ChangeRecordFragment :
             itemTimeStarted = item.recordPreview.timeStarted
             itemTimeEnded = item.recordPreview.timeFinished
             itemDuration = item.recordPreview.duration
+            itemDurationTotal = item.recordPreview.durationTotal
             itemComment = item.recordPreview.comment
 
             if (animated) {
@@ -199,8 +220,6 @@ class ChangeRecordFragment :
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_change_record_params"
-
         fun createBundle(data: ChangeRecordsFromScreen): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data.params)
         }

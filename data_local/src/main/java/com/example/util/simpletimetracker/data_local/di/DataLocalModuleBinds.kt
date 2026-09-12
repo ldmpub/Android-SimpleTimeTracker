@@ -2,12 +2,14 @@ package com.example.util.simpletimetracker.data_local.di
 
 import com.example.util.simpletimetracker.data_local.activityFilter.ActivityFilterRepoImpl
 import com.example.util.simpletimetracker.data_local.activitySuggestion.ActivitySuggestionRepoImpl
+import com.example.util.simpletimetracker.data_local.activityReminder.ActivityReminderOverrideRepoImpl
 import com.example.util.simpletimetracker.data_local.category.CategoryRepoImpl
 import com.example.util.simpletimetracker.data_local.category.RecordTypeCategoryRepoImpl
 import com.example.util.simpletimetracker.data_local.complexRule.ComplexRuleRepoImpl
 import com.example.util.simpletimetracker.data_local.favourite.FavouriteColorRepoImpl
 import com.example.util.simpletimetracker.data_local.favourite.FavouriteCommentRepoImpl
 import com.example.util.simpletimetracker.data_local.favourite.FavouriteIconRepoImpl
+import com.example.util.simpletimetracker.data_local.favourite.RecordTypeToFavouriteCommentRepoImpl
 import com.example.util.simpletimetracker.data_local.prefs.PrefsRepoImpl
 import com.example.util.simpletimetracker.data_local.record.RecordRepoImpl
 import com.example.util.simpletimetracker.data_local.record.RunningRecordRepoImpl
@@ -27,13 +29,16 @@ import com.example.util.simpletimetracker.data_local.recordShortcut.RecordShortc
 import com.example.util.simpletimetracker.data_local.recordTag.RecordShortcutToRecordTagRepoImpl
 import com.example.util.simpletimetracker.data_local.recordsFilter.FavouriteRecordsFilterRepoImpl
 import com.example.util.simpletimetracker.data_local.sharing.SharingRepoImpl
+import com.example.util.simpletimetracker.data_local.scheduledReminder.ScheduledReminderRepoImpl
 import com.example.util.simpletimetracker.domain.activityFilter.repo.ActivityFilterRepo
 import com.example.util.simpletimetracker.domain.activitySuggestion.repo.ActivitySuggestionRepo
+import com.example.util.simpletimetracker.domain.activityReminder.repo.ActivityReminderOverrideRepo
 import com.example.util.simpletimetracker.domain.category.repo.CategoryRepo
 import com.example.util.simpletimetracker.domain.complexRule.repo.ComplexRuleRepo
 import com.example.util.simpletimetracker.domain.favourite.repo.FavouriteColorRepo
 import com.example.util.simpletimetracker.domain.favourite.repo.FavouriteCommentRepo
 import com.example.util.simpletimetracker.domain.favourite.repo.FavouriteIconRepo
+import com.example.util.simpletimetracker.domain.favourite.repo.RecordTypeToFavouriteCommentRepo
 import com.example.util.simpletimetracker.domain.prefs.repo.PrefsRepo
 import com.example.util.simpletimetracker.domain.record.repo.RecordRepo
 import com.example.util.simpletimetracker.domain.recordTag.repo.RecordTagRepo
@@ -54,6 +59,7 @@ import com.example.util.simpletimetracker.domain.recordShortcut.repo.RecordShort
 import com.example.util.simpletimetracker.domain.recordTag.repo.RecordShortcutToRecordTagRepo
 import com.example.util.simpletimetracker.domain.recordsFilter.repo.FavouriteRecordsFilterRepo
 import com.example.util.simpletimetracker.domain.sharing.SharingRepo
+import com.example.util.simpletimetracker.domain.scheduledReminder.repo.ScheduledReminderRepo
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -146,6 +152,10 @@ interface DataLocalModuleBinds {
 
     @Binds
     @Singleton
+    fun bindRecordTagToFavouriteCommentRepo(impl: RecordTypeToFavouriteCommentRepoImpl): RecordTypeToFavouriteCommentRepo
+
+    @Binds
+    @Singleton
     fun bindFavouriteColorRepo(impl: FavouriteColorRepoImpl): FavouriteColorRepo
 
     @Binds
@@ -171,4 +181,12 @@ interface DataLocalModuleBinds {
     @Binds
     @Singleton
     fun bindFavouriteRecordsFilterRepo(impl: FavouriteRecordsFilterRepoImpl): FavouriteRecordsFilterRepo
+
+    @Binds
+    @Singleton
+    fun bindScheduledReminderRepo(impl: ScheduledReminderRepoImpl): ScheduledReminderRepo
+
+    @Binds
+    @Singleton
+    fun bindActivityReminderOverrideRepo(impl: ActivityReminderOverrideRepoImpl): ActivityReminderOverrideRepo
 }

@@ -4,11 +4,10 @@ import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseBottomSheetFragment
-import com.example.util.simpletimetracker.core.dialog.ArchiveDialogListener
-import com.example.util.simpletimetracker.core.extension.getAllFragments
+import com.example.util.simpletimetracker.core.extension.findListeners
+import com.example.util.simpletimetracker.feature_dialogs.api.ArchiveDialogListener
 import com.example.util.simpletimetracker.core.extension.setSkipCollapsed
 import com.example.util.simpletimetracker.core.utils.fragmentArgumentDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.BaseRecyclerAdapter
@@ -19,6 +18,7 @@ import com.example.util.simpletimetracker.feature_dialogs.archive.adapter.create
 import com.example.util.simpletimetracker.feature_dialogs.archive.adapter.createArchiveDialogInfoAdapterDelegate
 import com.example.util.simpletimetracker.feature_dialogs.archive.adapter.createArchiveDialogTitleAdapterDelegate
 import com.example.util.simpletimetracker.feature_dialogs.archive.viewModel.ArchiveDialogViewModel
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.ArchiveDialogParams
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
@@ -57,17 +57,7 @@ class ArchiveDialogFragment : BaseBottomSheetFragment<Binding>() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        when (context) {
-            is ArchiveDialogListener -> {
-                archiveDialogListener = context
-                return
-            }
-            is AppCompatActivity -> {
-                context.getAllFragments()
-                    .firstOrNull { it is ArchiveDialogListener && it.isResumed }
-                    ?.let { archiveDialogListener = it as? ArchiveDialogListener }
-            }
-        }
+        archiveDialogListener = context.findListeners<ArchiveDialogListener>().firstOrNull()
     }
 
     override fun initDialog() {
@@ -101,8 +91,6 @@ class ArchiveDialogFragment : BaseBottomSheetFragment<Binding>() {
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
-
         fun createBundle(data: ArchiveDialogParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

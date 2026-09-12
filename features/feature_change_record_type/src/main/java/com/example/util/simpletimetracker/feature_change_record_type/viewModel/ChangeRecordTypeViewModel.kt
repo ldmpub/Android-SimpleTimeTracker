@@ -5,10 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.util.simpletimetracker.core.base.BaseViewModel
 import com.example.util.simpletimetracker.core.base.ViewModelDelegate
-import com.example.util.simpletimetracker.core.delegates.colorSelection.ColorSelectionViewModelDelegate
-import com.example.util.simpletimetracker.core.delegates.colorSelection.ColorSelectionViewModelDelegateImpl
-import com.example.util.simpletimetracker.core.delegates.iconSelection.viewModelDelegate.IconSelectionViewModelDelegate
-import com.example.util.simpletimetracker.core.delegates.iconSelection.viewModelDelegate.IconSelectionViewModelDelegateImpl
+import com.example.util.simpletimetracker.core.extension.lazySuspend
 import com.example.util.simpletimetracker.core.extension.set
 import com.example.util.simpletimetracker.core.extension.trimIfNotBlank
 import com.example.util.simpletimetracker.core.interactor.SnackBarMessageNavigationInteractor
@@ -17,6 +14,7 @@ import com.example.util.simpletimetracker.core.mapper.RecordTypeViewDataMapper
 import com.example.util.simpletimetracker.core.mapper.TimeMapper
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.core.view.ViewChooserStateDelegate
+import com.example.util.simpletimetracker.domain.base.UNCATEGORIZED_ITEM_ID
 import com.example.util.simpletimetracker.domain.category.interactor.RecordTypeCategoryInteractor
 import com.example.util.simpletimetracker.domain.color.model.AppColor
 import com.example.util.simpletimetracker.domain.extension.addOrRemove
@@ -39,6 +37,8 @@ import com.example.util.simpletimetracker.feature_change_record_type.viewData.Ch
 import com.example.util.simpletimetracker.feature_change_record_type.viewData.ChangeRecordTypeCategoriesViewData
 import com.example.util.simpletimetracker.feature_change_record_type.viewData.ChangeRecordTypeChooserState
 import com.example.util.simpletimetracker.feature_change_record_type.viewData.ChangeRecordTypeFieldsState
+import com.example.util.simpletimetracker.feature_color_selection.api.ColorSelectionViewModelDelegate
+import com.example.util.simpletimetracker.feature_icon_selection.api.IconSelectionViewModelDelegate
 import com.example.util.simpletimetracker.navigation.Router
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeCategoryFromChangeActivityParams
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRecordTypeParams
@@ -67,59 +67,37 @@ class ChangeRecordTypeViewModel @Inject constructor(
     private val statisticsDetailNavigationInteractor: StatisticsDetailNavigationInteractor,
     private val removeRecordTypeMediator: RemoveRecordTypeMediator,
     private val goalsViewModelDelegate: GoalsViewModelDelegate,
-    private val colorSelectionViewModelDelegateImpl: ColorSelectionViewModelDelegateImpl,
-    private val iconSelectionViewModelDelegateImpl: IconSelectionViewModelDelegateImpl,
+    private val colorSelectionViewModelDelegate: ColorSelectionViewModelDelegate,
+    private val iconSelectionViewModelDelegateImpl: IconSelectionViewModelDelegate,
 ) : BaseViewModel(),
     GoalsViewModelDelegate by goalsViewModelDelegate,
-    ColorSelectionViewModelDelegate by colorSelectionViewModelDelegateImpl,
+    ColorSelectionViewModelDelegate by colorSelectionViewModelDelegate,
     IconSelectionViewModelDelegate by iconSelectionViewModelDelegateImpl {
 
     lateinit var extra: ChangeRecordTypeParams
 
-    val recordType: LiveData<RecordTypeViewData> by lazy {
-        return@lazy MutableLiveData<RecordTypeViewData>().let { initial ->
-            viewModelScope.launch {
-                initializeRecordTypeData()
-                initial.value = loadRecordPreviewViewData()
-            }
-            initial
-        }
+    val recordType: LiveData<RecordTypeViewData> by lazySuspend {
+        initializeRecordTypeData()
+        loadRecordPreviewViewData()
     }
-    val categories: LiveData<ChangeRecordTypeCategoriesViewData> by lazy {
-        return@lazy MutableLiveData<ChangeRecordTypeCategoriesViewData>().let { initial ->
-            viewModelScope.launch {
-                initializeSelectedCategories()
-                initial.value = loadCategoriesViewData()
-            }
-            initial
-        }
+    val categories: LiveData<ChangeRecordTypeCategoriesViewData> by lazySuspend {
+        initializeSelectedCategories()
+        loadCategoriesViewData()
     }
-    val chooserState: LiveData<ChangeRecordTypeFieldsState> by lazy {
-        return@lazy MutableLiveData<ChangeRecordTypeFieldsState>(
-            ChangeRecordTypeFieldsState(
-                chooserState = ViewChooserStateDelegate.States(
-                    current = ChangeRecordTypeChooserState.Closed,
-                    previous = ChangeRecordTypeChooserState.Closed,
-                ),
-                additionalFieldsVisible = false,
+    val chooserState: LiveData<ChangeRecordTypeFieldsState> by lazySuspend {
+        ChangeRecordTypeFieldsState(
+            chooserState = ViewChooserStateDelegate.States(
+                current = ChangeRecordTypeChooserState.Closed,
+                previous = ChangeRecordTypeChooserState.Closed,
             ),
+            additionalFieldsVisible = false,
         ).also { viewModelScope.launch { initializeChooserState() } }
     }
-    val additionalState: LiveData<ChangeRecordTypeAdditionalState> by lazy {
-        return@lazy MutableLiveData<ChangeRecordTypeAdditionalState>().let { initial ->
-            viewModelScope.launch {
-                initial.value = loadAdditionalState()
-            }
-            initial
-        }
+    val additionalState: LiveData<ChangeRecordTypeAdditionalState> by lazySuspend {
+        loadAdditionalState()
     }
-    val noteState: LiveData<String> by lazy {
-        return@lazy MutableLiveData<String>().let { initial ->
-            viewModelScope.launch {
-                initial.value = loadNoteState()
-            }
-            initial
-        }
+    val noteState: LiveData<String> by lazySuspend {
+        loadNoteState()
     }
     val archiveButtonEnabled: LiveData<Boolean> = MutableLiveData(true)
     val deleteButtonEnabled: LiveData<Boolean> = MutableLiveData(true)
@@ -138,14 +116,14 @@ class ChangeRecordTypeViewModel @Inject constructor(
     private var newNote: String = ""
 
     init {
-        colorSelectionViewModelDelegateImpl.attach(getColorSelectionDelegateParent())
+        colorSelectionViewModelDelegate.attach(getColorSelectionDelegateParent())
         iconSelectionViewModelDelegateImpl.attach(getIconSelectionDelegateParent())
     }
 
     override fun onCleared() {
         (goalsViewModelDelegate as? ViewModelDelegate)?.clear()
-        colorSelectionViewModelDelegateImpl.clear()
-        iconSelectionViewModelDelegateImpl.clear()
+        colorSelectionViewModelDelegate.clearColorDelegate()
+        iconSelectionViewModelDelegateImpl.clearIconDelegate()
         super.onCleared()
     }
 
@@ -199,12 +177,17 @@ class ChangeRecordTypeViewModel @Inject constructor(
 
     fun onCategoryClick(item: CategoryViewData) {
         viewModelScope.launch {
-            newCategories.addOrRemove(item.id)
+            if (item.id == UNCATEGORIZED_ITEM_ID) {
+                newCategories.clear()
+            } else {
+                newCategories.addOrRemove(item.id)
+            }
             updateCategoriesViewData()
         }
     }
 
     fun onCategoryLongClick(item: CategoryViewData, sharedElements: Pair<Any, String>) {
+        if (item.id == UNCATEGORIZED_ITEM_ID) return
         router.navigate(
             data = ChangeCategoryFromChangeActivityParams(
                 ChangeTagData.Change(
@@ -295,9 +278,19 @@ class ChangeRecordTypeViewModel @Inject constructor(
         saveButtonEnabled.set(false)
         viewModelScope.launch {
             val addedId = saveRecordType()
-            saveCategories(addedId)
+            val addedCategories = newCategories - initialCategories
+            val removedCategories = initialCategories.toList() - newCategories.toSet()
+            saveCategories(
+                typeId = addedId,
+                addedCategories = addedCategories,
+                removedCategories = removedCategories,
+            )
             goalsViewModelDelegate.saveGoals(RecordTypeGoal.IdData.Type(addedId))
-            externalViewsInteractor.onTypeAddOrChange(recordTypeId)
+            externalViewsInteractor.onTypeAddOrChange(
+                typeId = addedId,
+                initialCategories = initialCategories,
+                removedCategories = removedCategories.toSet(),
+            )
             keyboardVisibility.set(false)
             router.back()
         }
@@ -390,7 +383,7 @@ class ChangeRecordTypeViewModel @Inject constructor(
             id = recordTypeId,
             name = newName.trimIfNotBlank(),
             icon = iconSelectionViewModelDelegateImpl.newIcon,
-            color = colorSelectionViewModelDelegateImpl.newColor,
+            color = colorSelectionViewModelDelegate.newColor,
             defaultDuration = newDefaultDuration,
             note = newNote,
         )
@@ -398,10 +391,11 @@ class ChangeRecordTypeViewModel @Inject constructor(
         return recordTypeInteractor.add(recordType)
     }
 
-    private suspend fun saveCategories(typeId: Long) {
-        val addedCategories = newCategories.filterNot { it in initialCategories }
-        val removedCategories = initialCategories.filterNot { it in newCategories }
-
+    private suspend fun saveCategories(
+        typeId: Long,
+        addedCategories: List<Long>,
+        removedCategories: List<Long>,
+    ) {
         recordTypeCategoryInteractor.addCategories(typeId, addedCategories)
         recordTypeCategoryInteractor.removeCategories(typeId, removedCategories)
     }
@@ -420,10 +414,10 @@ class ChangeRecordTypeViewModel @Inject constructor(
             newDefaultDuration = it.defaultDuration
             newNote = it.note
             iconSelectionViewModelDelegateImpl.newIcon = it.icon
-            colorSelectionViewModelDelegateImpl.newColor = it.color
+            colorSelectionViewModelDelegate.newColor = it.color
             goalsViewModelDelegate.initialize(RecordTypeGoal.IdData.Type(it.id))
-            iconSelectionViewModelDelegateImpl.update()
-            colorSelectionViewModelDelegateImpl.update()
+            iconSelectionViewModelDelegateImpl.updateIconViewData()
+            colorSelectionViewModelDelegate.updateColorViewData()
             updateAdditionalState()
             updateNoteState()
         }
@@ -439,26 +433,20 @@ class ChangeRecordTypeViewModel @Inject constructor(
 
     private fun getColorSelectionDelegateParent(): ColorSelectionViewModelDelegate.Parent {
         return object : ColorSelectionViewModelDelegate.Parent {
+            override fun getDialogTag(): String = COLOR_SELECTION_DIALOG_TAG
             override suspend fun update() {
                 updateRecordPreviewViewData()
-                iconSelectionViewModelDelegateImpl.update()
+                iconSelectionViewModelDelegateImpl.updateIconViewData()
             }
         }
     }
 
     private fun getIconSelectionDelegateParent(): IconSelectionViewModelDelegate.Parent {
         return object : IconSelectionViewModelDelegate.Parent {
-            override fun keyboardVisibility(isVisible: Boolean) {
-                keyboardVisibility.set(isVisible)
-            }
-
-            override suspend fun update() {
-                updateRecordPreviewViewData()
-            }
-
-            override fun getColor(): AppColor {
-                return colorSelectionViewModelDelegateImpl.newColor
-            }
+            override fun getDialogTag(): String = ICON_SELECTION_DIALOG_TAG
+            override fun keyboardVisibility(isVisible: Boolean) = keyboardVisibility.set(isVisible)
+            override suspend fun update() = updateRecordPreviewViewData()
+            override fun getColor(): AppColor = colorSelectionViewModelDelegate.newColor
         }
     }
 
@@ -482,7 +470,7 @@ class ChangeRecordTypeViewModel @Inject constructor(
         return RecordType(
             name = newName,
             icon = iconSelectionViewModelDelegateImpl.newIcon,
-            color = colorSelectionViewModelDelegateImpl.newColor,
+            color = colorSelectionViewModelDelegate.newColor,
             defaultDuration = newDefaultDuration,
             note = newNote,
         ).let { recordTypeViewDataMapper.map(it, numberOfCards, isDarkTheme) }
@@ -524,5 +512,7 @@ class ChangeRecordTypeViewModel @Inject constructor(
     companion object {
         private const val DELETE_ALERT_DIALOG_TAG = "delete_alert_dialog_tag"
         private const val DEFAULT_DURATION_DIALOG_TAG = "default_duration_dialog_tag"
+        private const val COLOR_SELECTION_DIALOG_TAG = "change_record_type_color_selection_dialog_tag"
+        private const val ICON_SELECTION_DIALOG_TAG = "change_record_type_icon_selection_dialog_tag"
     }
 }

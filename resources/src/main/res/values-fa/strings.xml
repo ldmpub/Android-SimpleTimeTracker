@@ -14,7 +14,9 @@
     <string name="record_tag_hint">برچسب های تاریخچه</string>
     <string name="record_tag_hint_short">برچسب ها</string>
     <string name="nothing_selected">موردی انتخاب نشده</string>
-    <string name="something_selected">انتخاب شده:</string>
+    <string name="something_selected">انتخاب شده</string>
+    <string name="something_available">موجود</string>
+    <string name="something_preselected">از پیش انتخاب‌شده</string>
     <string name="select_all">انتخاب همه</string>
     <string name="select_nothing">چیزی را انتخاب نکنید</string>
     <string name="no_data">اطلاعاتی وجود ندارد</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">اهداف در اینجا نمایش داده می‌شوند</string>
+    <string name="all_goals_finished">همهٔ اهداف تکمیل شده‌اند</string>
+    <string name="hide_finished_goals">مخفی کردن اهداف تکمیل‌شده</string>
     <string name="goal_add_hint">فعالیت یا دسته‌بندی را ویرایش کنید تا هدفی به آن اختصاص دهید</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">برچسب های مختلف را به تاریخچه ها اختصاص دهید تا آنها را از هم تفکیک کنید</string>
     <string name="categories_add_category">افزودن دسته بندی</string>
     <string name="categories_add_record_tag">افزودن برچسب تاریخچه</string>
+    <string name="categories_show_relations">نمایش روابط</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>دسته‌بندی‌ها</b> به شما کمک می‌کنند فعالیت‌های مرتبط را گروه‌بندی کنید. برای مثال:<br><br>
 • دسته <custom-color-3>سودمند</custom-color-3> می‌تواند شامل <custom-color-3>مطالعه</custom-color-3> و <custom-color-3>باشگاه</custom-color-3> باشد.<br><br>
@@ -123,6 +128,7 @@
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">برچسب بایگانی شد</string>
     <string name="change_record_tag_default_hint">به طور پیش فرض اختصاص داده شده است</string>
+    <string name="change_record_tag_type_general">مشترک</string>
     <string name="change_record_tag_type_general_hint">می تواند به تاریخچه هر فعالیتی اضافه شود</string>
     <string name="change_record_tag_type_typed_hint">می تواند به تاریخچه های یک فعالیت خاص اصافه شود</string>
     <string name="change_record_tag_select_activity_hint">رنگ و نماد را از فعالیت بگیرید</string>
@@ -142,6 +148,7 @@
     <string name="change_record_last_comments_hint">نظرهای قبلی</string>
     <string name="change_record_favourite_comments_hint">مورد علاقه</string>
     <string name="change_record_favourite_comments_hint_long">نظرات مورد علاقه</string>
+    <string name="change_record_favourite_activity_selection">موارد دلخواه فقط برای فعالیت‌های انتخاب‌شده</string>
     <string name="change_record_similar_comments_hint">نظرات مشابه</string>
     <string name="change_record_categories_empty">برچسب تاریخچه ای اضافه نشده</string>
     <string name="change_record_save">ذخیره</string>
@@ -230,6 +237,8 @@
     <string name="change_complex_rule_removed">قانون حذف شد</string>
     <string name="change_complex_rule_choose_action">اقدام را انتخاب کنید</string>
     <string name="change_complex_rule_choose_condition">شرایط را انتخاب کنید</string>
+    <string name="change_complex_tag_value_dialog_message">انتخاب کنید چه زمانی مقدار تنظیم شود</string>
+    <string name="change_complex_tag_value_set_later">در شروع</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">پیشنهاداتی را برای فعالیت بعدی بر اساس فعالیت فعلی یا آخرین نشان می دهد</string>
@@ -289,6 +298,7 @@
     <string name="records_all_sort_order">مرتب کردن تاریخچه ها</string>
     <string name="records_all_sort_time_started">زمان شروع</string>
     <string name="records_all_sort_duration">طول مدت</string>
+    <string name="records_all_days_without_records">روزهای بدون رکورد - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">برای شروع ردیابی، با کلیک بر روی دکمه %s فعالیت ها را اضافه کنید یا با کلیک بر روی دکمه %s از تنظیمات پیش فرض استفاده کنید</string>
@@ -309,7 +319,7 @@
     <string name="settings_display_title">نمایش تنظیمات</string>
     <string name="settings_additional_title">تنظیمت اضافه</string>
     <string name="settings_notification_title">تنظیمات اعلان</string>
-    <string name="settings_backup_title">تنظیمات پشتیبان گیری</string>
+    <string name="settings_backup_title">پشتیبان‌گیری</string>
     <string name="settings_export_title">صادرات و واردات</string>
     <string name="settings_sort_order">مرتب سازی فعالیت ها</string>
     <string name="settings_sort_order_category">دسته بندی ها</string>
@@ -327,6 +337,7 @@
     <string name="settings_show_untracked_time_statistics">نمایش زمان پیگیری نشده در آمار</string>
     <string name="settings_ignore_short_untracked">چشم پوشی از زمان کوتاه اندازه گیری نشده</string>
     <string name="settings_ignore_short_untracked_hint">زمان اندازه گیری نشده که از زمان معین کوتاه تر است را نمایش نده</string>
+    <string name="settings_untracked_days_hint">زمان بدون ردیابی را فقط در روزهای انتخاب‌شده محاسبه کنید.</string>
     <string name="settings_untracked_range">محدوده اندازه گیری نشده</string>
     <string name="settings_untracked_range_hint">نمایش زمان ثبت‌نشده فقط در بازهٔ انتخاب‌شده.</string>
     <string name="settings_show_records_calendar">نمایش تاریخچه ها در نمای تقویم</string>
@@ -360,11 +371,14 @@
     <string name="settings_inactivity_reminder">نمایش یادآور بی فعالیتی</string>
     <string name="settings_inactivity_reminder_hint">اگر تایمری در حال اجرا نیست بعد از زمان معین اعلانی نمایش داده شود</string>
     <string name="settings_inactivity_reminder_recurrent">مکرر</string>
+    <string name="settings_reminder_active_days">روزهای فعال</string>
     <string name="settings_activity_reminder">یادآور فعالیت را نمایش بده</string>
     <string name="settings_activity_reminder_hint">وقتی تایمری در حال اجراست اعلانی را بعد از زمان معین نشان بده</string>
     <string name="settings_do_not_disturb">مزاحم نشوید</string>
     <string name="settings_notifications_system_settings">تنظیمات سیستم</string>
     <string name="settings_notifications_system_settings_hint">صدا، لرزش، فلاش و غیره</string>
+    <string name="settings_reminders_title">یادآورها</string>
+    <string name="settings_reminders_hint">مدیریت یادآورهای زمان‌بندی‌شده</string>
     <string name="settings_ignore_short_records">چشم پوشی از تاریخچه های کوتاه</string>
     <string name="settings_ignore_short_records_hint">فعالیت هایی که از زمان معین شده کوتاه تر هستند را اندازه گیری نکن</string>
     <string name="settings_inactivity_reminder_disabled">غیر فعال</string>
@@ -527,6 +541,7 @@
     <string name="statistics_detail_record_time">طول تاریخچه</string>
     <string name="statistics_detail_first_record">اولین</string>
     <string name="statistics_detail_last_record">آخرین</string>
+    <string name="statistics_detail_record_span">بازه</string>
     <string name="statistics_detail_time_since">از زمان</string>
     <string name="statistics_detail_streaks">ردیفی</string>
     <string name="statistics_detail_streaks_longest">طولانی ترین</string>
@@ -549,6 +564,8 @@
     <string name="statistics_detail_goals_deficit">کسری</string>
     <string name="statistics_detail_tag_values_hint">مقادیر برچسب</string>
     <string name="statistics_detail_tag_values_multiply_duration">ضرب در مدت‌زمان</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">پر کردن دوره‌های خالی با داده‌های قبلی</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">بزرگ‌نمایی محور Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">بدون تاریخچه</item>-->
@@ -673,6 +690,33 @@
     <string name="shortcut_navigation_records">تاریخچه ها</string>
     <string name="shortcut_navigation_statistics">آمار ها</string>
     <string name="shortcut_navigation_settings">تنظیمات</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">روزانه</string>
+    <string name="reminders_schedule_weekly">هفتگی</string>
+    <string name="reminders_schedule_one_time">یک‌بار</string>
+    <string name="reminders_schedule_monthly">ماهانه</string>
+    <string name="reminders_schedule_hourly">ساعتی</string>
+    <string name="reminders_condition_activity_not_tracked">وقتی فعالیت امروز ثبت نشده باشد</string>
+    <string name="activity_reminders_hint">تنظیم سراسری یادآور فعالیت را لغو می‌کند</string>
+    <string name="activity_reminder_mode">حالت یادآوری</string>
+    <string name="activity_reminder_mode_disabled">غیرفعال</string>
+    <string name="activity_reminder_mode_custom">سفارشی</string>
+    <string name="activity_reminder_disabled_summary">یادآورها برای این فعالیت غیرفعال هستند</string>
+    <string name="activity_reminder_positive_duration_required">مدت یادآوری را بیشتر از صفر تنظیم کنید</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">پیام</string>
+    <string name="change_reminder_schedule">زمان‌بندی</string>
+    <string name="change_reminder_day_of_month">روز ماه</string>
+    <string name="change_reminder_interval">فاصله زمانی</string>
+    <string name="change_reminder_condition">شرط نمایش</string>
+    <string name="change_reminder_condition_always">همیشه</string>
+    <string name="change_reminder_message_prefill">انجام %s را فراموش نکنید.</string>
+    <string name="change_reminder_message_required">پیام یادآوری را وارد کنید</string>
+    <string name="change_reminder_future_required">زمانی در آینده انتخاب کنید</string>
+    <string name="change_reminder_interval_required">فاصله زمانی را بیشتر از صفر تنظیم کنید</string>
+    <string name="change_reminder_removed">یادآوری حذف شد</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">اتصال خود را بررسی کنید و دوباره امتحان کنید</string>

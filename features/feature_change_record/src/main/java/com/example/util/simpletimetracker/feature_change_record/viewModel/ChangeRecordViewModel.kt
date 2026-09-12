@@ -2,34 +2,34 @@ package com.example.util.simpletimetracker.feature_change_record.viewModel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.example.util.simpletimetracker.core.base.BaseViewModel
 import com.example.util.simpletimetracker.core.base.SingleLiveEvent
 import com.example.util.simpletimetracker.core.extension.set
-import com.example.util.simpletimetracker.core.interactor.RecordCommentSearchViewDataInteractor
-import com.example.util.simpletimetracker.core.interactor.RecordTagViewDataInteractor
-import com.example.util.simpletimetracker.core.interactor.RecordTypesViewDataInteractor
-import com.example.util.simpletimetracker.core.interactor.SnackBarMessageNavigationInteractor
 import com.example.util.simpletimetracker.core.interactor.StatisticsDetailNavigationInteractor
 import com.example.util.simpletimetracker.core.mapper.TimeMapper
 import com.example.util.simpletimetracker.domain.base.UNTRACKED_ITEM_ID
-import com.example.util.simpletimetracker.domain.extension.orZero
-import com.example.util.simpletimetracker.domain.record.interactor.AddRecordMediator
-import com.example.util.simpletimetracker.domain.favourite.interactor.FavouriteCommentInteractor
-import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
-import com.example.util.simpletimetracker.domain.record.interactor.RecordInteractor
-import com.example.util.simpletimetracker.domain.recordTag.interactor.RecordTypeToTagInteractor
-import com.example.util.simpletimetracker.domain.notifications.interactor.UpdateExternalViewsInteractor
-import com.example.util.simpletimetracker.domain.statistics.model.ChartFilterType
 import com.example.util.simpletimetracker.domain.daysOfWeek.model.DayOfWeek
-import com.example.util.simpletimetracker.domain.statistics.model.RangeLength
+import com.example.util.simpletimetracker.domain.extension.orZero
+import com.example.util.simpletimetracker.domain.notifications.interactor.UpdateExternalViewsInteractor
+import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
+import com.example.util.simpletimetracker.domain.record.interactor.AddRecordMediator
+import com.example.util.simpletimetracker.domain.record.interactor.RecordInteractor
+import com.example.util.simpletimetracker.domain.record.interactor.RecordInteractor.GetParam
 import com.example.util.simpletimetracker.domain.record.model.Record
 import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.recordTag.interactor.AddTagToTypeIfNotExistMediator
-import com.example.util.simpletimetracker.domain.recordTag.interactor.NeedTagValueSelectionInteractor
-import com.example.util.simpletimetracker.domain.recordTag.interactor.RecordTagInteractor
+import com.example.util.simpletimetracker.domain.statistics.model.ChartFilterType
+import com.example.util.simpletimetracker.domain.statistics.model.RangeLength
+import com.example.util.simpletimetracker.feature_change_record.api.ChangeRecordConfig
 import com.example.util.simpletimetracker.feature_change_record.interactor.ChangeRecordViewDataInteractor
 import com.example.util.simpletimetracker.feature_change_record.viewData.ChangeRecordViewData
+import com.example.util.simpletimetracker.feature_change_record.api.ChangeRecordEditorDelegate
+import com.example.util.simpletimetracker.feature_change_record.api.ChangeRecordEditorMode
+import com.example.util.simpletimetracker.feature_change_record.api.model.ChangeRecordEditorState
 import com.example.util.simpletimetracker.navigation.Router
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRecordParams
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRecordTagFromChangeRecordParams
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRecordTagFromScreen
@@ -40,15 +40,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChangeRecordViewModel @Inject constructor(
-    recordTypesViewDataInteractor: RecordTypesViewDataInteractor,
-    recordTagViewDataInteractor: RecordTagViewDataInteractor,
-    snackBarMessageNavigationInteractor: SnackBarMessageNavigationInteractor,
-    changeRecordActionsDelegate: ChangeRecordActionsDelegateImpl,
-    recordTagInteractor: RecordTagInteractor,
-    recordTypeToTagInteractor: RecordTypeToTagInteractor,
-    favouriteCommentInteractor: FavouriteCommentInteractor,
-    needTagValueSelectionInteractor: NeedTagValueSelectionInteractor,
-    recordCommentSearchViewDataInteractor: RecordCommentSearchViewDataInteractor,
+    savedStateHandle: SavedStateHandle,
+    val editorDelegate: ChangeRecordEditorDelegate,
     private val prefsInteractor: PrefsInteractor,
     private val router: Router,
     private val recordInteractor: RecordInteractor,
@@ -58,38 +51,38 @@ class ChangeRecordViewModel @Inject constructor(
     private val timeMapper: TimeMapper,
     private val statisticsDetailNavigationInteractor: StatisticsDetailNavigationInteractor,
     private val addTagToTypeIfNotExistMediator: AddTagToTypeIfNotExistMediator,
-) : ChangeRecordBaseViewModel(
-    router = router,
-    snackBarMessageNavigationInteractor = snackBarMessageNavigationInteractor,
-    prefsInteractor = prefsInteractor,
-    recordTypesViewDataInteractor = recordTypesViewDataInteractor,
-    recordTagViewDataInteractor = recordTagViewDataInteractor,
-    changeRecordViewDataInteractor = changeRecordViewDataInteractor,
-    recordInteractor = recordInteractor,
-    recordTagInteractor = recordTagInteractor,
-    recordTypeToTagInteractor = recordTypeToTagInteractor,
-    favouriteCommentInteractor = favouriteCommentInteractor,
-    changeRecordActionsDelegate = changeRecordActionsDelegate,
-    needTagValueSelectionInteractor = needTagValueSelectionInteractor,
-    recordCommentSearchViewDataInteractor = recordCommentSearchViewDataInteractor,
-) {
+) : BaseViewModel() {
 
-    lateinit var extra: ChangeRecordParams
+    private val extra: ChangeRecordParams = savedStateHandle[ARGS_PARAMS]
+        ?: ChangeRecordParams.New(0)
+    private val recordId: Long? = (extra as? ChangeRecordParams.Tracked)?.id
 
-    override val forceSecondsInDurationDialog: Boolean get() = false
-    override val mergeAvailable: Boolean get() = extra is ChangeRecordParams.Untracked && newTypeId == 0L
-    override val previewTimeEnded: Long get() = newTimeEnded
-    override val showTimeEndedOnSplitPreview: Boolean get() = true
-    override val adjustPreviewTimeEnded: Long get() = newTimeEnded
-    override val adjustPreviewOriginalTimeEnded: Long get() = originalTimeEnded
-    override val showTimeEndedOnAdjustPreview: Boolean get() = true
-    override val adjustNextRecordAvailable: Boolean get() = true
-    override val isTimeEndedAvailable: Boolean get() = true
-    override val isAdditionalActionsAvailable: Boolean get() = true
-    override val isDeleteButtonVisible: Boolean get() = recordId.orZero() != 0L
-    override val isStatisticsButtonVisible: Boolean
-        get() = extra is ChangeRecordParams.Tracked ||
-            extra is ChangeRecordParams.Untracked
+    private val mode: ChangeRecordEditorMode = ChangeRecordEditorMode(
+        config = ChangeRecordConfig(
+            forceSecondsInDurationDialog = false,
+            showTimeEndedOnSplitPreview = true,
+            showTimeEndedOnAdjustPreview = true,
+            adjustNextRecordAvailable = true,
+            isTimeEndedAvailable = true,
+            isAdditionalActionsAvailable = true,
+            isDuplicateActionAvailable = true,
+            isDeleteButtonVisible = recordId.orZero() != 0L,
+            isStatisticsButtonVisible = extra is ChangeRecordParams.Tracked || extra is ChangeRecordParams.Untracked,
+        ),
+        mergeAvailable = { extra is ChangeRecordParams.Untracked && editorDelegate.recordState.newTypeId == 0L },
+        previewTimeEnded = { editorDelegate.recordState.newTimeEnded },
+        adjustPreviewTimeEnded = { editorDelegate.recordState.newTimeEnded },
+        adjustPreviewOriginalTimeEnded = { editorDelegate.recordState.originalTimeEnded },
+        updatePreview = ::updatePreview,
+        getChangeCategoryParams = ::getChangeCategoryParams,
+        onSaveClickDelegate = ::onSaveClickDelegate,
+        sendPreviewUpdate = {},
+        initializePreviewViewData = ::initializePreviewViewData,
+        onDeleteClick = ::onDeleteClickMode,
+        onStatisticsClick = ::onStatisticsClickMode,
+        onTimeStartedChanged = ::onTimeStartedChanged,
+        onTimeEndedChanged = ::onTimeEndedChanged,
+    )
 
     val record: LiveData<ChangeRecordViewData> by lazy {
         return@lazy MutableLiveData<ChangeRecordViewData>().let { initial ->
@@ -102,22 +95,27 @@ class ChangeRecordViewModel @Inject constructor(
     }
     val removeRecordId: LiveData<Long> = SingleLiveEvent()
 
-    private val recordId: Long? get() = (extra as? ChangeRecordParams.Tracked)?.id
-
-    fun onVisible() {
-        viewModelScope.launch {
-            updateCategoriesViewData()
-        }
+    init {
+        editorDelegate.attach(mode)
     }
 
-    fun onDeleteClick() {
+    override fun onCleared() {
+        editorDelegate.clear()
+        super.onCleared()
+    }
+
+    fun onVisible() {
+        editorDelegate.onVisible()
+    }
+
+    private fun onDeleteClickMode() {
         recordId?.let { removeRecordId.set(it) }
         router.back()
     }
 
-    fun onStatisticsClick() = viewModelScope.launch {
+    private fun onStatisticsClickMode() = viewModelScope.launch {
         val itemId = when {
-            newTypeId != 0L -> newTypeId
+            editorDelegate.recordState.newTypeId != 0L -> editorDelegate.recordState.newTypeId
             extra is ChangeRecordParams.Untracked -> UNTRACKED_ITEM_ID
             else -> return@launch
         }
@@ -136,32 +134,27 @@ class ChangeRecordViewModel @Inject constructor(
         )
     }
 
-    override suspend fun onSaveClickDelegate(
+    private suspend fun onSaveClickDelegate(
         doAfter: suspend () -> Unit,
     ) {
+        val recordState = editorDelegate.recordState
         // Zero id creates new record
         val id = recordId.orZero()
-        Record(
-            id = id,
-            typeId = newTypeId,
-            timeStarted = newTimeStarted,
-            timeEnded = newTimeEnded,
-            comment = newComment,
-            tags = newTags,
-        ).let {
+        mapRecordModel(
+            comment = editorDelegate.commentSelectionViewModelDelegate.newComment,
+            recordState = recordState,
+        ).copy(id = id).let {
             addRecordMediator.add(it)
         }
-        if (showAllTags) {
-            addTagToTypeIfNotExistMediator.execute(
-                typeId = newTypeId,
-                tagIds = newTags.map(RecordBase.Tag::tagId),
-            )
+        addTagToTypeIfNotExistMediator.execute(
+            typeId = recordState.newTypeId,
+            tagIds = recordState.newTags.map(RecordBase.Tag::tagId),
+        )
+        if (recordState.newTypeId != recordState.originalTypeId) {
+            externalViewsInteractor.onRecordChangeType(listOf(recordState.originalTypeId))
         }
-        if (newTypeId != originalTypeId) {
-            externalViewsInteractor.onRecordChangeType(listOf(originalTypeId))
-        }
-        val newTagIds = newTags.map(RecordBase.Tag::tagId)
-        val removedTagIds = originalTagIds.filter { it !in newTagIds }
+        val newTagIds = recordState.newTags.map(RecordBase.Tag::tagId)
+        val removedTagIds = recordState.originalTags.map { it.tagId }.filter { it !in newTagIds }
         if (removedTagIds.isNotEmpty()) {
             externalViewsInteractor.onRecordChangeTags(removedTagIds)
         }
@@ -170,20 +163,24 @@ class ChangeRecordViewModel @Inject constructor(
         router.back()
     }
 
-    override fun getChangeCategoryParams(data: ChangeTagData): ChangeRecordTagFromScreen {
+    private fun getChangeCategoryParams(data: ChangeTagData): ChangeRecordTagFromScreen {
         return ChangeRecordTagFromChangeRecordParams(data)
     }
 
-    override suspend fun onTimeEndedChanged() {
-        if (newTimeEnded < newTimeStarted) newTimeStarted = newTimeEnded
-        if (newTimeEnded < newTimeSplit) newTimeSplit = newTimeEnded
-        super.onTimeEndedChanged()
+    private suspend fun onTimeEndedChanged() {
+        val recordState = editorDelegate.recordState
+        if (recordState.newTimeEnded < recordState.newTimeStarted) {
+            recordState.newTimeStarted = recordState.newTimeEnded
+        }
+        editorDelegate.afterTimeEndedChanged()
     }
 
-    override suspend fun onTimeStartedChanged() {
-        if (newTimeStarted > newTimeEnded) newTimeEnded = newTimeStarted
-        if (newTimeStarted > newTimeSplit) newTimeSplit = newTimeStarted
-        super.onTimeStartedChanged()
+    private suspend fun onTimeStartedChanged() {
+        val recordState = editorDelegate.recordState
+        if (recordState.newTimeStarted > recordState.newTimeEnded) {
+            recordState.newTimeEnded = recordState.newTimeStarted
+        }
+        editorDelegate.afterTimeStartedChanged()
     }
 
     private suspend fun warmupCache(actualShift: Int) {
@@ -194,14 +191,17 @@ class ChangeRecordViewModel @Inject constructor(
             firstDayOfWeek = DayOfWeek.MONDAY, // Doesn't matter for days.
             startOfDayShift = prefsInteractor.getStartOfDayShift(),
         )
-        recordInteractor.getFromRange(range)
+        recordInteractor.getWithParams(GetParam.FromRange(range))
     }
 
     private fun getInitialTimeEnded(daysFromToday: Int): Long {
         return timeMapper.toTimestampShifted(daysFromToday, RangeLength.Day)
     }
 
-    private suspend fun getInitialTimeStarted(daysFromToday: Int): Long {
+    private suspend fun getInitialTimeStarted(
+        newTimeEnded: Long,
+        daysFromToday: Int,
+    ): Long {
         val default = newTimeEnded - ONE_HOUR
 
         return if (daysFromToday == 0) {
@@ -211,52 +211,58 @@ class ChangeRecordViewModel @Inject constructor(
         }
     }
 
-    override suspend fun updatePreview() {
+    private fun mapRecordModel(
+        comment: String,
+        recordState: ChangeRecordEditorState,
+    ): Record {
+        return Record(
+            typeId = recordState.newTypeId,
+            timeStarted = recordState.newTimeStarted,
+            timeEnded = recordState.newTimeEnded,
+            comment = comment,
+            tags = recordState.newTags,
+        )
+    }
+
+    private suspend fun updatePreview() {
         record.set(loadPreviewViewData())
     }
 
-    override suspend fun initializePreviewViewData() {
+    private suspend fun initializePreviewViewData() {
+        val recordState = editorDelegate.recordState
         when (extra) {
             is ChangeRecordParams.Tracked -> {
                 recordInteractor.get(recordId.orZero())?.let { record ->
-                    newTypeId = record.typeId.orZero()
-                    newTimeStarted = record.timeStarted
-                    newTimeEnded = record.timeEnded
-                    newComment = record.comment
-                    newTags = record.tags
+                    recordState.newTypeId = record.typeId.orZero()
+                    recordState.newTimeStarted = record.timeStarted
+                    recordState.newTimeEnded = record.timeEnded
+                    recordState.newTags = record.tags
+                    editorDelegate.commentSelectionViewModelDelegate.newComment = record.comment
                 }
             }
             is ChangeRecordParams.Untracked -> {
-                newTimeStarted = (extra as ChangeRecordParams.Untracked).timeStarted
-                newTimeEnded = (extra as ChangeRecordParams.Untracked).timeEnded
+                recordState.newTimeStarted = extra.timeStarted
+                recordState.newTimeEnded = extra.timeEnded
             }
             is ChangeRecordParams.New -> {
-                val daysFromToday = (extra as ChangeRecordParams.New).daysFromToday
-                newTimeEnded = getInitialTimeEnded(daysFromToday)
-                newTimeStarted = getInitialTimeStarted(daysFromToday)
+                val daysFromToday = extra.daysFromToday
+                recordState.newTimeEnded = getInitialTimeEnded(daysFromToday)
+                recordState.newTimeStarted = getInitialTimeStarted(recordState.newTimeEnded, daysFromToday)
             }
         }
-        newTimeSplit = newTimeStarted
-        originalRecordId = recordId.orZero()
-        originalTypeId = newTypeId
-        originalTagIds = newTags.map(RecordBase.Tag::tagId)
-        originalTimeStarted = newTimeStarted
-        originalTimeEnded = newTimeEnded
-        super.initializePreviewViewData()
+        recordState.originalRecordId = recordId.orZero()
+        editorDelegate.afterInitializePreviewViewData()
     }
 
     private suspend fun loadPreviewViewData(): ChangeRecordViewData {
-        val record = Record(
-            typeId = newTypeId,
-            timeStarted = newTimeStarted,
-            timeEnded = newTimeEnded,
-            comment = newComment,
-            tags = newTags,
+        val record = mapRecordModel(
+            comment = editorDelegate.commentSelectionViewModelDelegate.newComment,
+            recordState = editorDelegate.recordState,
         )
 
         return changeRecordViewDataInteractor.getPreviewViewData(
             record = record,
-            dateTimeFieldState = dateTimeState,
+            dateTimeFieldState = editorDelegate.dateTimeState,
         )
     }
 

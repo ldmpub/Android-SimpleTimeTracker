@@ -65,9 +65,19 @@ object NavUtils {
         clickOnSettingsRecyclerText(coreR.string.settings_notification_title)
     }
 
+    fun openRemindersScreen() {
+        scrollSettingsRecyclerToText(coreR.string.settings_reminders_title)
+        clickOnSettingsRecyclerText(coreR.string.settings_reminders_title)
+    }
+
     fun openSettingsDisplay() {
         scrollSettingsRecyclerToText(coreR.string.settings_display_title)
         clickOnSettingsRecyclerText(coreR.string.settings_display_title)
+    }
+
+    fun openSettingsUntrackedOptions() {
+        scrollSettingsRecyclerToText(coreR.string.untracked_time_name)
+        clickOnSettingsRecyclerText(coreR.string.untracked_time_name)
     }
 
     fun openSettingsAdditional() {
@@ -112,6 +122,12 @@ object NavUtils {
     fun openSuggestions() {
         scrollSettingsRecyclerToText(coreR.string.settings_activity_suggestions)
         clickOnSettingsRecyclerText(coreR.string.settings_activity_suggestions)
+        Thread.sleep(1000)
+    }
+
+    fun openShortcutsScreen() {
+        scrollSettingsRecyclerToText(coreR.string.change_record_shortcut)
+        clickOnSettingsRecyclerText(coreR.string.change_record_shortcut)
         Thread.sleep(1000)
     }
 

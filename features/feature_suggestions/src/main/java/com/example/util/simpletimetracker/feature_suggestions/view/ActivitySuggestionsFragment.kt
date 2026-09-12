@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.example.util.simpletimetracker.core.base.BaseFragment
-import com.example.util.simpletimetracker.core.dialog.TypesSelectionDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.TypesSelectionDialogListener
 import com.example.util.simpletimetracker.core.extension.onItemMoved
 import com.example.util.simpletimetracker.core.utils.ITEM_ALPHA_DEFAULT
 import com.example.util.simpletimetracker.core.utils.ITEM_ALPHA_SELECTED
@@ -23,8 +23,8 @@ import com.example.util.simpletimetracker.feature_base_adapter.emptySpace.create
 import com.example.util.simpletimetracker.feature_base_adapter.hint.createHintAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.loader.createLoaderAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.recordType.createRecordTypeAdapterDelegate
-import com.example.util.simpletimetracker.feature_suggestions.adapter.ActivitySuggestionListViewData
-import com.example.util.simpletimetracker.feature_suggestions.adapter.createActivitySuggestionListAdapterDelegate
+import com.example.util.simpletimetracker.feature_base_adapter.recordTypeRelation.ActivitySuggestionListViewData
+import com.example.util.simpletimetracker.feature_base_adapter.recordTypeRelation.createActivitySuggestionListAdapterDelegate
 import com.example.util.simpletimetracker.feature_suggestions.adapter.createActivitySuggestionSpecialAdapterDelegate
 import com.example.util.simpletimetracker.feature_suggestions.viewModel.ActivitySuggestionsViewModel
 import com.example.util.simpletimetracker.feature_views.extension.setOnClick
@@ -82,9 +82,10 @@ class ActivitySuggestionsFragment :
     }
 
     override fun onDataSelected(
-        tag: String?,
+        tag: String,
         dataIds: List<Long>,
         tagValues: List<RecordBase.Tag>,
+        selectValueOnStartTagIds: List<Long>,
     ) {
         viewModel.onTypesSelected(dataIds, tag)
     }

@@ -11,7 +11,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseFragment
-import com.example.util.simpletimetracker.core.dialog.ColorSelectionDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.ColorSelectionDialogListener
 import com.example.util.simpletimetracker.core.extension.addOnBackPressedListener
 import com.example.util.simpletimetracker.core.extension.hideKeyboard
 import com.example.util.simpletimetracker.core.extension.observeOnce
@@ -41,6 +41,7 @@ import com.example.util.simpletimetracker.feature_change_activity_filter.viewMod
 import com.example.util.simpletimetracker.feature_views.extension.animateColor
 import com.example.util.simpletimetracker.feature_views.extension.setOnClick
 import com.example.util.simpletimetracker.feature_views.extension.visible
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeActivityFilterParams
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
@@ -149,8 +150,8 @@ class ChangeActivityFilterFragment :
         super.onDestroy()
     }
 
-    override fun onColorSelected(colorInt: Int) {
-        viewModel.onCustomColorSelected(colorInt)
+    override fun onColorSelected(tag: String, colorInt: Int) {
+        viewModel.onCustomColorSelected(tag = tag, colorInt = colorInt)
     }
 
     private fun updateUi(item: ActivityFilterViewData) = with(binding) {
@@ -240,8 +241,6 @@ class ChangeActivityFilterFragment :
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
-
         fun createBundle(data: ChangeActivityFilterParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

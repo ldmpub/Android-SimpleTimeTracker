@@ -1,16 +1,18 @@
 package com.example.util.simpletimetracker.feature_dialogs.typesSelection.view
 
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseBottomSheetFragment
-import com.example.util.simpletimetracker.core.dialog.OnTagValueSelectedListener
-import com.example.util.simpletimetracker.core.dialog.TypesSelectionDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OnTagValueSelectedListener
+import com.example.util.simpletimetracker.feature_dialogs.api.TypesSelectionDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.StandardDialogListener
 import com.example.util.simpletimetracker.core.extension.blockContentScroll
-import com.example.util.simpletimetracker.core.extension.findListener
+import com.example.util.simpletimetracker.core.extension.findListeners
 import com.example.util.simpletimetracker.core.extension.observeOnce
 import com.example.util.simpletimetracker.core.extension.setFullScreen
 import com.example.util.simpletimetracker.core.extension.setSkipCollapsed
@@ -26,6 +28,8 @@ import com.example.util.simpletimetracker.feature_dialogs.typesSelection.model.T
 import com.example.util.simpletimetracker.feature_dialogs.typesSelection.viewData.TypesSelectionDialogViewData
 import com.example.util.simpletimetracker.feature_dialogs.typesSelection.viewModel.TypesSelectionViewModel
 import com.example.util.simpletimetracker.feature_views.extension.setOnClick
+import com.example.util.simpletimetracker.feature_views.extension.setTextOptional
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.RecordTagValueSelectionParams
 import com.example.util.simpletimetracker.navigation.params.screen.TypesSelectionDialogParams
 import com.google.android.flexbox.FlexDirection
@@ -38,7 +42,8 @@ import com.example.util.simpletimetracker.feature_dialogs.databinding.RecordTagS
 @AndroidEntryPoint
 class TypesSelectionDialogFragment :
     BaseBottomSheetFragment<Binding>(),
-    OnTagValueSelectedListener {
+    OnTagValueSelectedListener,
+    StandardDialogListener {
 
     override val inflater: (LayoutInflater, ViewGroup?, Boolean) -> Binding =
         Binding::inflate
@@ -58,11 +63,11 @@ class TypesSelectionDialogFragment :
     private val extra: TypesSelectionDialogParams by fragmentArgumentDelegate(
         key = ARGS_PARAMS, default = TypesSelectionDialogParams.Empty,
     )
-    private var listener: TypesSelectionDialogListener? = null
+    private var listeners: List<TypesSelectionDialogListener> = emptyList()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        listener = context.findListener()
+        listeners = context.findListeners()
     }
 
     override fun initDialog() {
@@ -100,26 +105,38 @@ class TypesSelectionDialogFragment :
         viewModel.onCategoryValueSelected(params, data)
     }
 
+    override fun onPositiveClick(tag: String?, data: Any?) {
+        viewModel.onPositiveClick(tag, data)
+    }
+
+    override fun onNegativeClick(tag: String?, data: Any?) {
+        viewModel.onNegativeClick(tag, data)
+    }
+
+    override fun onDismiss(dialog: DialogInterface) {
+        super.onDismiss(dialog)
+    }
+
     private fun updateViewState(data: TypesSelectionDialogViewData) = with(binding) {
-        tvTypesSelectionDialogTitle.text = data.title
-        tvTypesSelectionDialogTitle.isVisible = data.title.isNotEmpty()
-
-        tvTypesSelectionDialogSubtitle.text = data.subtitle
-        tvTypesSelectionDialogSubtitle.isVisible = data.subtitle.isNotEmpty()
-
-        viewTypesSelectionDialogDivider.isVisible =
-            data.title.isNotEmpty() || data.subtitle.isNotEmpty()
+        tvTypesSelectionDialogTitle.setTextOptional(data.title)
+        tvTypesSelectionDialogSubtitle.setTextOptional(data.subtitle)
+        viewTypesSelectionDialogDivider.isVisible = data.title.isNotEmpty() || data.subtitle.isNotEmpty()
         containerTypesSelectionButtons.isVisible = data.isButtonsVisible
     }
 
     private fun onDataSelected(result: TypesSelectionResult) {
-        listener?.onDataSelected(extra.tag, result.dataIds, result.tagValues)
+        listeners.forEach {
+            it.onDataSelected(
+                tag = extra.tag,
+                dataIds = result.dataIds,
+                tagValues = result.tagValues,
+                selectValueOnStartTagIds = result.selectValueOnStartTagIds,
+            )
+        }
         dismiss()
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_types_selection_params"
-
         fun createBundle(data: TypesSelectionDialogParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

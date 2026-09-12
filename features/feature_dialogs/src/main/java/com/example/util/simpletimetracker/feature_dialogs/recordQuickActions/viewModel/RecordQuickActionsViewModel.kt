@@ -10,7 +10,6 @@ import com.example.util.simpletimetracker.core.extension.toViewData
 import com.example.util.simpletimetracker.core.interactor.StatisticsDetailNavigationInteractor
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.domain.base.UNTRACKED_ITEM_ID
-import com.example.util.simpletimetracker.domain.extension.orZero
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.RecordInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.RecordsContainerMultiselectInteractor
@@ -146,7 +145,7 @@ class RecordQuickActionsViewModel @Inject constructor(
         when (val params = extra.type) {
             is Type.RecordTracked -> {
                 // Removal handled in separate viewModel.
-                val recordId = (params as? Type.RecordTracked)?.id.orZero()
+                val recordId = params.id
                 removeRecordIds.set(setOf(recordId))
                 router.back()
             }
@@ -206,15 +205,35 @@ class RecordQuickActionsViewModel @Inject constructor(
             exit()
             return
         }
-        val record = getTrackedRecord() ?: return
-        recordActionDuplicateMediator.execute(
-            typeId = record.typeId,
-            timeStarted = record.timeStarted,
-            timeEnded = record.timeEnded,
-            comment = record.comment,
-            tagIds = record.tags,
-        )
-        exit()
+        when (extra.type) {
+            is Type.RecordTracked -> {
+                val record = getTrackedRecord() ?: return
+                recordActionDuplicateMediator.execute(
+                    typeId = record.typeId,
+                    timeStarted = record.timeStarted,
+                    timeEnded = record.timeEnded,
+                    comment = record.comment,
+                    tagIds = record.tags,
+                )
+                exit()
+            }
+            is Type.RecordUntracked -> {
+                // Do nothing, shouldn't be possible.
+            }
+            is Type.RecordRunning -> {
+                val record = (extra.type as? Type.RecordRunning)
+                    ?.let { runningRecordInteractor.get(it.id) }
+                    ?: return
+                recordActionDuplicateMediator.execute(
+                    typeId = record.id,
+                    timeStarted = record.timeStarted,
+                    timeEnded = record.timeEnded,
+                    comment = record.comment,
+                    tagIds = record.tags,
+                )
+                exit()
+            }
+        }
     }
 
     private suspend fun onMove() {
@@ -283,6 +302,7 @@ class RecordQuickActionsViewModel @Inject constructor(
             type = TypesSelectionDialogParams.Type.Activity,
             selectedTypeIds = emptyList(),
             selectedTagValues = emptyList(),
+            selectedTagValueOnStart = emptyList(),
             isMultiSelectAvailable = false,
             idsShouldBeVisible = emptyList(),
             showHints = false,
@@ -319,6 +339,7 @@ class RecordQuickActionsViewModel @Inject constructor(
                     numericValue = it.numericValue,
                 )
             },
+            selectedTagValueOnStart = emptyList(),
             isMultiSelectAvailable = true,
             idsShouldBeVisible = selectedTypeIds,
             showHints = true,
@@ -327,7 +348,7 @@ class RecordQuickActionsViewModel @Inject constructor(
     }
 
     fun onTypesSelected(
-        tag: String?,
+        tag: String,
         dataIds: List<Long>,
         tagValues: List<RecordBase.Tag>,
     ) = viewModelScope.launch {
@@ -373,8 +394,7 @@ class RecordQuickActionsViewModel @Inject constructor(
     }
 
     private suspend fun getTrackedRecord(): Record? {
-        val recordId = (extra.type as? Type.RecordTracked)?.id
-            ?: return null
+        val recordId = (extra.type as? Type.RecordTracked)?.id ?: return null
         return recordInteractor.get(recordId)
     }
 

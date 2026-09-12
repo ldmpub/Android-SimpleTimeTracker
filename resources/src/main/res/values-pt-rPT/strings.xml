@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Etiquetas dos registos</string>
     <string name="record_tag_hint_short">Etiquetas</string>
     <string name="nothing_selected">Nenhuma seleção</string>
-    <string name="something_selected">Seleção:</string>
+    <string name="something_selected">Seleção</string>
+    <string name="something_available">Disponível</string>
+    <string name="something_preselected">Pré-selecionado</string>
     <string name="select_all">Selecionar tudo</string>
     <string name="select_nothing">Não selecionar nada</string>
     <string name="no_data">Sem dados</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Os objetivos serão exibidos aqui</string>
+    <string name="all_goals_finished">Todos os objetivos foram concluídos</string>
+    <string name="hide_finished_goals">Ocultar objetivos concluídos</string>
     <string name="goal_add_hint">Edite a atividade ou categoria para atribuir um objetivo</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Atribuir etiquetas diferentes aos registos para os distinguir</string>
     <string name="categories_add_category">Adicionar categoria</string>
     <string name="categories_add_record_tag">Adicionar etiqueta de registo</string>
+    <string name="categories_show_relations">Mostrar relações</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>Categorias</b> ajudam a agrupar atividades relacionadas. Por exemplo:<br><br>
 • A categoria <custom-color-3>Produtiva</custom-color-3> pode incluir <custom-color-3>Leitura</custom-color-3> e <custom-color-3>Ginásio</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@ Isto permite-lhe ver quanto tempo está a gastar em atividades produtivas versus
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Etiqueta arquivada</string>
     <string name="change_record_tag_default_hint">Atribuído por padrão</string>
+    <string name="change_record_tag_type_general">Comum</string>
     <string name="change_record_tag_type_general_hint">Pode ser atribuída a registos de qualquer atividade</string>
     <string name="change_record_tag_type_typed_hint">Só pode ser atribuída a registos de uma atividade específica</string>
     <string name="change_record_tag_select_activity_hint">Pegue a cor e o ícone da atividade</string>
@@ -142,6 +148,7 @@ Isto permite-lhe ver quanto tempo está a gastar em atividades produtivas versus
     <string name="change_record_last_comments_hint">Últimos comentários</string>
     <string name="change_record_favourite_comments_hint">Favorito</string>
     <string name="change_record_favourite_comments_hint_long">Comentários favoritos</string>
+    <string name="change_record_favourite_activity_selection">Favorito apenas para atividades selecionadas</string>
     <string name="change_record_similar_comments_hint">Comentários semelhantes</string>
     <string name="change_record_categories_empty">Nenhuma etiqueta de registo adicionada</string>
     <string name="change_record_save">Guardar</string>
@@ -230,6 +237,8 @@ Isto permite-lhe ver quanto tempo está a gastar em atividades produtivas versus
     <string name="change_complex_rule_removed">Regra removida</string>
     <string name="change_complex_rule_choose_action">Escolher ação</string>
     <string name="change_complex_rule_choose_condition">Escolher condições</string>
+    <string name="change_complex_tag_value_dialog_message">Escolha quando definir o valor</string>
+    <string name="change_complex_tag_value_set_later">Ao iniciar</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Mostra sugestões para a atividade seguinte com base na atividade atual ou na última</string>
@@ -289,6 +298,7 @@ Isto permite-lhe ver quanto tempo está a gastar em atividades produtivas versus
     <string name="records_all_sort_order">Organizar registos</string>
     <string name="records_all_sort_time_started">Hora de início</string>
     <string name="records_all_sort_duration">Duração</string>
+    <string name="records_all_days_without_records">Dias sem registos - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">Para iniciar o registo, adicionar atividades clicando no botão %s ou usar as definições padrão clicando no botão %s</string>
@@ -309,7 +319,7 @@ Isto permite-lhe ver quanto tempo está a gastar em atividades produtivas versus
     <string name="settings_display_title">Definições de visualização</string>
     <string name="settings_additional_title">Definições adicionais</string>
     <string name="settings_notification_title">Definições das notificações</string>
-    <string name="settings_backup_title">Definições da cópia de segurança</string>
+    <string name="settings_backup_title">Cópia de segurança</string>
     <string name="settings_export_title">Exportar e importar</string>
     <string name="settings_sort_order">Organizar atividades</string>
     <string name="settings_sort_order_category">Organizar categorias</string>
@@ -327,6 +337,7 @@ Isto permite-lhe ver quanto tempo está a gastar em atividades produtivas versus
     <string name="settings_show_untracked_time_statistics">Mostrar tempo não registado nas estatísticas</string>
     <string name="settings_ignore_short_untracked">Ignorar tempo curto não registado</string>
     <string name="settings_ignore_short_untracked_hint">Não mostrar o tempo não registado que seja menor que o tempo especificado.</string>
+    <string name="settings_untracked_days_hint">Contar o tempo sem registo apenas nos dias selecionados.</string>
     <string name="settings_untracked_range">Período não registado</string>
     <string name="settings_untracked_range_hint">Mostrar o tempo não rastreado apenas dentro do intervalo selecionado.</string>
     <string name="settings_show_records_calendar">Mostrar registos na visualização de calendário</string>
@@ -360,11 +371,14 @@ Isto permite-lhe ver quanto tempo está a gastar em atividades produtivas versus
     <string name="settings_inactivity_reminder">Mostrar lembrete de inatividade</string>
     <string name="settings_inactivity_reminder_hint">Mostrar notificação após tempo especificado se nenhum temporizador estiver em execução.</string>
     <string name="settings_inactivity_reminder_recurrent">Recorrente</string>
+    <string name="settings_reminder_active_days">Dias ativos</string>
     <string name="settings_activity_reminder">Mostrar noticação de atividade</string>
     <string name="settings_activity_reminder_hint">Mostrar notificação após tempo especificado se cronómetros estiverem em execução.</string>
     <string name="settings_do_not_disturb">Não perturbar</string>
     <string name="settings_notifications_system_settings">Definições de sistema</string>
     <string name="settings_notifications_system_settings_hint">Sons, vibração, lanterna e outros</string>
+    <string name="settings_reminders_title">Lembretes</string>
+    <string name="settings_reminders_hint">Gerir lembretes agendados</string>
     <string name="settings_ignore_short_records">Ignorar registos curtos</string>
     <string name="settings_ignore_short_records_hint">Não registar atividades mais curtas que o tempo especificado.</string>
     <string name="settings_inactivity_reminder_disabled">Desativado</string>
@@ -527,6 +541,7 @@ Exemplo:<br/>
     <string name="statistics_detail_record_time">Histórico do registo</string>
     <string name="statistics_detail_first_record">Primeiro</string>
     <string name="statistics_detail_last_record">Último</string>
+    <string name="statistics_detail_record_span">Intervalo</string>
     <string name="statistics_detail_time_since">Tempo decorrido</string>
     <string name="statistics_detail_streaks">Rondas</string>
     <string name="statistics_detail_streaks_longest">Maior</string>
@@ -549,6 +564,8 @@ Exemplo:<br/>
     <string name="statistics_detail_goals_deficit">Déficit</string>
     <string name="statistics_detail_tag_values_hint">Valores da etiqueta</string>
     <string name="statistics_detail_tag_values_multiply_duration">Multiplicar pela duração</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Preencher períodos vazios com dados anteriores</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Ampliar eixo Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">Registos</item>-->
@@ -673,6 +690,33 @@ Exemplo:<br/>
     <string name="shortcut_navigation_records">Registos</string>
     <string name="shortcut_navigation_statistics">Estatisticas</string>
     <string name="shortcut_navigation_settings">Definições</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Diariamente</string>
+    <string name="reminders_schedule_weekly">Semanalmente</string>
+    <string name="reminders_schedule_one_time">Uma vez</string>
+    <string name="reminders_schedule_monthly">Mensalmente</string>
+    <string name="reminders_schedule_hourly">De hora a hora</string>
+    <string name="reminders_condition_activity_not_tracked">Quando a atividade não tiver sido registada hoje</string>
+    <string name="activity_reminders_hint">Substitui a definição global do lembrete de atividade</string>
+    <string name="activity_reminder_mode">Modo de lembrete</string>
+    <string name="activity_reminder_mode_disabled">Desativado</string>
+    <string name="activity_reminder_mode_custom">Personalizado</string>
+    <string name="activity_reminder_disabled_summary">Os lembretes estão desativados para esta atividade</string>
+    <string name="activity_reminder_positive_duration_required">Defina uma duração do lembrete superior a zero</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Mensagem</string>
+    <string name="change_reminder_schedule">Agendamento</string>
+    <string name="change_reminder_day_of_month">Dia do mês</string>
+    <string name="change_reminder_interval">Intervalo</string>
+    <string name="change_reminder_condition">Condição de apresentação</string>
+    <string name="change_reminder_condition_always">Sempre</string>
+    <string name="change_reminder_message_prefill">Não se esqueça de fazer %s.</string>
+    <string name="change_reminder_message_required">Introduza uma mensagem de lembrete</string>
+    <string name="change_reminder_future_required">Selecione uma hora futura</string>
+    <string name="change_reminder_interval_required">Defina um intervalo superior a zero</string>
+    <string name="change_reminder_removed">Lembrete removido</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Verifique sua conexão e tente novamente</string>

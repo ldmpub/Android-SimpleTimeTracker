@@ -17,6 +17,7 @@ import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteracto
 import com.example.util.simpletimetracker.domain.record.interactor.RecordsContainerMultiselectInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.RecordsShareUpdateInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.RecordsUpdateInteractor
+import com.example.util.simpletimetracker.domain.record.interactor.RunningRecordInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.UpdateRunningRecordsInteractor
 import com.example.util.simpletimetracker.domain.record.model.MultiSelectedRecordId
 import com.example.util.simpletimetracker.domain.statistics.model.ChartFilterType
@@ -38,7 +39,6 @@ import com.example.util.simpletimetracker.navigation.params.screen.ChangeRunning
 import com.example.util.simpletimetracker.navigation.params.screen.RecordQuickActionsParams
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -49,6 +49,7 @@ class RecordsViewModel @Inject constructor(
     private val router: Router,
     private val recordsViewDataInteractor: RecordsViewDataInteractor,
     private val prefsInteractor: PrefsInteractor,
+    private val runningRecordInteractor: RunningRecordInteractor,
     private val recordsUpdateInteractor: RecordsUpdateInteractor,
     private val recordsShareUpdateInteractor: RecordsShareUpdateInteractor,
     private val sharingInteractor: SharingInteractor,
@@ -99,6 +100,7 @@ class RecordsViewModel @Inject constructor(
         item: RunningRecordViewData,
         sharedElements: Pair<Any, String>? = null,
     ) = viewModelScope.launch {
+        if (runningRecordInteractor.get(item.id) == null) return@launch
         if (recordsContainerMultiselectInteractor.isEnabled) {
             onMultiselectRunningRecordClick(item)
             return@launch
@@ -221,11 +223,7 @@ class RecordsViewModel @Inject constructor(
 
     fun onVisible() {
         isVisible = true
-        if (shift == 0) {
-            startUpdate()
-        } else {
-            updateRecords()
-        }
+        startUpdate()
     }
 
     fun onHidden() {
@@ -234,7 +232,7 @@ class RecordsViewModel @Inject constructor(
     }
 
     fun onNeedUpdate() {
-        updateRecords()
+        if (isVisible) updateRecords()
     }
 
     fun onTabReselected(tab: NavigationTab?) {
@@ -251,6 +249,7 @@ class RecordsViewModel @Inject constructor(
         chartFilterType: ChartFilterType,
         dataIds: List<Long>,
     ) = viewModelScope.launch {
+        if (!isVisible) return@launch
         prefsInteractor.setListFilterType(chartFilterType)
         when (chartFilterType) {
             ChartFilterType.ACTIVITY -> prefsInteractor.setFilteredTypesOnList(dataIds)
@@ -349,8 +348,12 @@ class RecordsViewModel @Inject constructor(
     }
 
     private fun startUpdate() {
+        timerJob?.cancel()
+        if (shift != 0) {
+            updateRecords()
+            return
+        }
         timerJob = viewModelScope.launch {
-            timerJob?.cancelAndJoin()
             while (isActive) {
                 updateRecords()
                 delay(TIMER_UPDATE)
@@ -359,9 +362,7 @@ class RecordsViewModel @Inject constructor(
     }
 
     private fun stopUpdate() {
-        viewModelScope.launch {
-            timerJob?.cancelAndJoin()
-        }
+        timerJob?.cancel()
     }
 
     companion object {

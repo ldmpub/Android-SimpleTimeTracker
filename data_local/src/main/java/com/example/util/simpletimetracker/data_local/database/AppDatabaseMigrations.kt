@@ -39,6 +39,12 @@ class AppDatabaseMigrations {
                 migration_28_29,
                 migration_29_30,
                 migration_30_31,
+                migration_31_32,
+                migration_32_33,
+                migration_33_34,
+                migration_34_35,
+                migration_35_36,
+                migration_36_37,
             )
 
         private val migration_1_2 = object : Migration(1, 2) {
@@ -395,6 +401,69 @@ class AppDatabaseMigrations {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL(
                     "ALTER TABLE complexRules ADD COLUMN actionDisallowOnlyPrevious INTEGER NOT NULL DEFAULT 0",
+                )
+            }
+        }
+
+        private val migration_31_32 = object : Migration(31, 32) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE complexRules ADD COLUMN actionSetTagValues TEXT NOT NULL DEFAULT ''",
+                )
+            }
+        }
+
+        private val migration_32_33 = object : Migration(32, 33) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE recordShortcuts ADD COLUMN target_type INTEGER NOT NULL DEFAULT 0",
+                )
+                database.execSQL(
+                    "ALTER TABLE recordShortcuts ADD COLUMN setting_action INTEGER NOT NULL DEFAULT 0",
+                )
+            }
+        }
+
+        private val migration_33_34 = object : Migration(33, 34) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `recordTypeToFavouriteComment` (`record_type_id` INTEGER NOT NULL, `comment_id` INTEGER NOT NULL, PRIMARY KEY(`record_type_id`, `comment_id`))",
+                )
+            }
+        }
+
+        private val migration_34_35 = object : Migration(34, 35) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `scheduledReminders` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `enabled` INTEGER NOT NULL, `text` TEXT NOT NULL, `schedule_type` INTEGER NOT NULL, `time_of_day_millis` INTEGER NOT NULL, `weekdays` TEXT, `one_time_local_epoch_day` INTEGER, `monthly_day_of_month` INTEGER, `condition_type` INTEGER NOT NULL, `activity_id` INTEGER)",
+                )
+            }
+        }
+
+        private val migration_35_36 = object : Migration(35, 36) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `activityReminderOverrides` (`activity_id` INTEGER NOT NULL, `mode` INTEGER NOT NULL, PRIMARY KEY(`activity_id`))",
+                )
+                database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `activityReminderRules` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `activity_id` INTEGER NOT NULL, `duration_seconds` INTEGER NOT NULL, `recurrent` INTEGER NOT NULL, `weekdays` TEXT NOT NULL, `dnd_start_millis` INTEGER NOT NULL, `dnd_end_millis` INTEGER NOT NULL, FOREIGN KEY(`activity_id`) REFERENCES `activityReminderOverrides`(`activity_id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+                )
+                database.execSQL(
+                    "CREATE INDEX IF NOT EXISTS `index_activityReminderRules_activity_id` ON `activityReminderRules` (`activity_id`)",
+                )
+            }
+        }
+
+        private val migration_36_37 = object : Migration(36, 37) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE scheduledReminders ADD COLUMN interval_seconds INTEGER",
+                )
+                database.execSQL(
+                    "ALTER TABLE scheduledReminders ADD COLUMN dnd_start_millis INTEGER",
+                )
+                database.execSQL(
+                    "ALTER TABLE scheduledReminders ADD COLUMN dnd_end_millis INTEGER",
                 )
             }
         }

@@ -5,12 +5,12 @@
  */
 package com.example.util.simpletimetracker.feature_wear
 
-import com.example.util.simpletimetracker.core.interactor.LoadPreselectedTagsInteractor
 import com.example.util.simpletimetracker.core.interactor.RecordRepeatInteractor
 import com.example.util.simpletimetracker.core.interactor.StatisticsMediator
 import com.example.util.simpletimetracker.core.mapper.TimeMapper
 import com.example.util.simpletimetracker.core.provider.ApplicationDataProvider
 import com.example.util.simpletimetracker.domain.activitySuggestion.interactor.GetCurrentActivitySuggestionsInteractor
+import com.example.util.simpletimetracker.domain.extension.orFalse
 import com.example.util.simpletimetracker.domain.extension.orZero
 import com.example.util.simpletimetracker.domain.notifications.interactor.UpdateExternalViewsInteractor
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
@@ -64,7 +64,6 @@ class WearDataRepo @Inject constructor(
     private val addRunningRecordMediator: Lazy<AddRunningRecordMediator>,
     private val recordRepeatInteractor: Lazy<RecordRepeatInteractor>,
     private val updateExternalViewsInteractor: Lazy<UpdateExternalViewsInteractor>,
-    private val loadPreselectedTagsInteractor: Lazy<LoadPreselectedTagsInteractor>,
     private val router: Router,
     private val timeMapper: TimeMapper,
     private val widgetInteractor: WidgetInteractor,
@@ -147,6 +146,7 @@ class WearDataRepo @Inject constructor(
             filterType = filterType,
             filteredIds = filteredIds,
             range = range,
+            forceSeconds = false,
         ).filterNot {
             it.id in filteredIds
         }
@@ -170,6 +170,7 @@ class WearDataRepo @Inject constructor(
                 )
             },
             comment = "",
+            useSelectedTags = request.useSelectedTags.orFalse(),
         )
         if (recordTypeInteractor.get(typeId)?.defaultDuration.orZero() > 0) {
             updateExternalViewsInteractor.get().onInstantRecordAdd()
@@ -189,14 +190,12 @@ class WearDataRepo @Inject constructor(
 
     override suspend fun queryTagsForActivity(activityId: Long): List<WearTagDTO> {
         val types = recordTypeInteractor.getAll().associateBy { it.id }
-        val preselectedTagIds = loadPreselectedTagsInteractor.get().execute(activityId)
         return getSelectableTagsInteractor.execute(activityId)
             .filterNot { it.archived }
             .map {
                 wearDataLocalMapper.map(
                     recordTag = it,
                     types = types,
-                    preselectedTagIds = preselectedTagIds,
                 )
             }
     }
@@ -210,6 +209,13 @@ class WearDataRepo @Inject constructor(
         )
         return WearShouldShowTagSelectionResponse(
             shouldShow = RecordDataSelectionDialogResult.Field.Tags in result.fields,
+            preselectedTags = result.preselectedTags.map {
+                WearShouldShowTagSelectionResponse.Tag(
+                    tagId = it.tagId,
+                    numericValue = it.numericValue,
+                )
+            },
+            requiredTagValueSelectionTagIds = result.requiredValueSelectionTagIds,
         )
     }
 

@@ -18,6 +18,7 @@ import com.example.util.simpletimetracker.feature_base_adapter.loader.createLoad
 import com.example.util.simpletimetracker.feature_base_adapter.multitaskRecord.createMultitaskRecordAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.record.createRecordAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.recordsDateDivider.createRecordsDateDividerAdapterDelegate
+import com.example.util.simpletimetracker.feature_base_adapter.recordsDateDivider.createRecordsDaysBetweenDividerAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.runningRecord.createRunningRecordAdapterDelegate
 import com.example.util.simpletimetracker.feature_records_all.viewData.RecordsAllSortOrderViewData
 import com.example.util.simpletimetracker.feature_records_all.viewData.RecordsAllViewDataState
@@ -25,6 +26,7 @@ import com.example.util.simpletimetracker.feature_records_all.viewModel.RecordsA
 import com.example.util.simpletimetracker.feature_views.TransitionNames
 import com.example.util.simpletimetracker.navigation.Router
 import com.example.util.simpletimetracker.navigation.params.notification.SnackBarParams
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.RecordsAllParams
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -57,6 +59,7 @@ class RecordsAllFragment : BaseFragment<Binding>() {
             createRecordAdapterDelegate(throttle(viewModel::onRecordClick)),
             createMultitaskRecordAdapterDelegate(),
             createRecordsDateDividerAdapterDelegate(),
+            createRecordsDaysBetweenDividerAdapterDelegate(),
             createEmptyAdapterDelegate(),
             createLoaderAdapterDelegate(),
         )
@@ -127,8 +130,6 @@ class RecordsAllFragment : BaseFragment<Binding>() {
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
-
         fun createBundle(data: RecordsAllParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

@@ -1,12 +1,14 @@
 package com.example.util.simpletimetracker.domain.recordType.interactor
 
 import com.example.util.simpletimetracker.domain.activityFilter.interactor.ActivityFilterInteractor
+import com.example.util.simpletimetracker.domain.activityReminder.repo.ActivityReminderOverrideRepo
 import com.example.util.simpletimetracker.domain.activitySuggestion.interactor.ActivitySuggestionInteractor
 import com.example.util.simpletimetracker.domain.record.repo.RecordRepo
 import com.example.util.simpletimetracker.domain.recordTag.repo.RecordTagRepo
 import com.example.util.simpletimetracker.domain.recordTag.repo.RecordToRecordTagRepo
 import com.example.util.simpletimetracker.domain.category.repo.RecordTypeCategoryRepo
 import com.example.util.simpletimetracker.domain.complexRule.interactor.ComplexRuleInteractor
+import com.example.util.simpletimetracker.domain.favourite.repo.RecordTypeToFavouriteCommentRepo
 import com.example.util.simpletimetracker.domain.recordType.model.CardOrder
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
 import com.example.util.simpletimetracker.domain.recordTag.repo.RecordTypeToDefaultTagRepo
@@ -16,6 +18,7 @@ import com.example.util.simpletimetracker.domain.recordShortcut.repo.RecordShort
 import com.example.util.simpletimetracker.domain.recordTag.repo.RecordShortcutToRecordTagRepo
 import com.example.util.simpletimetracker.domain.recordType.model.RecordType
 import com.example.util.simpletimetracker.domain.recordType.repo.RecordTypeRepo
+import com.example.util.simpletimetracker.domain.scheduledReminder.interactor.ScheduledReminderInteractor
 import javax.inject.Inject
 
 class RecordTypeInteractor @Inject constructor(
@@ -29,12 +32,15 @@ class RecordTypeInteractor @Inject constructor(
     private val recordTypeCategoryRepo: RecordTypeCategoryRepo,
     private val recordTypeToTagRepo: RecordTypeToTagRepo,
     private val recordTypeToDefaultTagRepo: RecordTypeToDefaultTagRepo,
+    private val recordTypeToFavouriteCommentRepo: RecordTypeToFavouriteCommentRepo,
     private val recordTypeGoalInteractor: RecordTypeGoalInteractor,
     private val complexRuleInteractor: ComplexRuleInteractor,
     private val activityFilterInteractor: ActivityFilterInteractor,
     private val activitySuggestionInteractor: ActivitySuggestionInteractor,
     private val prefsInteractor: PrefsInteractor,
     private val sortCardsInteractor: SortCardsInteractor,
+    private val scheduledReminderInteractor: ScheduledReminderInteractor,
+    private val activityReminderOverrideRepo: ActivityReminderOverrideRepo,
 ) {
 
     suspend fun getAll(cardOrder: CardOrder? = null): List<RecordType> {
@@ -66,7 +72,7 @@ class RecordTypeInteractor @Inject constructor(
     }
 
     suspend fun remove(id: Long) {
-        val recordsToRemove = recordRepo.getByType(listOf(id)).map { it.id }
+        val recordsToRemove = recordRepo.getByType(setOf(id)).map { it.id }
         recordsToRemove.forEach { recordId ->
             recordToRecordTagRepo.removeAllByRecordId(recordId) // TODO do better?
         }
@@ -109,10 +115,13 @@ class RecordTypeInteractor @Inject constructor(
         recordTypeCategoryRepo.removeAllByType(id)
         recordTypeToTagRepo.removeAllByType(id)
         recordTypeToDefaultTagRepo.removeAllByType(id)
+        recordTypeToFavouriteCommentRepo.removeAllByType(id)
         recordTypeGoalInteractor.removeByType(id)
         complexRuleInteractor.removeTypeId(id)
         activityFilterInteractor.removeTypeId(id)
         activitySuggestionInteractor.removeTypeId(id)
+        scheduledReminderInteractor.disableByTypeId(id)
+        activityReminderOverrideRepo.remove(id)
         recordTypeRepo.remove(id)
     }
 

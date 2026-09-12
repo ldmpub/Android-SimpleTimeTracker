@@ -4,10 +4,11 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.commit
 import com.example.util.simpletimetracker.core.base.BaseFragment
-import com.example.util.simpletimetracker.core.dialog.OnTagSelectedListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OnTagSelectedListener
 import com.example.util.simpletimetracker.core.utils.InsetConfiguration
 import com.example.util.simpletimetracker.feature_widget.R
 import com.example.util.simpletimetracker.navigation.ScreenFactory
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.RecordTagSelectionParams
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -30,7 +31,7 @@ class WidgetSingleTagSelectionFragment :
     override fun initUi() {
         // TODO check insets on all widget activities.
         val params = activity?.intent?.extras
-            ?.getParcelable<RecordTagSelectionParams>(WidgetSingleTagSelectionActivity.ARGS_PARAMS)
+            ?.getParcelable<RecordTagSelectionParams>(ARGS_PARAMS)
             ?: return
         screenFactory.getFragment(params)?.let {
             childFragmentManager.commit {

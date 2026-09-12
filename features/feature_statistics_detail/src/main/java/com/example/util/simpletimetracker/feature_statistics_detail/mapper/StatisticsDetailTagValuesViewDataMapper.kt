@@ -17,7 +17,7 @@ import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartB
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartGrouping
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartLength
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartMode
-import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartValueMode
+import com.example.util.simpletimetracker.domain.statistics.model.ChartValueMode
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailCardInternalViewData
 import javax.inject.Inject
 
@@ -36,6 +36,7 @@ class StatisticsDetailTagValuesViewDataMapper @Inject constructor(
         appliedChartLength: ChartLength,
         chartMode: ChartMode.TAG_VALUE,
         chartValueMode: ChartValueMode,
+        yAxisZoomed: Boolean,
         valueSuffix: String,
         durationFormat: DurationFormat,
         showSeconds: Boolean,
@@ -48,6 +49,7 @@ class StatisticsDetailTagValuesViewDataMapper @Inject constructor(
             goal = 0, // Don't show goal.
             rangeLength = rangeLength,
             chartMode = chartMode,
+            yAxisZoomed = yAxisZoomed,
             showSelectedBarOnStart = true,
             useSingleColor = true,
             drawRoundCaps = true,
@@ -72,19 +74,12 @@ class StatisticsDetailTagValuesViewDataMapper @Inject constructor(
             availableChartLengths = availableChartLengths,
             appliedChartLength = appliedChartLength,
         )
-        val chartValueModeViewData = statisticsDetailViewDataMapper.mapToChartValueModeViewData(
-            availableChartValueModes = listOf(
-                ChartValueMode.TOTAL,
-                ChartValueMode.AVERAGE,
-            ),
-            chartValueMode = chartValueMode,
-        )
         val totals = mapTagValuesTotals(
             goalData = data,
             chartValueMode = chartValueMode,
         )
 
-        if (chartData.visible) {
+        if (chartData != null) {
             val mainHint = resourceRepo.getString(R.string.statistics_detail_tag_values_hint)
             val hint = if (valueSuffix.isEmpty()) {
                 mainHint
@@ -97,10 +92,10 @@ class StatisticsDetailTagValuesViewDataMapper @Inject constructor(
             )
         }
 
-        if (chartData.visible) {
+        if (chartData != null) {
             items += StatisticsDetailBarChartViewData(
                 block = StatisticsDetailBlock.TagValuesChartData,
-                singleColor = null,
+                singleColor = null, // Replaced later.
                 marginTopDp = 0,
                 data = chartData,
             )
@@ -122,16 +117,7 @@ class StatisticsDetailTagValuesViewDataMapper @Inject constructor(
             )
         }
 
-        if (chartValueModeViewData.isNotEmpty()) {
-            items += ButtonsRowItemViewData(
-                block = StatisticsDetailBlock.TagValuesChartMode,
-                marginTopDp = getTopMargin(items),
-                data = chartValueModeViewData,
-            )
-        }
-
-        items += mapMultiplyDurationItems(
-            multiplyDuration = chartMode.multiplyDuration,
+        items += mapTagValuesSettingsItem(
             marginTopDp = getTopMargin(items),
             isDarkTheme = isDarkTheme,
         )
@@ -145,7 +131,7 @@ class StatisticsDetailTagValuesViewDataMapper @Inject constructor(
             )
         }
 
-        if (chartData.visible) {
+        if (chartData != null) {
             items += StatisticsDetailCardViewData(
                 block = StatisticsDetailBlock.TagValuesTotals,
                 title = "",
@@ -198,28 +184,23 @@ class StatisticsDetailTagValuesViewDataMapper @Inject constructor(
         )
     }
 
-    private fun mapMultiplyDurationItems(
-        multiplyDuration: Boolean,
+    private fun mapTagValuesSettingsItem(
         marginTopDp: Int,
         isDarkTheme: Boolean,
-    ): List<ViewHolderType> {
+    ): ViewHolderType {
         return StatisticsDetailButtonViewData(
             marginTopDp = marginTopDp,
             data = StatisticsDetailButtonViewData.Button(
-                block = StatisticsDetailBlock.TagValuesMultiplyDuration,
-                text = resourceRepo.getString(R.string.statistics_detail_tag_values_multiply_duration),
-                color = if (multiplyDuration) {
-                    R.attr.appActiveColor
-                } else {
-                    R.attr.appInactiveColor
-                }.let { resourceRepo.getThemedAttr(it, isDarkTheme) },
+                block = StatisticsDetailBlock.TagValuesSettings,
+                text = resourceRepo.getString(R.string.shortcut_navigation_settings),
+                color = resourceRepo.getThemedAttr(R.attr.appInactiveColor, isDarkTheme),
             ),
             dataSecond = null,
-        ).let(::listOf)
+        )
     }
 
     private fun getTopMargin(currentItems: List<ViewHolderType>): Int {
-        // Update margin top depending if has buttons before.
+        // Update margin top depending on if it has buttons before.
         val hasButtonsBefore = currentItems.lastOrNull() is ButtonsRowItemViewData
         return if (hasButtonsBefore) -10 else 4
     }

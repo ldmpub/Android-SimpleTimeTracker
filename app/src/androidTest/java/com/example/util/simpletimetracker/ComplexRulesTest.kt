@@ -1,5 +1,6 @@
 package com.example.util.simpletimetracker
 
+import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.matcher.ViewMatchers.hasDescendant
 import androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed
@@ -18,6 +19,7 @@ import com.example.util.simpletimetracker.utils.clickOnViewWithId
 import com.example.util.simpletimetracker.utils.clickOnViewWithText
 import com.example.util.simpletimetracker.utils.longClickOnView
 import com.example.util.simpletimetracker.utils.tryAction
+import com.example.util.simpletimetracker.utils.typeTextIntoView
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.CoreMatchers.allOf
@@ -27,6 +29,7 @@ import java.util.Calendar
 import com.example.util.simpletimetracker.feature_change_record_tag.R as changeRecordTagR
 import com.example.util.simpletimetracker.feature_change_record_type.R as changeRecordTypeR
 import com.example.util.simpletimetracker.feature_complex_rules.R as complexRulesR
+import com.example.util.simpletimetracker.feature_dialogs.R as dialogsR
 
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
@@ -575,6 +578,95 @@ class ComplexRulesTest : BaseUiTest() {
     }
 
     @Test
+    fun assignTagValueFromRule() {
+        val typeName = "typeName"
+        val tagName = "tagName"
+        val tagValueText = "12.3"
+
+        // Add data
+        runBlocking { prefsInteractor.setAllowMultitasking(false) }
+        testUtils.addActivity(typeName)
+        testUtils.addRecordTag(
+            tagName = tagName,
+            typeName = typeName,
+            hasTagValue = true,
+        )
+
+        // Create rule
+        NavUtils.openSettingsScreen()
+        NavUtils.openSettingsAdditional()
+        NavUtils.openComplexRules()
+        clickOnViewWithText(R.string.running_records_add_type)
+        clickOnViewWithText(R.string.change_complex_rule_choose_action)
+        clickOnViewWithText(R.string.change_complex_action_assign_tag)
+        clickOnViewWithText(tagName)
+        clickOnViewWithText(R.string.time_now)
+        Thread.sleep(500)
+        typeTextIntoView(R.id.etCommentItemField, tagValueText)
+        closeSoftKeyboard()
+        clickOnViewWithId(dialogsR.id.btnRecordTagSelectionSave)
+        clickOnViewWithId(dialogsR.id.btnTypesSelectionSave)
+        clickOnViewWithText(R.string.change_complex_starting_activity)
+        clickOnViewWithText(typeName)
+        clickOnViewWithText(R.string.change_activity_filter_save)
+
+        // Check rule
+        checkViewIsDisplayed(withSubstring(tagValueText))
+        pressBack()
+
+        // Check record started
+        NavUtils.openRunningRecordsScreen()
+        clickOnViewWithText(typeName)
+        checkRunningRecordWithTag(typeName, tagName, tagValueText)
+    }
+
+    @Test
+    fun assignTagValueOnStart() {
+        val typeName = "typeName"
+        val tagName = "onStartTag"
+
+        // Add data
+        runBlocking { prefsInteractor.setAllowMultitasking(false) }
+        testUtils.addActivity(typeName)
+        testUtils.addRecordTag(
+            tagName = tagName,
+            typeName = typeName,
+            hasTagValue = true,
+        )
+
+        // Create rule
+        NavUtils.openSettingsScreen()
+        NavUtils.openSettingsAdditional()
+        NavUtils.openComplexRules()
+        clickOnViewWithText(R.string.running_records_add_type)
+        clickOnViewWithText(R.string.change_complex_rule_choose_action)
+        clickOnViewWithText(R.string.change_complex_action_assign_tag)
+        clickOnViewWithText(tagName)
+        clickOnViewWithText(R.string.change_complex_tag_value_set_later)
+        clickOnViewWithId(dialogsR.id.btnTypesSelectionSave)
+        clickOnViewWithText(R.string.change_complex_starting_activity)
+        clickOnViewWithText(typeName)
+        clickOnViewWithText(R.string.change_activity_filter_save)
+
+        // Check rule
+        val onStartLabel = getString(R.string.change_complex_tag_value_set_later)
+        val expectedTagName = "$tagName ($onStartLabel)"
+        checkViewIsDisplayed(
+            allOf(
+                withId(complexRulesR.id.containerComplexRuleItem),
+                hasDescendant(withText(expectedTagName)),
+            ),
+        )
+        pressBack()
+
+        // Check tag value selection
+        NavUtils.openRunningRecordsScreen()
+        clickOnViewWithText(typeName)
+        tryAction { checkViewIsDisplayed(withText(tagName)) }
+        checkViewIsDisplayed(withId(dialogsR.id.btnRecordTagSelectionSave))
+    }
+
+    @Test
     fun archiveAndRemoveData() {
         val typeName1 = "typeName1"
         val typeName2 = "typeName2"
@@ -689,11 +781,19 @@ class ComplexRulesTest : BaseUiTest() {
         checkViewDoesNotExist(allOf(withId(R.id.viewRunningRecordItem), hasDescendant(withText(name))))
     }
 
-    private fun checkRunningRecordWithTag(name: String, tagName: String) {
+    private fun checkRunningRecordWithTag(
+        name: String,
+        tagName: String,
+        tagValue: String? = null,
+    ) {
+        val tagName = buildString {
+            append("$name - $tagName")
+            tagValue?.let { value -> append(" ($value)") }
+        }
         checkViewIsDisplayed(
             allOf(
                 withId(R.id.viewRunningRecordItem),
-                hasDescendant(withText("$name - $tagName")),
+                hasDescendant(withText(tagName)),
             ),
         )
     }

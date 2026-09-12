@@ -8,12 +8,11 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.util.simpletimetracker.core.base.BaseFragment
-import com.example.util.simpletimetracker.core.delegates.dateSelector.viewDelegate.DateSelectorViewDelegate
-import com.example.util.simpletimetracker.core.dialog.CustomRangeSelectionDialogListener
-import com.example.util.simpletimetracker.core.dialog.DateTimeDialogListener
-import com.example.util.simpletimetracker.core.dialog.DurationDialogListener
-import com.example.util.simpletimetracker.core.dialog.OptionsListDialogListener
-import com.example.util.simpletimetracker.core.dialog.RecordsFilterListener
+import com.example.util.simpletimetracker.feature_dialogs.api.CustomRangeSelectionDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DateTimeDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DurationDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OptionsListDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.RecordsFilterListener
 import com.example.util.simpletimetracker.core.extension.addOnBackPressedListener
 import com.example.util.simpletimetracker.core.extension.onItemSwiped
 import com.example.util.simpletimetracker.core.extension.setSharedTransitions
@@ -24,6 +23,7 @@ import com.example.util.simpletimetracker.core.viewData.RangeSelectionOptionsLis
 import com.example.util.simpletimetracker.domain.extension.orFalse
 import com.example.util.simpletimetracker.domain.extension.orZero
 import com.example.util.simpletimetracker.domain.record.model.Range
+import com.example.util.simpletimetracker.domain.statistics.model.StatisticsDetailTagValueSettings
 import com.example.util.simpletimetracker.feature_base_adapter.BaseRecyclerAdapter
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
 import com.example.util.simpletimetracker.feature_base_adapter.buttonsRow.createButtonsRowAdapterDelegate
@@ -31,6 +31,7 @@ import com.example.util.simpletimetracker.feature_base_adapter.hint.createHintAd
 import com.example.util.simpletimetracker.feature_base_adapter.statistics.StatisticsSelectableViewData
 import com.example.util.simpletimetracker.feature_base_adapter.statistics.createStatisticsAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.statistics.createStatisticsSelectableAdapterDelegate
+import com.example.util.simpletimetracker.feature_date_selection.api.viewDelegate.DateSelectorViewDelegateProvider
 import com.example.util.simpletimetracker.feature_statistics_detail.R
 import com.example.util.simpletimetracker.feature_statistics_detail.adapter.createStatisticsDetailBarChartAdapterDelegate
 import com.example.util.simpletimetracker.feature_statistics_detail.adapter.createStatisticsDetailButtonAdapterDelegate
@@ -44,16 +45,22 @@ import com.example.util.simpletimetracker.feature_statistics_detail.adapter.crea
 import com.example.util.simpletimetracker.feature_statistics_detail.adapter.createStatisticsDetailSeriesCalendarAdapterDelegate
 import com.example.util.simpletimetracker.feature_statistics_detail.adapter.createStatisticsDetailSeriesChartAdapterDelegate
 import com.example.util.simpletimetracker.feature_statistics_detail.api.StatisticsDetailOptionsListItem
+import com.example.util.simpletimetracker.feature_statistics_detail.mapper.mapItems
+import com.example.util.simpletimetracker.feature_statistics_detail.mapper.mapToViewData
+import com.example.util.simpletimetracker.feature_statistics_detail.settings.dialog.StatisticsTagValuesSettingsDialogListener
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailPreviewCompositeViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailPreviewViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.viewModel.StatisticsDetailViewModel
+import com.example.util.simpletimetracker.feature_statistics_detail.viewModel.delegate.StatisticsDetailPreviewViewModelDelegate
 import com.example.util.simpletimetracker.feature_views.ColorUtils
 import com.example.util.simpletimetracker.feature_views.extension.getThemedAttr
 import com.example.util.simpletimetracker.feature_views.extension.postDelayed
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.OptionsListParams
 import com.example.util.simpletimetracker.navigation.params.screen.RecordsFilterResultParams
 import com.example.util.simpletimetracker.navigation.params.screen.StatisticsDetailParams
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import com.example.util.simpletimetracker.feature_statistics_detail.databinding.StatisticsDetailFragmentBinding as Binding
 
 @AndroidEntryPoint
@@ -63,7 +70,8 @@ class StatisticsDetailFragment :
     DurationDialogListener,
     CustomRangeSelectionDialogListener,
     RecordsFilterListener,
-    OptionsListDialogListener {
+    OptionsListDialogListener,
+    StatisticsTagValuesSettingsDialogListener {
 
     override val inflater: (LayoutInflater, ViewGroup?, Boolean) -> Binding =
         Binding::inflate
@@ -71,7 +79,17 @@ class StatisticsDetailFragment :
     override var insetConfiguration: InsetConfiguration =
         InsetConfiguration.ApplyToView { binding.root }
 
+    @Inject
+    lateinit var dateSelectorViewDelegateProvider: DateSelectorViewDelegateProvider
+
     private val viewModel: StatisticsDetailViewModel by viewModels()
+    private val dateSelectorViewDelegate by lazy {
+        dateSelectorViewDelegateProvider.provide(
+            viewModel = viewModel.dateSelectorViewModelDelegate,
+            binding = binding.containerDatesSelector,
+            fragment = this,
+        )
+    }
 
     private val contentAdapter: BaseRecyclerAdapter by lazy {
         BaseRecyclerAdapter(
@@ -114,11 +132,6 @@ class StatisticsDetailFragment :
             ),
         )
     }
-    private val dateSelectorViewHolder by lazy {
-        DateSelectorViewDelegate.getViewHolder(
-            viewModel = viewModel.dateSelectorViewModelDelegate,
-        )
-    }
     private val params: StatisticsDetailParams by fragmentArgumentDelegate(
         key = ARGS_PARAMS, default = StatisticsDetailParams.Empty,
     )
@@ -134,12 +147,7 @@ class StatisticsDetailFragment :
 
         rvStatisticsDetailContent.adapter = contentAdapter
 
-        DateSelectorViewDelegate.initUi(
-            fragment = this@StatisticsDetailFragment,
-            viewHolder = dateSelectorViewHolder,
-            viewModel = viewModel.dateSelectorViewModelDelegate,
-            binding = containerDatesSelector,
-        )
+        dateSelectorViewDelegate.initUi()
     }
 
     override fun initUx() = with(binding) {
@@ -148,9 +156,7 @@ class StatisticsDetailFragment :
             viewStatisticsDetailItem.isVisible = true
             viewModel.onBackPressed()
         }
-        DateSelectorViewDelegate.initUx(
-            fragment = this@StatisticsDetailFragment,
-            binding = binding.containerDatesSelector,
+        dateSelectorViewDelegate.initUx(
             onOptionsClick = viewModel::onOptionsClick,
             onOptionsLongClick = viewModel::onOptionsLongClick,
         )
@@ -174,12 +180,7 @@ class StatisticsDetailFragment :
         scrollToTop.observe { scrollToTop() } // TODO expand appbar on short list.
         content.observe(contentAdapter::replace)
         previewViewData.observe(::setPreviewViewData)
-        DateSelectorViewDelegate.initViewModel(
-            fragment = this@StatisticsDetailFragment,
-            viewHolder = dateSelectorViewHolder,
-            viewModel = viewModel.dateSelectorViewModelDelegate,
-            binding = binding.containerDatesSelector,
-        )
+        dateSelectorViewDelegate.initViewModel()
     }
 
     override fun onResume() {
@@ -206,6 +207,10 @@ class StatisticsDetailFragment :
         }
     }
 
+    override fun onStatisticsTagValuesSettingsChanged(result: StatisticsDetailTagValueSettings) {
+        viewModel.onTagValuesSettingsChanged(result)
+    }
+
     private fun setPreview() = params.preview?.run {
         val preview = StatisticsDetailPreviewViewData(
             id = 0L,
@@ -219,16 +224,19 @@ class StatisticsDetailFragment :
         )
 
         StatisticsDetailPreviewCompositeViewData(
-            previewColor = preview.color,
-            comparisonPreviewColor = null,
-            mainPreview = preview,
-            additionalData = emptyList(),
-            comparisonData = emptyList(),
+            data = StatisticsDetailPreviewViewModelDelegate.mapToViewData(
+                items = emptyList<ViewHolderType>().mapItems(),
+            ),
+            preview = StatisticsDetailPreviewCompositeViewData.Preview(
+                previewColor = preview.color,
+                comparisonPreviewColor = null,
+                mainPreview = preview,
+            ),
         ).let(::setPreviewViewData)
     }
 
     private fun setPreviewViewData(viewData: StatisticsDetailPreviewCompositeViewData?) = with(binding) {
-        val preview = viewData?.mainPreview
+        val preview = viewData?.preview?.mainPreview
 
         if (preview == null) {
             viewStatisticsDetailItem.isVisible = false
@@ -291,8 +299,6 @@ class StatisticsDetailFragment :
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
-
         fun createBundle(data: StatisticsDetailParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

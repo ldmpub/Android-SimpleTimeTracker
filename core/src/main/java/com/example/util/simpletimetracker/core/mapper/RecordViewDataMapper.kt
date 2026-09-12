@@ -4,7 +4,7 @@ import android.text.SpannableStringBuilder
 import com.example.util.simpletimetracker.core.R
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.domain.base.DurationFormat
-import com.example.util.simpletimetracker.domain.extension.dropSeconds
+import com.example.util.simpletimetracker.domain.record.mapper.DurationMapper
 import com.example.util.simpletimetracker.domain.record.model.Record
 import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.recordTag.model.RecordTag
@@ -24,12 +24,30 @@ class RecordViewDataMapper @Inject constructor(
     private val iconMapper: IconMapper,
     private val colorMapper: ColorMapper,
     private val resourceRepo: ResourceRepo,
+    private val durationMapper: DurationMapper,
     private val recordTagFullNameMapper: RecordTagFullNameMapper,
 ) {
 
+    fun mapDuration(
+        timeStarted: Long,
+        timeEnded: Long,
+        showSeconds: Boolean,
+        durationFormat: DurationFormat,
+    ): String {
+        return timeMapper.formatInterval(
+            interval = durationMapper.map(
+                timeStarted = timeStarted,
+                timeEnded = timeEnded,
+                showSeconds = showSeconds,
+            ),
+            forceSeconds = showSeconds,
+            durationFormat = durationFormat,
+        )
+    }
+
     fun map(
         record: Record,
-        recordType: RecordType,
+        recordType: RecordType?,
         recordTags: List<RecordTag>,
         isDarkTheme: Boolean,
         useMilitaryTime: Boolean,
@@ -42,7 +60,8 @@ class RecordViewDataMapper @Inject constructor(
             id = record.id,
             timeStartedTimestamp = record.timeStarted,
             timeEndedTimestamp = record.timeEnded,
-            name = recordType.name,
+            name = recordType?.name
+                ?: resourceRepo.getString(R.string.untracked_time_name),
             tagName = recordTagFullNameMapper.getFullName(
                 tags = recordTags.filter { it.id in tagIds },
                 tagData = record.tags,
@@ -57,19 +76,22 @@ class RecordViewDataMapper @Inject constructor(
                 useMilitaryTime = useMilitaryTime,
                 showSeconds = showSeconds,
             ),
-            duration = timeMapper.formatInterval(
-                interval = mapDuration(
-                    record = record,
-                    showSeconds = showSeconds,
-                ),
-                forceSeconds = showSeconds,
+            duration = mapDuration(
+                timeStarted = record.timeStarted,
+                timeEnded = record.timeEnded,
+                showSeconds = showSeconds,
                 durationFormat = durationFormat,
             ),
-            iconId = iconMapper.mapIcon(recordType.icon),
-            color = colorMapper.mapToColorInt(
-                color = recordType.color,
-                isDarkTheme = isDarkTheme,
-            ),
+            durationTotal = "", // Added later.
+            iconId = recordType?.icon?.let {
+                iconMapper.mapIcon(it)
+            } ?: RecordTypeIcon.Image(R.drawable.unknown),
+            color = recordType?.color?.let {
+                colorMapper.mapToColorInt(
+                    color = it,
+                    isDarkTheme = isDarkTheme,
+                )
+            } ?: colorMapper.toUntrackedColor(isDarkTheme),
             comment = record.comment,
         )
     }
@@ -116,15 +138,13 @@ class RecordViewDataMapper @Inject constructor(
                 showSeconds = showSeconds,
             ),
             timeEndedTimestamp = timeEnded,
-            duration = timeMapper.formatInterval(
-                interval = mapDuration(
-                    timeStarted = timeStarted,
-                    timeEnded = timeEnded,
-                    showSeconds = showSeconds,
-                ),
-                forceSeconds = showSeconds,
+            duration = mapDuration(
+                timeStarted = timeStarted,
+                timeEnded = timeEnded,
+                showSeconds = showSeconds,
                 durationFormat = durationFormat,
             ),
+            durationTotal = "",
             iconId = RecordTypeIcon.Image(R.drawable.unknown),
             color = colorMapper.toUntrackedColor(isDarkTheme),
         )
@@ -187,28 +207,5 @@ class RecordViewDataMapper @Inject constructor(
             infoIconVisible = true,
             closeIconVisible = false,
         )
-    }
-
-    fun mapDuration(
-        record: Record,
-        showSeconds: Boolean,
-    ): Long {
-        return mapDuration(
-            timeStarted = record.timeStarted,
-            timeEnded = record.timeEnded,
-            showSeconds = showSeconds,
-        )
-    }
-
-    fun mapDuration(
-        timeStarted: Long,
-        timeEnded: Long,
-        showSeconds: Boolean,
-    ): Long {
-        return if (showSeconds) {
-            timeEnded - timeStarted
-        } else {
-            timeEnded.dropSeconds() - timeStarted.dropSeconds()
-        }
     }
 }

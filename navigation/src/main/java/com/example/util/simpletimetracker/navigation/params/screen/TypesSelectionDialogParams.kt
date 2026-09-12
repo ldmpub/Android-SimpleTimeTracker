@@ -11,11 +11,15 @@ data class TypesSelectionDialogParams(
     val type: Type,
     val selectedTypeIds: List<Long>,
     val selectedTagValues: List<TagData>,
+    val selectedTagValueOnStart: List<Long>,
     val isMultiSelectAvailable: Boolean,
     // Allows showing items that are archived but was selected earlier.
     val idsShouldBeVisible: List<Long>,
+    // Allows excluding certain ids from showing.
+    val excludedTypeIds: List<Long> = emptyList(),
     val showHints: Boolean,
     val allowTagValueSelection: Boolean,
+    val allowSelectTagValueOnStart: Boolean = false,
 ) : Parcelable, ScreenParams {
 
     sealed interface Type : Parcelable {
@@ -44,11 +48,13 @@ data class TypesSelectionDialogParams(
             subtitle = "",
             selectedTypeIds = emptyList(),
             selectedTagValues = emptyList(),
+            selectedTagValueOnStart = emptyList(),
             type = Type.Activity,
             isMultiSelectAvailable = false,
             idsShouldBeVisible = emptyList(),
             showHints = false,
             allowTagValueSelection = false,
+            allowSelectTagValueOnStart = false,
         )
     }
 }

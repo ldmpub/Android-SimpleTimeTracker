@@ -92,7 +92,7 @@ class WidgetGridRemoveViewsFactory @Inject constructor(
             .groupBy { it.idData.value }
         val allDailyCurrents = if (goals.isNotEmpty()) {
             getCurrentRecordsDurationInteractor.getAllDailyCurrents(
-                typeIds = recordTypes.map(RecordType::id),
+                typeIds = recordTypes.map(RecordType::id).toSet(),
                 runningRecords = runningRecords,
             )
         } else {
@@ -203,7 +203,7 @@ class WidgetGridRemoveViewsFactory @Inject constructor(
     // TODO WIDGET:
     // TODO add settings activity to select number of cards
     // TODO add settings for padding between cards?
-    // TODO add repeat
+    // TODO add repeat, avoid id collision because of ClickRequestCode hashCode and negative id
     private fun getView(
         context: Context,
         appWidgetId: Int,

@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Étiquettes d\'enregistrement</string>
     <string name="record_tag_hint_short">Étiquettes</string>
     <string name="nothing_selected">Aucun élément sélectionné</string>
-    <string name="something_selected">Sélectionné :</string>
+    <string name="something_selected">Sélectionné</string>
+    <string name="something_available">Disponible</string>
+    <string name="something_preselected">Présélectionné</string>
     <string name="select_all">Tout sélectionner</string>
     <string name="select_nothing">Effacer la sélection</string>
     <string name="no_data">Aucun enregistrement</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Les objectifs s\'afficheront ici</string>
+    <string name="all_goals_finished">Tous les objectifs sont terminés</string>
+    <string name="hide_finished_goals">Masquer les objectifs terminés</string>
     <string name="goal_add_hint">Modifiez une activité ou une catégorie pour définir un objectif</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Attribuez des étiquettes à chaque enregistrement pour obtenir des statistiques plus détaillées.</string>
     <string name="categories_add_category">Créer une catégorie</string>
     <string name="categories_add_record_tag">Créer une étiquette</string>
+    <string name="categories_show_relations">Afficher les relations</string>
     <string name="categories_and_tags_hint"><![CDATA[
 Les <b>Catégories</b> permettent de regrouper des activités similaires. Par exemple :<br><br>
 • La catégorie <custom-color-3>Loisirs sportifs</custom-color-3> peut regrouper les activités <custom-color-3>Course à pied</custom-color-3> et <custom-color-3>Golf</custom-color-3>.<br><br>
@@ -142,6 +147,7 @@ Les <b>Étiquettes</b> permettent d\'ajouter plus de détails sur un enregistrem
     <string name="change_record_last_comments_hint">Commentaires précédents</string>
     <string name="change_record_favourite_comments_hint">Favoris</string>
     <string name="change_record_favourite_comments_hint_long">Commentaires favoris</string>
+    <string name="change_record_favourite_activity_selection">Favori uniquement pour les activités sélectionnées</string>
     <string name="change_record_similar_comments_hint">Commentaires similaires</string>
     <string name="change_record_categories_empty">Aucune étiquette définie</string>
     <string name="change_record_save">Enregistrer</string>
@@ -230,6 +236,8 @@ Les <b>Étiquettes</b> permettent d\'ajouter plus de détails sur un enregistrem
     <string name="change_complex_rule_removed">Règle supprimée</string>
     <string name="change_complex_rule_choose_action">Sélectionnez une action</string>
     <string name="change_complex_rule_choose_condition">Indiquez les conditions</string>
+    <string name="change_complex_tag_value_dialog_message">Choisissez quand définir la valeur</string>
+    <string name="change_complex_tag_value_set_later">Au démarrage</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Suggèrer les prochaines activités en fonction de l\'enregistrement en cours ou de l\'enregistrement précédent</string>
@@ -309,7 +317,7 @@ Les <b>Étiquettes</b> permettent d\'ajouter plus de détails sur un enregistrem
     <string name="settings_display_title">Paramètres d\'affichage</string>
     <string name="settings_additional_title">Paramètres supplémentaires</string>
     <string name="settings_notification_title">Paramètres de notification</string>
-    <string name="settings_backup_title">Paramètres de sauvegarde</string>
+    <string name="settings_backup_title">Sauvegarde</string>
     <string name="settings_export_title">Exporter et importer</string>
     <string name="settings_sort_order">Trier les activités</string>
     <string name="settings_sort_order_category">Trier les catégories</string>
@@ -326,8 +334,9 @@ Les <b>Étiquettes</b> permettent d\'ajouter plus de détails sur un enregistrem
     <string name="settings_show_untracked_time">Afficher les temps non enregistrés dans la liste des enregistrements</string>
     <string name="settings_show_untracked_time_statistics">Afficher les temps non enregistrés dans les statistiques</string>
     <string name="settings_ignore_short_untracked">Ignorer les temps courts non enregistrés</string>
-    <string name="settings_ignore_short_untracked_hint">Ne pas afficher les temps non enregistrés inférieurs à la durée indiquée.</string>
-    <string name="settings_untracked_range">Plage de suivi des temps non enregistrés</string>
+    <string name="settings_ignore_short_untracked_hint">Ne pas afficher les temps non enregistrés s\'ils sont plus courts que la durée indiquée.</string>
+    <string name="settings_untracked_days_hint">Compter le temps non suivi uniquement les jours sélectionnés.</string>
+    <string name="settings_untracked_range">Période de suivi des temps non enregistrés</string>
     <string name="settings_untracked_range_hint">Afficher le temps non suivi uniquement dans la plage sélectionnée.</string>
     <string name="settings_show_records_calendar">Afficher les enregistrements sous forme de calendrier</string>
     <string name="settings_reverse_order_in_calendar">Inverser l\'ordre des enregistrements</string>
@@ -360,6 +369,7 @@ Les <b>Étiquettes</b> permettent d\'ajouter plus de détails sur un enregistrem
     <string name="settings_inactivity_reminder">Afficher un rappel d\'inactivité</string>
     <string name="settings_inactivity_reminder_hint">Afficher une notification après la durée indiquée si aucun aucun enregistrement n\'est en cours.</string>
     <string name="settings_inactivity_reminder_recurrent">Répéter</string>
+    <string name="settings_reminder_active_days">Jours actifs</string>
     <string name="settings_activity_reminder">Afficher un rappel d\'activité</string>
     <string name="settings_activity_reminder_hint">Afficher une notification après la durée indiquée si des enregistrements sont en cours.</string>
     <string name="settings_do_not_disturb">Ne pas déranger</string>
@@ -527,6 +537,7 @@ Exemple :<br/>
     <string name="statistics_detail_record_time">Étendue des enregistrements</string>
     <string name="statistics_detail_first_record">Premier</string>
     <string name="statistics_detail_last_record">Dernier</string>
+    <string name="statistics_detail_record_span">Période</string>
     <string name="statistics_detail_time_since">Il y a</string>
     <string name="statistics_detail_streaks">Séries</string>
     <string name="statistics_detail_streaks_longest">La plus longue</string>
@@ -549,6 +560,8 @@ Exemple :<br/>
     <string name="statistics_detail_goals_deficit">Retard</string>
     <string name="statistics_detail_tag_values_hint">Valeurs de l\'étiquette</string>
     <string name="statistics_detail_tag_values_multiply_duration">Multiplier par la durée</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Remplir les périodes vides avec les données précédentes</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Zoomer l\'axe Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--         <item quantity="zero">Enregistrement</item> -->
@@ -673,6 +686,33 @@ Exemple :<br/>
     <string name="shortcut_navigation_records">Enregistrements</string>
     <string name="shortcut_navigation_statistics">Statistiques</string>
     <string name="shortcut_navigation_settings">Paramètres</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Tous les jours</string>
+    <string name="reminders_schedule_weekly">Chaque semaine</string>
+    <string name="reminders_schedule_one_time">Une fois</string>
+    <string name="reminders_schedule_monthly">Tous les mois</string>
+    <string name="reminders_schedule_hourly">Toutes les heures</string>
+    <string name="reminders_condition_activity_not_tracked">Lorsque l\'activité n\'a pas été suivie aujourd\'hui</string>
+    <string name="activity_reminders_hint">Remplace le paramètre global de rappel d\'activité</string>
+    <string name="activity_reminder_mode">Mode de rappel</string>
+    <string name="activity_reminder_mode_disabled">Désactivé</string>
+    <string name="activity_reminder_mode_custom">Personnalisé</string>
+    <string name="activity_reminder_disabled_summary">Les rappels sont désactivés pour cette activité</string>
+    <string name="activity_reminder_positive_duration_required">Définissez une durée de rappel supérieure à zéro</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Message</string>
+    <string name="change_reminder_schedule">Planification</string>
+    <string name="change_reminder_day_of_month">Jour du mois</string>
+    <string name="change_reminder_interval">Intervalle</string>
+    <string name="change_reminder_condition">Condition d\'affichage</string>
+    <string name="change_reminder_condition_always">Toujours</string>
+    <string name="change_reminder_message_prefill">N\'oubliez pas de faire %s.</string>
+    <string name="change_reminder_message_required">Saisissez un message de rappel</string>
+    <string name="change_reminder_future_required">Sélectionnez une heure future</string>
+    <string name="change_reminder_interval_required">Définissez un intervalle supérieur à zéro</string>
+    <string name="change_reminder_removed">Rappel supprimé</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Vérifiez votre connexion et réessayez</string>

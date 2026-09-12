@@ -14,7 +14,9 @@
     <string name="record_tag_hint">紀錄標記</string>
     <string name="record_tag_hint_short">標籤</string>
     <string name="nothing_selected">未選取</string>
-    <string name="something_selected">已選取:</string>
+    <string name="something_selected">已選取</string>
+    <string name="something_available">可用</string>
+    <string name="something_preselected">已預選</string>
     <string name="select_all">全選</string>
     <string name="select_nothing">不選擇任何內容</string>
     <string name="no_data">沒有數據</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">目標將顯示在此處</string>
+    <string name="all_goals_finished">所有目標皆已完成</string>
+    <string name="hide_finished_goals">隱藏已完成的目標</string>
     <string name="goal_add_hint">編輯活動或類別以分配目標</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">指派不同標記來記錄它們不同之處</string>
     <string name="categories_add_category">新增分類</string>
     <string name="categories_add_record_tag">新增紀錄標記</string>
+    <string name="categories_show_relations">顯示關聯</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>分類</b>可以幫助你將相關的活動分組。例如：<br><br>
 • <custom-color-3>高效</custom-color-3>分類可能包括<custom-color-3>閱讀</custom-color-3>和<custom-color-3>健身</custom-color-3>。<br><br>
@@ -123,6 +128,7 @@
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">標記已歸檔</string>
     <string name="change_record_tag_default_hint">預設分配</string>
+    <string name="change_record_tag_type_general">通用</string>
     <string name="change_record_tag_type_general_hint">已能指派任何活動給紀錄</string>
     <string name="change_record_tag_type_typed_hint">只能指派給指定活動的紀錄</string>
     <string name="change_record_tag_select_activity_hint">從活動中獲取顏色和圖標</string>
@@ -142,6 +148,7 @@
     <string name="change_record_last_comments_hint">最後註解</string>
     <string name="change_record_favourite_comments_hint">最喜歡的</string>
     <string name="change_record_favourite_comments_hint_long">收藏評論</string>
+    <string name="change_record_favourite_activity_selection">僅對所選活動設為收藏</string>
     <string name="change_record_similar_comments_hint">類似評論</string>
     <string name="change_record_categories_empty">沒有新增紀錄標記</string>
     <string name="change_record_save">儲存</string>
@@ -230,6 +237,8 @@
     <string name="change_complex_rule_removed">規則已刪除</string>
     <string name="change_complex_rule_choose_action">選擇行動</string>
     <string name="change_complex_rule_choose_condition">選擇條件</string>
+    <string name="change_complex_tag_value_dialog_message">選擇何時設定數值</string>
+    <string name="change_complex_tag_value_set_later">開始時</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">根據目前或上一個活動顯示下一個活動的建議</string>
@@ -289,6 +298,7 @@
     <string name="records_all_sort_order">排序紀錄</string>
     <string name="records_all_sort_time_started">開始時間</string>
     <string name="records_all_sort_duration">期間</string>
+    <string name="records_all_days_without_records">無記錄天數 - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">要開始跟踪，請單擊 %s 按鈕添加活動，或單擊 %s 按鈕使用默認預設</string>
@@ -309,7 +319,7 @@
     <string name="settings_display_title">顯示設定</string>
     <string name="settings_additional_title">附加設定</string>
     <string name="settings_notification_title">通知設置</string>
-    <string name="settings_backup_title">備份設置</string>
+    <string name="settings_backup_title">備份</string>
     <string name="settings_export_title">導出和導入</string>
     <string name="settings_sort_order">排序活動</string>
     <string name="settings_sort_order_category">對類別進行排序</string>
@@ -327,6 +337,7 @@
     <string name="settings_show_untracked_time_statistics">在統計中顯示未跟踪的時間</string>
     <string name="settings_ignore_short_untracked">忽略短的未跟踪時間</string>
     <string name="settings_ignore_short_untracked_hint">不要顯示比指定時間短的未跟踪時間。</string>
+    <string name="settings_untracked_days_hint">僅計算所選日期中的未追蹤時間。</string>
     <string name="settings_untracked_range">未追踪範圍</string>
     <string name="settings_untracked_range_hint">僅在所選時間範圍內顯示未記錄的時間。</string>
     <string name="settings_show_records_calendar">顯示月曆檢視紀錄</string>
@@ -360,11 +371,14 @@
     <string name="settings_inactivity_reminder">顯示未活動提醒器</string>
     <string name="settings_inactivity_reminder_hint">如果沒有計時器在運行，則在指定時間後顯示通知</string>
     <string name="settings_inactivity_reminder_recurrent">經常性的</string>
+    <string name="settings_reminder_active_days">啟用日期</string>
     <string name="settings_activity_reminder">顯示活動提醒</string>
     <string name="settings_activity_reminder_hint">如果計時器正在運行，則在指定時間後顯示通知。</string>
     <string name="settings_do_not_disturb">請勿打擾</string>
     <string name="settings_notifications_system_settings">系統設定</string>
     <string name="settings_notifications_system_settings_hint">聲音、振動、閃光等</string>
+    <string name="settings_reminders_title">提醒</string>
+    <string name="settings_reminders_hint">管理排定的提醒</string>
     <string name="settings_ignore_short_records">忽略短時間</string>
     <string name="settings_ignore_short_records_hint">短於指定時間，不要追蹤活動</string>
     <string name="settings_inactivity_reminder_disabled">已關閉</string>
@@ -527,6 +541,7 @@ csv 文件必須包含以逗號分隔的這些列：<br/>
     <string name="statistics_detail_record_time">紀錄時間</string>
     <string name="statistics_detail_first_record">第一</string>
     <string name="statistics_detail_last_record">最後</string>
+    <string name="statistics_detail_record_span">跨度</string>
     <string name="statistics_detail_time_since">已過時間</string>
     <string name="statistics_detail_streaks">系列</string>
     <string name="statistics_detail_streaks_longest">最久</string>
@@ -549,6 +564,8 @@ csv 文件必須包含以逗號分隔的這些列：<br/>
     <string name="statistics_detail_goals_deficit">赤字</string>
     <string name="statistics_detail_tag_values_hint">標籤值</string>
     <string name="statistics_detail_tag_values_multiply_duration">按時長相乘</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">用先前的資料填補空白期間</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">縮放Y軸</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">紀錄</item>-->
@@ -673,6 +690,33 @@ csv 文件必須包含以逗號分隔的這些列：<br/>
     <string name="shortcut_navigation_records">紀錄</string>
     <string name="shortcut_navigation_statistics">統計</string>
     <string name="shortcut_navigation_settings">設定</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">每天</string>
+    <string name="reminders_schedule_weekly">每週</string>
+    <string name="reminders_schedule_one_time">僅一次</string>
+    <string name="reminders_schedule_monthly">每月</string>
+    <string name="reminders_schedule_hourly">每小時</string>
+    <string name="reminders_condition_activity_not_tracked">當今天尚未記錄此活動時</string>
+    <string name="activity_reminders_hint">覆寫全域活動提醒設定</string>
+    <string name="activity_reminder_mode">提醒模式</string>
+    <string name="activity_reminder_mode_disabled">已停用</string>
+    <string name="activity_reminder_mode_custom">自訂</string>
+    <string name="activity_reminder_disabled_summary">此活動的提醒已停用</string>
+    <string name="activity_reminder_positive_duration_required">請將提醒時長設為大於零</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">訊息</string>
+    <string name="change_reminder_schedule">排程</string>
+    <string name="change_reminder_day_of_month">每月日期</string>
+    <string name="change_reminder_interval">間隔</string>
+    <string name="change_reminder_condition">顯示條件</string>
+    <string name="change_reminder_condition_always">一律</string>
+    <string name="change_reminder_message_prefill">別忘了進行 %s。</string>
+    <string name="change_reminder_message_required">請輸入提醒訊息</string>
+    <string name="change_reminder_future_required">請選擇未來的時間</string>
+    <string name="change_reminder_interval_required">設定大於零的間隔</string>
+    <string name="change_reminder_removed">提醒已移除</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">檢查您的連線並重試</string>

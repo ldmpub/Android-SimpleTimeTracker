@@ -6,6 +6,7 @@ import com.example.util.simpletimetracker.domain.base.DurationFormat
 import com.example.util.simpletimetracker.domain.fileExport.ExportDateTimeFormat
 import com.example.util.simpletimetracker.domain.darkMode.interactor.IsSystemInDarkModeInteractor
 import com.example.util.simpletimetracker.domain.darkMode.model.DarkMode
+import com.example.util.simpletimetracker.domain.daysOfWeek.mapper.DaysOfWeekDataLocalMapper
 import com.example.util.simpletimetracker.domain.daysOfWeek.model.DayOfWeek
 import com.example.util.simpletimetracker.domain.daysOfWeek.model.DaysInCalendar
 import com.example.util.simpletimetracker.domain.extension.orZero
@@ -16,7 +17,9 @@ import com.example.util.simpletimetracker.domain.record.model.RepeatButtonType
 import com.example.util.simpletimetracker.domain.recordTag.model.CardTagOrder
 import com.example.util.simpletimetracker.domain.recordType.model.CardOrder
 import com.example.util.simpletimetracker.domain.statistics.model.ChartFilterType
+import com.example.util.simpletimetracker.domain.statistics.model.ChartValueMode
 import com.example.util.simpletimetracker.domain.statistics.model.RangeLength
+import com.example.util.simpletimetracker.domain.statistics.model.StatisticsDetailTagValueSettings
 import com.example.util.simpletimetracker.domain.statistics.model.StatisticsStreaksType
 import com.example.util.simpletimetracker.domain.widget.model.GridWidgetData
 import com.example.util.simpletimetracker.domain.widget.model.StatisticsWidgetData
@@ -29,6 +32,7 @@ class PrefsInteractor @Inject constructor(
     private val prefsRepo: PrefsRepo,
     private val isSystemInDarkModeInteractor: IsSystemInDarkModeInteractor,
     private val isExportFormatAvailableInteractor: IsExportFormatAvailableInteractor,
+    private val daysOfWeekDataLocalMapper: DaysOfWeekDataLocalMapper,
 ) {
 
     suspend fun getFilteredTypesOnList(): List<Long> = withContext(Dispatchers.IO) {
@@ -199,6 +203,24 @@ class PrefsInteractor @Inject constructor(
 
     suspend fun getStatisticsDetailLastDays(): Int = withContext(Dispatchers.IO) {
         prefsRepo.statisticsDetailRangeLastDays
+    }
+
+    suspend fun getStatisticsDetailTagValueSettings(
+        tagId: Long,
+    ): StatisticsDetailTagValueSettings = withContext(Dispatchers.IO) {
+        prefsRepo.statisticsDetailTagValueSettings
+            .let(::mapStatisticsDetailTagValueSettings)[tagId]
+            ?: StatisticsDetailTagValueSettings.getDefault(tagId)
+    }
+
+    suspend fun setStatisticsDetailTagValueSettings(
+        value: StatisticsDetailTagValueSettings,
+    ) = withContext(Dispatchers.IO) {
+        val settings = prefsRepo.statisticsDetailTagValueSettings
+            .let(::mapStatisticsDetailTagValueSettings)
+            .toMutableMap().apply { put(value.tagId, value) }
+            .let { serializeStatisticsDetailTagValueSettings(it.values) }
+        prefsRepo.statisticsDetailTagValueSettings = settings
     }
 
     suspend fun getFileExportRange(): RangeLength = withContext(Dispatchers.IO) {
@@ -497,6 +519,14 @@ class PrefsInteractor @Inject constructor(
         prefsRepo.showGoalsSeparately = isEnabled
     }
 
+    suspend fun getHideFinishedGoals(): Boolean = withContext(Dispatchers.IO) {
+        prefsRepo.hideFinishedGoals
+    }
+
+    suspend fun setHideFinishedGoals(isEnabled: Boolean) = withContext(Dispatchers.IO) {
+        prefsRepo.hideFinishedGoals = isEnabled
+    }
+
     suspend fun getAllowMultitasking(): Boolean = withContext(Dispatchers.IO) {
         prefsRepo.allowMultitasking
     }
@@ -545,6 +575,14 @@ class PrefsInteractor @Inject constructor(
         prefsRepo.inactivityReminderRecurrent = isRecurrent
     }
 
+    suspend fun getInactivityReminderDaysOfWeek(): Set<DayOfWeek> = withContext(Dispatchers.IO) {
+        daysOfWeekDataLocalMapper.mapDaysOfWeek(prefsRepo.inactivityReminderDaysOfWeek)
+    }
+
+    suspend fun setInactivityReminderDaysOfWeek(daysOfWeek: Set<DayOfWeek>) = withContext(Dispatchers.IO) {
+        prefsRepo.inactivityReminderDaysOfWeek = daysOfWeekDataLocalMapper.mapDaysOfWeek(daysOfWeek)
+    }
+
     suspend fun getInactivityReminderDoNotDisturbStart(): Long = withContext(Dispatchers.IO) {
         prefsRepo.inactivityReminderDoNotDisturbStart
     }
@@ -577,6 +615,14 @@ class PrefsInteractor @Inject constructor(
         prefsRepo.activityReminderRecurrent = isRecurrent
     }
 
+    suspend fun getActivityReminderDaysOfWeek(): Set<DayOfWeek> = withContext(Dispatchers.IO) {
+        daysOfWeekDataLocalMapper.mapDaysOfWeek(prefsRepo.activityReminderDaysOfWeek)
+    }
+
+    suspend fun setActivityReminderDaysOfWeek(daysOfWeek: Set<DayOfWeek>) = withContext(Dispatchers.IO) {
+        prefsRepo.activityReminderDaysOfWeek = daysOfWeekDataLocalMapper.mapDaysOfWeek(daysOfWeek)
+    }
+
     suspend fun getActivityReminderDoNotDisturbStart(): Long = withContext(Dispatchers.IO) {
         prefsRepo.activityReminderDoNotDisturbStart
     }
@@ -607,6 +653,14 @@ class PrefsInteractor @Inject constructor(
 
     suspend fun setIgnoreShortUntrackedDuration(duration: Long) = withContext(Dispatchers.IO) {
         prefsRepo.ignoreShortUntrackedDuration = duration
+    }
+
+    suspend fun getUntrackedDaysOfWeek(): Set<DayOfWeek> = withContext(Dispatchers.IO) {
+        daysOfWeekDataLocalMapper.mapDaysOfWeek(prefsRepo.untrackedDaysOfWeek)
+    }
+
+    suspend fun setUntrackedDaysOfWeek(daysOfWeek: Set<DayOfWeek>) = withContext(Dispatchers.IO) {
+        prefsRepo.untrackedDaysOfWeek = daysOfWeekDataLocalMapper.mapDaysOfWeek(daysOfWeek)
     }
 
     suspend fun getUntrackedRangeEnabled(): Boolean = withContext(Dispatchers.IO) {
@@ -992,12 +1046,36 @@ class PrefsInteractor @Inject constructor(
         prefsRepo.isCategoriesSearchEnabled = value
     }
 
+    suspend fun getIsCategoriesRelationsEnabled(): Boolean = withContext(Dispatchers.IO) {
+        prefsRepo.isCategoriesRelationsEnabled
+    }
+
+    suspend fun setIsCategoriesRelationsEnabled(value: Boolean) = withContext(Dispatchers.IO) {
+        prefsRepo.isCategoriesRelationsEnabled = value
+    }
+
     suspend fun getIsArchiveSearchEnabled(): Boolean = withContext(Dispatchers.IO) {
         prefsRepo.isArchiveSearchEnabled
     }
 
     suspend fun setIsArchiveSearchEnabled(value: Boolean) = withContext(Dispatchers.IO) {
         prefsRepo.isArchiveSearchEnabled = value
+    }
+
+    suspend fun getIsTagSearchEnabled(): Boolean = withContext(Dispatchers.IO) {
+        prefsRepo.isTagSearchEnabled
+    }
+
+    suspend fun setIsTagSearchEnabled(value: Boolean) = withContext(Dispatchers.IO) {
+        prefsRepo.isTagSearchEnabled = value
+    }
+
+    suspend fun getIsShowAllTagsEnabled(): Boolean = withContext(Dispatchers.IO) {
+        prefsRepo.isShowAllTagsEnabled
+    }
+
+    suspend fun setIsShowAllTagsEnabled(value: Boolean) = withContext(Dispatchers.IO) {
+        prefsRepo.isShowAllTagsEnabled = value
     }
 
     suspend fun getHiddenCommentFilters(): Set<CommentFilterType> = withContext(Dispatchers.IO) {
@@ -1262,7 +1340,57 @@ class PrefsInteractor @Inject constructor(
             ?: emptyMap()
     }
 
+    private fun mapStatisticsDetailTagValueSettings(
+        set: Set<String>?,
+    ): Map<Long, StatisticsDetailTagValueSettings> {
+        return set?.mapNotNull { string ->
+            string.split(STATISTICS_DETAIL_TAG_VALUE_DELIMITER).let { parts ->
+                val tagId = parts.getOrNull(0)?.toLongOrNull() ?: return@mapNotNull null
+                val modeInt = parts.getOrNull(1)?.toIntOrNull().orZero()
+                val multiplyInt = parts.getOrNull(2)?.toIntOrNull().orZero()
+                val fillInt = parts.getOrNull(3)?.toIntOrNull().orZero()
+                val zoomInt = parts.getOrNull(4)?.toIntOrNull().orZero()
+                val chartValueMode = when (modeInt) {
+                    0 -> ChartValueMode.TOTAL
+                    1 -> ChartValueMode.AVERAGE
+                    else -> ChartValueMode.TOTAL
+                }
+                tagId to StatisticsDetailTagValueSettings(
+                    tagId = tagId,
+                    chartValueMode = chartValueMode,
+                    multiplyDuration = multiplyInt == 1,
+                    fillEmptyPeriods = fillInt == 1,
+                    yAxisZoomed = zoomInt == 1,
+                )
+            }
+        }?.toMap().orEmpty()
+    }
+
+    private fun serializeStatisticsDetailTagValueSettings(
+        values: Collection<StatisticsDetailTagValueSettings>,
+    ): Set<String> {
+        return values.map { settings ->
+            buildString {
+                append(settings.tagId)
+                append(STATISTICS_DETAIL_TAG_VALUE_DELIMITER)
+                append(
+                    when (settings.chartValueMode) {
+                        ChartValueMode.TOTAL -> 0
+                        ChartValueMode.AVERAGE -> 1
+                    },
+                )
+                append(STATISTICS_DETAIL_TAG_VALUE_DELIMITER)
+                append(if (settings.multiplyDuration) 1 else 0)
+                append(STATISTICS_DETAIL_TAG_VALUE_DELIMITER)
+                append(if (settings.fillEmptyPeriods) 1 else 0)
+                append(STATISTICS_DETAIL_TAG_VALUE_DELIMITER)
+                append(if (settings.yAxisZoomed) 1 else 0)
+            }
+        }.toSet()
+    }
+
     companion object {
         private const val CARDS_ORDER_DELIMITER = "_"
+        private const val STATISTICS_DETAIL_TAG_VALUE_DELIMITER = "_"
     }
 }

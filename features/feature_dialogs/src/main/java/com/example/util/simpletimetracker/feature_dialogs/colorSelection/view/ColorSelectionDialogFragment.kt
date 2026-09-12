@@ -6,12 +6,11 @@ import android.os.Bundle
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseBottomSheetFragment
-import com.example.util.simpletimetracker.core.dialog.ColorSelectionDialogListener
-import com.example.util.simpletimetracker.core.extension.getAllFragments
+import com.example.util.simpletimetracker.core.extension.findListeners
+import com.example.util.simpletimetracker.feature_dialogs.api.ColorSelectionDialogListener
 import com.example.util.simpletimetracker.core.extension.setFullScreen
 import com.example.util.simpletimetracker.core.extension.setSkipCollapsed
 import com.example.util.simpletimetracker.core.utils.fragmentArgumentDelegate
@@ -20,6 +19,7 @@ import com.example.util.simpletimetracker.feature_dialogs.colorSelection.model.H
 import com.example.util.simpletimetracker.feature_dialogs.colorSelection.model.RGBUpdate
 import com.example.util.simpletimetracker.feature_dialogs.colorSelection.viewModel.ColorSelectionViewModel
 import com.example.util.simpletimetracker.feature_views.extension.setOnClick
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.ColorSelectionDialogParams
 import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
@@ -33,9 +33,9 @@ class ColorSelectionDialogFragment : BaseBottomSheetFragment<Binding>() {
     private val viewModel: ColorSelectionViewModel by viewModels()
 
     private val params: ColorSelectionDialogParams by fragmentArgumentDelegate(
-        key = ARGS_PARAMS, default = ColorSelectionDialogParams(),
+        key = ARGS_PARAMS, default = ColorSelectionDialogParams.Empty,
     )
-    private var colorSelectionDialogListener: ColorSelectionDialogListener? = null
+    private var listeners: List<ColorSelectionDialogListener> = emptyList()
 
     // TODO do better?
     private var textWatcherHex: TextWatcher? = null
@@ -48,17 +48,7 @@ class ColorSelectionDialogFragment : BaseBottomSheetFragment<Binding>() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        when (context) {
-            is ColorSelectionDialogListener -> {
-                colorSelectionDialogListener = context
-                return
-            }
-            is AppCompatActivity -> {
-                context.getAllFragments()
-                    .firstOrNull { it is ColorSelectionDialogListener && it.isResumed }
-                    ?.let { colorSelectionDialogListener = it as? ColorSelectionDialogListener }
-            }
-        }
+        listeners = context.findListeners()
     }
 
     override fun initDialog() {
@@ -134,13 +124,11 @@ class ColorSelectionDialogFragment : BaseBottomSheetFragment<Binding>() {
     }
 
     private fun onColorSelected(colorInt: Int) {
-        colorSelectionDialogListener?.onColorSelected(colorInt)
+        listeners.forEach { it.onColorSelected(tag = params.tag, colorInt = colorInt) }
         dismiss()
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
-
         fun createBundle(data: ColorSelectionDialogParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

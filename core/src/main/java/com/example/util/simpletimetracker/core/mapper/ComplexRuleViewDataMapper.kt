@@ -17,6 +17,7 @@ class ComplexRuleViewDataMapper @Inject constructor(
     private val colorMapper: ColorMapper,
     private val resourceRepo: ResourceRepo,
     private val recordTagViewDataMapper: RecordTagViewDataMapper,
+    private val recordTagValueMapper: RecordTagValueMapper,
 ) {
 
     fun mapRule(
@@ -94,14 +95,13 @@ class ComplexRuleViewDataMapper @Inject constructor(
         tagsOrder: List<Long>,
     ): List<ViewHolderType> {
         val action = rule.action
+        val actionAssignTagValueOnStartIds = rule.actionAssignTagValueOnStartIds.toList()
         val data = when (action) {
             is ComplexRule.Action.AllowMultitasking,
             is ComplexRule.Action.DisallowMultitasking,
             -> emptyList()
             is ComplexRule.Action.AssignTag -> {
-                rule.actionAssignTagIds
-                    .sortedBy { tagsOrder.indexOf(it) }
-                    .mapNotNull { tagsMap[it] }
+                rule.actionAssignTagValues.sortedBy { tagsOrder.indexOf(it.tagId) }
             }
         }
         val result = mutableListOf<ViewHolderType>()
@@ -111,15 +111,26 @@ class ComplexRuleViewDataMapper @Inject constructor(
                 disallowOnlyPrevious = rule.actionDisallowOnlyPrevious,
             ),
         )
-        result += data.map {
+        result += data.mapNotNull { tagValue ->
+            val tag = tagsMap[tagValue.tagId] ?: return@mapNotNull null
+            val text = recordTagValueMapper.getName(
+                tagId = tagValue.tagId,
+                name = tag.name,
+                value = tagValue.numericValue,
+                valueSuffix = tag.valueSuffix,
+                valueOnStartIds = actionAssignTagValueOnStartIds,
+            )
             ListElementViewData(
-                text = it.name,
+                text = text,
                 icon = recordTagViewDataMapper.mapIcon(
-                    tag = it,
+                    tag = tag,
                     types = typesMap,
                 )?.let(iconMapper::mapIcon),
                 color = colorMapper.mapToColorInt(
-                    color = it.color,
+                    color = recordTagViewDataMapper.mapColor(
+                        tag = tag,
+                        types = typesMap,
+                    ),
                     isDarkTheme = isDarkTheme,
                 ),
             )

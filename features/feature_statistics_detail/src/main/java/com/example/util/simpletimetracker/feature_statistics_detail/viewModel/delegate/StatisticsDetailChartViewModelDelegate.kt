@@ -6,6 +6,8 @@ import com.example.util.simpletimetracker.core.extension.lazySuspend
 import com.example.util.simpletimetracker.core.extension.set
 import com.example.util.simpletimetracker.feature_base_adapter.buttonsRow.view.ButtonsRowViewData
 import com.example.util.simpletimetracker.domain.extension.flip
+import com.example.util.simpletimetracker.feature_base_adapter.buttonsRow.ButtonsRowItemViewData
+import com.example.util.simpletimetracker.feature_statistics_detail.adapter.StatisticsDetailBlock
 import com.example.util.simpletimetracker.feature_statistics_detail.interactor.StatisticsDetailChartInteractor
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartGrouping
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartLength
@@ -13,6 +15,7 @@ import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartS
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailChartCompositeViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailChartLengthViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailGroupingViewData
+import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailViewData
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,24 +37,46 @@ class StatisticsDetailChartViewModelDelegate @Inject constructor(
         this.parent = parent
     }
 
-    fun onChartGroupingClick(viewData: ButtonsRowViewData) {
+    override fun getViewData(): StatisticsDetailViewData? {
+        return viewData.value?.data
+    }
+
+    override fun onButtonsRowClick(
+        block: ButtonsRowItemViewData.ButtonsRowId,
+        viewData: ButtonsRowViewData,
+    ) {
+        when (block) {
+            StatisticsDetailBlock.ChartGrouping -> onChartGroupingClick(viewData)
+            StatisticsDetailBlock.ChartLength -> onChartLengthClick(viewData)
+        }
+    }
+
+    override fun onButtonClick(block: StatisticsDetailBlock) {
+        when (block) {
+            StatisticsDetailBlock.ChartSplitByActivity -> onSplitByActivityClick()
+            StatisticsDetailBlock.ChartSplitByActivitySort -> onSplitByActivitySortClick()
+            else -> Unit
+        }
+    }
+
+    private fun onChartGroupingClick(viewData: ButtonsRowViewData) {
         if (viewData !is StatisticsDetailGroupingViewData) return
         this.chartGrouping = viewData.chartGrouping
         updateViewData()
     }
 
-    fun onChartLengthClick(viewData: ButtonsRowViewData) {
+    private fun onChartLengthClick(viewData: ButtonsRowViewData) {
         if (viewData !is StatisticsDetailChartLengthViewData) return
         this.chartLength = viewData.chartLength
         updateViewData()
     }
 
-    fun onSplitByActivityClick() {
+    private fun onSplitByActivityClick() {
         splitByActivity = splitByActivity.flip()
         updateViewData()
     }
 
-    fun onSplitByActivitySortClick() {
+    private fun onSplitByActivitySortClick() {
         splitSortMode = when (splitSortMode) {
             ChartSplitSortMode.ACTIVITY_ORDER -> ChartSplitSortMode.DURATION
             ChartSplitSortMode.DURATION -> ChartSplitSortMode.ACTIVITY_ORDER
@@ -59,12 +84,14 @@ class StatisticsDetailChartViewModelDelegate @Inject constructor(
         updateViewData()
     }
 
-    fun updateViewData() = delegateScope.launch {
-        val data = loadViewData() ?: return@launch
-        viewData.set(data)
-        chartGrouping = data.appliedChartGrouping
-        chartLength = data.appliedChartLength
-        parent?.updateContent()
+    override fun updateViewData(animate: Boolean) {
+        delegateScope.launch {
+            val data = loadViewData() ?: return@launch
+            viewData.set(data)
+            chartGrouping = data.appliedChartGrouping
+            chartLength = data.appliedChartLength
+            parent?.updateContent()
+        }
     }
 
     private fun loadEmptyViewData(): StatisticsDetailChartCompositeViewData? {
@@ -92,4 +119,6 @@ class StatisticsDetailChartViewModelDelegate @Inject constructor(
             splitSortMode = splitSortMode,
         )
     }
+
+    companion object : StatisticsDetailViewData.Key
 }

@@ -9,6 +9,7 @@ import com.example.util.simpletimetracker.core.extension.set
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.domain.activityFilter.model.ActivityFilter
 import com.example.util.simpletimetracker.domain.backup.model.PartialBackupRestoreData
+import com.example.util.simpletimetracker.domain.recordShortcut.model.RecordShortcut
 import com.example.util.simpletimetracker.domain.recordType.model.RecordTypeGoal
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
 import com.example.util.simpletimetracker.feature_base_adapter.recordFilter.FilterViewData
@@ -148,11 +149,18 @@ class PartialRestoreViewModel @Inject constructor(
 
         // Check record shortcuts
         val recordShortcuts = data.recordShortcuts.filter {
-            it.value.data.typeId in typesIds
+            when (val target = it.value.data.target) {
+                is RecordShortcut.Target.Record -> target.typeId in typesIds
+                is RecordShortcut.Target.Setting -> true
+            }
         }.mapValues { (_, item) ->
-            val newData = item.data.copy(
-                tags = item.data.tags.filter { it.tagId in tags },
-            )
+            val newTarget = when (val value = item.data.target) {
+                is RecordShortcut.Target.Record -> value.copy(
+                    tags = value.tags.filter { it.tagId in tags },
+                )
+                is RecordShortcut.Target.Setting -> value
+            }
+            val newData = item.data.copy(target = newTarget)
             item.copy(data = newData)
         }
         val recordShortcutsIds = records.keys
@@ -196,8 +204,8 @@ class PartialRestoreViewModel @Inject constructor(
         // Check rules
         val rules = data.rules.mapNotNull { (id, item) ->
             val newData = item.data.copy(
-                actionAssignTagIds = item.data.actionAssignTagIds
-                    .filter { it in tags }.toSet(),
+                actionAssignTagValues = item.data.actionAssignTagValues
+                    .filter { it.tagId in tags },
                 conditionStartingTypeIds = item.data.conditionStartingTypeIds
                     .filter { it in typesIds }.toSet(),
                 conditionCurrentTypeIds = item.data.conditionCurrentTypeIds
@@ -234,6 +242,7 @@ class PartialRestoreViewModel @Inject constructor(
             typeToDefaultTag = typeToDefaultTag,
             activityFilters = activityFilters,
             favouriteComments = data.favouriteComments,
+            typeToFavouriteComment = data.typeToFavouriteComment,
             favouriteColors = data.favouriteColors,
             favouriteIcon = data.favouriteIcon,
             goals = goals,

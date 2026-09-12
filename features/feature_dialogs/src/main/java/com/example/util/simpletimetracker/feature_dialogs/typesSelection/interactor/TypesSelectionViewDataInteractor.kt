@@ -35,7 +35,8 @@ class TypesSelectionViewDataInteractor @Inject constructor(
         return when (val extraType = extra.type) {
             is TypesSelectionDialogParams.Type.Activity -> {
                 types.filter {
-                    !it.hidden || it.id in extra.idsShouldBeVisible
+                    (!it.hidden || it.id in extra.idsShouldBeVisible) &&
+                        it.id !in extra.excludedTypeIds
                 }.map(TypesSelectionCacheHolder::Type)
             }
             is TypesSelectionDialogParams.Type.Tag -> {
@@ -59,6 +60,7 @@ class TypesSelectionViewDataInteractor @Inject constructor(
         types: List<RecordType>,
         dataIdsSelected: List<Long>,
         tagValuesSelected: List<RecordBase.Tag>,
+        tagValueOnStartIds: List<Long>,
         viewDataCache: List<TypesSelectionCacheHolder>,
     ): List<ViewHolderType> {
         val numberOfCards = prefsInteractor.getNumberOfCards()
@@ -83,6 +85,7 @@ class TypesSelectionViewDataInteractor @Inject constructor(
                         tagData = tagDataMap[type.data.id],
                         types = typesMap,
                         isDarkTheme = isDarkTheme,
+                        valueOnStartIds = tagValueOnStartIds,
                     )
                 }
             }

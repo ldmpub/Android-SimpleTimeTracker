@@ -10,12 +10,12 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.util.simpletimetracker.core.base.BaseBottomSheetFragment
-import com.example.util.simpletimetracker.core.dialog.DateTimeDialogListener
-import com.example.util.simpletimetracker.core.dialog.DurationDialogListener
-import com.example.util.simpletimetracker.core.dialog.RecordsFilterListener
-import com.example.util.simpletimetracker.core.dialog.StandardDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DateTimeDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DurationDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.RecordsFilterListener
+import com.example.util.simpletimetracker.feature_dialogs.api.StandardDialogListener
 import com.example.util.simpletimetracker.core.extension.blockContentScroll
-import com.example.util.simpletimetracker.core.extension.findListener
+import com.example.util.simpletimetracker.core.extension.findListeners
 import com.example.util.simpletimetracker.core.extension.hideKeyboard
 import com.example.util.simpletimetracker.core.extension.setFullScreen
 import com.example.util.simpletimetracker.core.extension.setSkipCollapsed
@@ -44,6 +44,7 @@ import com.example.util.simpletimetracker.feature_records_filter.model.RecordsFi
 import com.example.util.simpletimetracker.feature_records_filter.viewData.RecordTypeFilteredType
 import com.example.util.simpletimetracker.feature_records_filter.viewModel.RecordsFilterViewModel
 import com.example.util.simpletimetracker.feature_views.extension.setOnClick
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.RecordsFilterParams
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
@@ -69,7 +70,7 @@ class RecordsFilterFragment :
             createLoaderAdapterDelegate(),
             createFilterAdapterDelegate(
                 onClick = viewModel::onFilterClick,
-                onRemoveClick = viewModel::onFilterRemoveClick,
+                onButtonClick = viewModel::onFilterRemoveClick,
             ),
         )
     }
@@ -130,7 +131,7 @@ class RecordsFilterFragment :
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        listener = context.findListener()
+        listener = context.findListeners<RecordsFilterListener>().firstOrNull()
     }
 
     override fun initDialog() {
@@ -226,8 +227,6 @@ class RecordsFilterFragment :
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
-
         fun createBundle(data: RecordsFilterParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

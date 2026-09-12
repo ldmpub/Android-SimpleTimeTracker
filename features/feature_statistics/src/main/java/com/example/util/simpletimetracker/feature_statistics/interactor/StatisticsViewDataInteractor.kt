@@ -80,6 +80,7 @@ class StatisticsViewDataInteractor @Inject constructor(
             filterType = filterType,
             filteredIds = filteredIds,
             range = range,
+            forceSeconds = false,
         )
         val chart = statisticsChartViewDataInteractor.getChart(
             filterType = filterType,
@@ -133,6 +134,7 @@ class StatisticsViewDataInteractor @Inject constructor(
                 filterType = filterType,
                 filteredIds = filteredIds,
                 rangeLength = rangeLength,
+                // TODO goal statistics should be second accurate (forceSeconds).
                 statistics = statistics.filterNot { it.id in filteredIds },
                 data = dataHolders,
                 isDarkTheme = isDarkTheme,

@@ -12,7 +12,6 @@ import com.example.util.simpletimetracker.core.interactor.ActivitySuggestionView
 import com.example.util.simpletimetracker.core.interactor.FilterGoalsByDayOfWeekInteractor
 import com.example.util.simpletimetracker.core.interactor.GetCurrentRecordsDurationInteractor
 import com.example.util.simpletimetracker.core.interactor.RecordRepeatInteractor
-import com.example.util.simpletimetracker.core.interactor.RecordsShortcutsViewDataInteractor
 import com.example.util.simpletimetracker.core.mapper.RecordTypeViewDataMapper
 import com.example.util.simpletimetracker.domain.activityFilter.interactor.ChangeSelectedActivityFilterMediator
 import com.example.util.simpletimetracker.domain.extension.addBetweenEach
@@ -22,10 +21,9 @@ import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteracto
 import com.example.util.simpletimetracker.domain.record.interactor.AddRunningRecordMediator
 import com.example.util.simpletimetracker.domain.record.interactor.RemoveRunningRecordMediator
 import com.example.util.simpletimetracker.domain.record.interactor.RunningRecordInteractor
+import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.record.model.RecordDataSelectionDialogResult
 import com.example.util.simpletimetracker.domain.record.model.RunningRecord
-import com.example.util.simpletimetracker.domain.recordAction.interactor.RecordActionRepeatMediator
-import com.example.util.simpletimetracker.domain.recordShortcut.interactor.RecordShortcutInteractor
 import com.example.util.simpletimetracker.domain.recordTag.interactor.RecordTagInteractor
 import com.example.util.simpletimetracker.domain.recordType.interactor.RecordTypeGoalInteractor
 import com.example.util.simpletimetracker.domain.recordType.interactor.RecordTypeInteractor
@@ -40,6 +38,9 @@ import com.example.util.simpletimetracker.feature_base_adapter.loader.LoaderView
 import com.example.util.simpletimetracker.feature_base_adapter.recordShortcut.RecordShortcutViewData
 import com.example.util.simpletimetracker.feature_base_adapter.recordType.RecordTypeViewData
 import com.example.util.simpletimetracker.feature_base_adapter.recordTypeSpecial.RunningRecordTypeSpecialViewData
+import com.example.util.simpletimetracker.feature_dialogs.api.interactor.CardOrderChangedInteractor
+import com.example.util.simpletimetracker.feature_running_records.api.OnShortcutClickInteractor
+import com.example.util.simpletimetracker.feature_running_records.api.RecordsShortcutsViewDataInteractor
 import com.example.util.simpletimetracker.feature_widget.universal.mapper.WidgetUniversalViewDataMapper
 import com.example.util.simpletimetracker.feature_widget.universal.viewData.WidgetUniversalButtonViewData
 import com.example.util.simpletimetracker.navigation.Router
@@ -61,7 +62,6 @@ class WidgetUniversalViewModel @Inject constructor(
     private val prefsInteractor: PrefsInteractor,
     private val changeSelectedActivityFilterMediator: ChangeSelectedActivityFilterMediator,
     private val activityFilterViewDataInteractor: ActivityFilterViewDataInteractor,
-    private val recordShortcutInteractor: RecordShortcutInteractor,
     private val widgetUniversalViewDataMapper: WidgetUniversalViewDataMapper,
     private val recordTypeViewDataMapper: RecordTypeViewDataMapper,
     private val recordRepeatInteractor: RecordRepeatInteractor,
@@ -70,7 +70,8 @@ class WidgetUniversalViewModel @Inject constructor(
     private val filterGoalsByDayOfWeekInteractor: FilterGoalsByDayOfWeekInteractor,
     private val activitySuggestionViewDataInteractor: ActivitySuggestionViewDataInteractor,
     private val recordsShortcutsViewDataInteractor: RecordsShortcutsViewDataInteractor,
-    private val recordActionRepeatMediator: RecordActionRepeatMediator,
+    private val onShortcutClickInteractor: OnShortcutClickInteractor,
+    private val cardOrderChangedInteractor: CardOrderChangedInteractor,
 ) : ViewModel() {
 
     val recordTypes: LiveData<List<ViewHolderType>> by lazy {
@@ -88,6 +89,10 @@ class WidgetUniversalViewModel @Inject constructor(
     private var completeTypeJob: Job? = null
     private var completeTypeIds: Set<Long> = emptySet()
     private var navBarHeightDp: Int = 0
+
+    init {
+        subscribeToUpdates()
+    }
 
     fun onChangeInsets(navBarHeight: Int) {
         if (navBarHeightDp != navBarHeight) {
@@ -162,14 +167,20 @@ class WidgetUniversalViewModel @Inject constructor(
     }
 
     fun onShortcutClick(item: RecordShortcutViewData) = viewModelScope.launch {
-        val shortcut = recordShortcutInteractor.get(item.id) ?: return@launch
-        recordActionRepeatMediator.execute(
-            typeId = shortcut.typeId,
-            comment = shortcut.comment,
-            tags = shortcut.tags,
-        )
+        onShortcutClickInteractor.execute(item)
         updateRecordTypesViewData()
         exit.set(Unit)
+    }
+
+    fun onShortcutSpinnerPositionSelected(block: RecordShortcutViewData, position: Int) = viewModelScope.launch {
+        onShortcutClickInteractor.onSpinnerPositionSelected(block, position)
+        updateRecordTypesViewData()
+    }
+
+    fun onShortcutButtonClick(
+        item: RecordShortcutViewData,
+    ) {
+        onShortcutClickInteractor.onButtonClick(item)
     }
 
     fun onButtonClick(data: ButtonViewData) {
@@ -199,7 +210,20 @@ class WidgetUniversalViewModel @Inject constructor(
         typeId: Long,
         result: RecordDataSelectionDialogResult,
     ) {
-        router.navigate(RecordTagSelectionParams(typeId, result.toParams()))
+        router.navigate(
+            RecordTagSelectionParams(
+                typeId = typeId,
+                fields = result.fields.toParams(),
+                preselectedTags = result.preselectedTags.map(RecordBase.Tag::toParams),
+                requiredValueSelectionTagIds = result.requiredValueSelectionTagIds,
+            ),
+        )
+    }
+
+    private fun subscribeToUpdates() {
+        allowDiskRead { viewModelScope }.launch {
+            cardOrderChangedInteractor.update.collect { updateRecordTypesViewData() }
+        }
     }
 
     private fun updateRecordTypesViewData() = viewModelScope.launch {
@@ -222,7 +246,7 @@ class WidgetUniversalViewModel @Inject constructor(
             .groupBy { it.idData.value }
         val allDailyCurrents = if (goals.isNotEmpty()) {
             getCurrentRecordsDurationInteractor.getAllDailyCurrents(
-                typeIds = recordTypes.map(RecordType::id),
+                typeIds = recordTypes.map(RecordType::id).toSet(),
                 runningRecords = runningRecords,
             )
         } else {

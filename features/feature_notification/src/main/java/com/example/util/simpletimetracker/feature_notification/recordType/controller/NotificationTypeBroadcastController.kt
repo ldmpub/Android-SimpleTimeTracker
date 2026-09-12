@@ -1,14 +1,10 @@
 package com.example.util.simpletimetracker.feature_notification.recordType.controller
 
-import com.example.util.simpletimetracker.core.extension.allowDiskRead
 import com.example.util.simpletimetracker.domain.notifications.interactor.NotificationActivitySwitchInteractor
 import com.example.util.simpletimetracker.domain.notifications.interactor.NotificationTypeInteractor
 import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.mapper.NotificationControlsMapper
 import com.example.util.simpletimetracker.feature_notification.recordType.interactor.ActivityStartStopFromBroadcastInteractor
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,66 +16,104 @@ class NotificationTypeBroadcastController @Inject constructor(
     private val notificationControlsMapper: NotificationControlsMapper,
 ) {
 
-    fun onActionActivityStop(
+    suspend fun onActionActivityStop(
         typeId: Long,
     ) {
         if (typeId == 0L) return
-        safeLaunch {
-            activityStartStopFromBroadcastInteractor.onActionActivityStop(
-                typeId = typeId,
-            )
-        }
+        activityStartStopFromBroadcastInteractor.onActionActivityStop(
+            typeId = typeId,
+        )
     }
 
-    fun onActionTypeClick(
+    suspend fun onActionTypeClick(
         from: Int,
         typeId: Long,
         selectedTypeId: Long,
         typesShift: Int,
     ) {
-        safeLaunch {
-            activityStartStopFromBroadcastInteractor.onActionTypeClick(
-                from = notificationControlsMapper.mapExtraToFrom(
-                    extra = from,
-                    recordTypeId = typeId,
-                ) ?: return@safeLaunch,
-                selectedTypeId = selectedTypeId,
-                typesShift = typesShift,
-            )
-        }
+        if (selectedTypeId <= 0L) return
+        activityStartStopFromBroadcastInteractor.onActionTypeClick(
+            from = notificationControlsMapper.mapExtraToFrom(
+                extra = from,
+                recordTypeId = typeId,
+            ) ?: return,
+            selectedTypeId = selectedTypeId,
+            typesShift = typesShift,
+        )
     }
 
-    fun onActionTagClick(
+    suspend fun onActionRepeat() {
+        activityStartStopFromBroadcastInteractor.onActionRepeat()
+    }
+
+    suspend fun onActionApplyTags(
+        from: Int,
+        typeId: Long,
+        selectedTypeId: Long,
+        selectedTags: List<RecordBase.Tag>,
+        typesShift: Int,
+    ) {
+        activityStartStopFromBroadcastInteractor.onActionApplyTags(
+            from = notificationControlsMapper.mapExtraToFrom(
+                extra = from,
+                recordTypeId = typeId,
+            ) ?: return,
+            selectedTypeId = selectedTypeId,
+            selectedTags = selectedTags,
+            typesShift = typesShift,
+        )
+    }
+
+    suspend fun onActionClearTags(
+        from: Int,
+        typeId: Long,
+        selectedTypeId: Long,
+        typesShift: Int,
+        tagsShift: Int,
+        isMultipleTagAvailable: Boolean,
+        requiredValueSelectionTagIds: List<Long>,
+    ) {
+        activityStartStopFromBroadcastInteractor.onActionClearTags(
+            from = notificationControlsMapper.mapExtraToFrom(
+                extra = from,
+                recordTypeId = typeId,
+            ) ?: return,
+            selectedTypeId = selectedTypeId,
+            typesShift = typesShift,
+            tagsShift = tagsShift,
+            isMultipleTagAvailable = isMultipleTagAvailable,
+            requiredValueSelectionTagIds = requiredValueSelectionTagIds,
+        )
+    }
+
+    suspend fun onActionTagClick(
         from: Int,
         typeId: Long,
         selectedTypeId: Long,
         tagId: Long,
         typesShift: Int,
         tagsShift: Int,
-        selectedTags: List<RecordBase.Tag> = emptyList(),
-        editingTagId: Long? = null,
-        editingTagValueInput: String? = null,
+        selectedTags: List<RecordBase.Tag>,
         isMultipleTagAvailable: Boolean,
+        requiredValueSelectionTagIds: List<Long>,
     ) {
-        safeLaunch {
-            activityStartStopFromBroadcastInteractor.onActionTagClick(
-                from = notificationControlsMapper.mapExtraToFrom(
-                    extra = from,
-                    recordTypeId = typeId,
-                ) ?: return@safeLaunch,
-                selectedTypeId = selectedTypeId,
-                tagId = tagId,
-                typesShift = typesShift,
-                tagsShift = tagsShift,
-                selectedTags = selectedTags,
-                editingTagId = editingTagId,
-                editingTagValueInput = editingTagValueInput,
-                isMultipleTagAvailable = isMultipleTagAvailable,
-            )
-        }
+        if (tagId <= 0L) return
+        activityStartStopFromBroadcastInteractor.onActionTagClick(
+            from = notificationControlsMapper.mapExtraToFrom(
+                extra = from,
+                recordTypeId = typeId,
+            ) ?: return,
+            selectedTypeId = selectedTypeId,
+            tagId = tagId,
+            typesShift = typesShift,
+            tagsShift = tagsShift,
+            selectedTags = selectedTags,
+            isMultipleTagAvailable = isMultipleTagAvailable,
+            requiredValueSelectionTagIds = requiredValueSelectionTagIds,
+        )
     }
 
-    fun onActionTagValueSave(
+    suspend fun onActionTagValueSave(
         from: Int,
         typeId: Long,
         selectedTypeId: Long,
@@ -87,27 +121,27 @@ class NotificationTypeBroadcastController @Inject constructor(
         tagValue: String?,
         typesShift: Int,
         tagsShift: Int,
-        selectedTags: List<RecordBase.Tag> = emptyList(),
+        selectedTags: List<RecordBase.Tag>,
         isMultipleTagAvailable: Boolean,
+        requiredValueSelectionTagIds: List<Long>,
     ) {
-        safeLaunch {
-            activityStartStopFromBroadcastInteractor.onActionTagValueSave(
-                from = notificationControlsMapper.mapExtraToFrom(
-                    extra = from,
-                    recordTypeId = typeId,
-                ) ?: return@safeLaunch,
-                selectedTypeId = selectedTypeId,
-                tagId = tagId,
-                tagValue = tagValue,
-                typesShift = typesShift,
-                tagsShift = tagsShift,
-                selectedTags = selectedTags,
-                isMultipleTagAvailable = isMultipleTagAvailable,
-            )
-        }
+        activityStartStopFromBroadcastInteractor.onActionTagValueSave(
+            from = notificationControlsMapper.mapExtraToFrom(
+                extra = from,
+                recordTypeId = typeId,
+            ) ?: return,
+            selectedTypeId = selectedTypeId,
+            tagId = tagId,
+            tagValue = tagValue,
+            typesShift = typesShift,
+            tagsShift = tagsShift,
+            selectedTags = selectedTags,
+            isMultipleTagAvailable = isMultipleTagAvailable,
+            requiredValueSelectionTagIds = requiredValueSelectionTagIds,
+        )
     }
 
-    fun onRequestUpdate(
+    suspend fun onRequestUpdate(
         from: Int,
         typeId: Long,
         selectedTypeId: Long,
@@ -117,48 +151,36 @@ class NotificationTypeBroadcastController @Inject constructor(
         typesShift: Int,
         tagsShift: Int,
         isMultipleTagAvailable: Boolean,
+        requiredValueSelectionTagIds: List<Long>,
     ) {
-        safeLaunch {
-            activityStartStopFromBroadcastInteractor.onRequestUpdate(
-                from = notificationControlsMapper.mapExtraToFrom(
-                    extra = from,
-                    typeId,
-                ) ?: return@safeLaunch,
-                selectedTypeId = selectedTypeId,
-                selectedTags = selectedTags,
-                editingTagId = editingTagId,
-                editingTagValueInput = editingTagValueInput,
-                typesShift = typesShift,
-                tagsShift = tagsShift,
-                isMultipleTagAvailable = isMultipleTagAvailable,
-            )
-        }
+        activityStartStopFromBroadcastInteractor.onRequestUpdate(
+            from = notificationControlsMapper.mapExtraToFrom(
+                extra = from,
+                recordTypeId = typeId,
+            ) ?: return,
+            selectedTypeId = selectedTypeId,
+            selectedTags = selectedTags,
+            editingTagId = editingTagId,
+            editingTagValueInput = editingTagValueInput,
+            typesShift = typesShift,
+            tagsShift = tagsShift,
+            isMultipleTagAvailable = isMultipleTagAvailable,
+            requiredValueSelectionTagIds = requiredValueSelectionTagIds,
+        )
     }
 
-    fun onTypeCancel(
+    suspend fun onTypeCancel(
         typeId: Long,
     ) {
-        safeLaunch {
-            notificationTypeInteractor.checkAndShow(typeId)
-        }
+        notificationTypeInteractor.checkAndShow(typeId)
     }
 
-    fun onActivitySwitchCancel() {
-        safeLaunch {
-            notificationActivitySwitchInteractor.updateNotification()
-        }
+    suspend fun onActivitySwitchCancel() {
+        notificationActivitySwitchInteractor.updateNotification()
     }
 
-    fun onBootCompleted() {
-        safeLaunch {
-            notificationTypeInteractor.updateNotifications()
-            notificationActivitySwitchInteractor.updateNotification()
-        }
-    }
-
-    private fun safeLaunch(
-        block: suspend CoroutineScope.() -> Unit,
-    ) {
-        allowDiskRead { MainScope() }.launch(block = block)
+    suspend fun onBootCompleted() {
+        notificationTypeInteractor.updateNotifications()
+        notificationActivitySwitchInteractor.updateNotification()
     }
 }

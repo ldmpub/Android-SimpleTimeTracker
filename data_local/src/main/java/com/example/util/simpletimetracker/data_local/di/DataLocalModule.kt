@@ -3,6 +3,7 @@ package com.example.util.simpletimetracker.data_local.di
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
+import com.example.util.simpletimetracker.data_local.activityReminder.ActivityReminderOverrideDao
 import com.example.util.simpletimetracker.core.extension.allowDiskWrite
 import com.example.util.simpletimetracker.data_local.activityFilter.ActivityFilterDao
 import com.example.util.simpletimetracker.data_local.activitySuggestion.ActivitySuggestionDao
@@ -13,6 +14,7 @@ import com.example.util.simpletimetracker.data_local.complexRule.ComplexRulesDao
 import com.example.util.simpletimetracker.data_local.favourite.FavouriteColorDao
 import com.example.util.simpletimetracker.data_local.favourite.FavouriteCommentDao
 import com.example.util.simpletimetracker.data_local.favourite.FavouriteIconDao
+import com.example.util.simpletimetracker.data_local.favourite.RecordTypeToFavouriteCommentDao
 import com.example.util.simpletimetracker.data_local.record.RecordDao
 import com.example.util.simpletimetracker.data_local.recordTag.RecordTagDao
 import com.example.util.simpletimetracker.data_local.recordTag.RecordToRecordTagDao
@@ -27,6 +29,7 @@ import com.example.util.simpletimetracker.data_local.recordShortcut.RecordShortc
 import com.example.util.simpletimetracker.data_local.recordTag.RecordShortcutToRecordTagDao
 import com.example.util.simpletimetracker.data_local.recordTag.RunningRecordToRecordTagDao
 import com.example.util.simpletimetracker.data_local.recordsFilter.FavouriteRecordsFilterDao
+import com.example.util.simpletimetracker.data_local.scheduledReminder.ScheduledReminderDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -150,6 +153,12 @@ class DataLocalModule {
 
     @Provides
     @Singleton
+    fun getRecordTypeToFavouriteCommentDao(database: AppDatabase): RecordTypeToFavouriteCommentDao {
+        return database.recordTypeToFavouriteCommentDao()
+    }
+
+    @Provides
+    @Singleton
     fun getFavouriteColorDao(database: AppDatabase): FavouriteColorDao {
         return database.favouriteColorDao()
     }
@@ -188,5 +197,17 @@ class DataLocalModule {
     @Singleton
     fun getFavouriteRecordsFilterDao(database: AppDatabase): FavouriteRecordsFilterDao {
         return database.favouriteRecordsFilterDao()
+    }
+
+    @Provides
+    @Singleton
+    fun getScheduledReminderDao(database: AppDatabase): ScheduledReminderDao {
+        return database.scheduledReminderDao()
+    }
+
+    @Provides
+    @Singleton
+    fun getActivityReminderOverrideDao(database: AppDatabase): ActivityReminderOverrideDao {
+        return database.activityReminderOverrideDao()
     }
 }

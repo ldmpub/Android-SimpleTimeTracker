@@ -1,6 +1,7 @@
 package com.example.util.simpletimetracker.domain.backup.interactor
 
 import com.example.util.simpletimetracker.domain.activityFilter.repo.ActivityFilterRepo
+import com.example.util.simpletimetracker.domain.activityReminder.repo.ActivityReminderOverrideRepo
 import com.example.util.simpletimetracker.domain.activitySuggestion.repo.ActivitySuggestionRepo
 import com.example.util.simpletimetracker.domain.category.repo.CategoryRepo
 import com.example.util.simpletimetracker.domain.category.repo.RecordTypeCategoryRepo
@@ -9,6 +10,11 @@ import com.example.util.simpletimetracker.domain.durationSuggestion.repo.Duratio
 import com.example.util.simpletimetracker.domain.favourite.repo.FavouriteColorRepo
 import com.example.util.simpletimetracker.domain.favourite.repo.FavouriteCommentRepo
 import com.example.util.simpletimetracker.domain.favourite.repo.FavouriteIconRepo
+import com.example.util.simpletimetracker.domain.favourite.repo.RecordTypeToFavouriteCommentRepo
+import com.example.util.simpletimetracker.domain.notifications.interactor.NotificationActivityInteractor
+import com.example.util.simpletimetracker.domain.notifications.interactor.NotificationGoalRangeEndInteractor
+import com.example.util.simpletimetracker.domain.notifications.interactor.NotificationGoalTimeInteractor
+import com.example.util.simpletimetracker.domain.notifications.interactor.ScheduledReminderNotificationInteractor
 import com.example.util.simpletimetracker.domain.record.repo.RecordRepo
 import com.example.util.simpletimetracker.domain.record.repo.RunningRecordRepo
 import com.example.util.simpletimetracker.domain.recordShortcut.repo.RecordShortcutRepo
@@ -21,6 +27,7 @@ import com.example.util.simpletimetracker.domain.recordTag.repo.RunningRecordToR
 import com.example.util.simpletimetracker.domain.recordType.repo.RecordTypeGoalRepo
 import com.example.util.simpletimetracker.domain.recordType.repo.RecordTypeRepo
 import com.example.util.simpletimetracker.domain.recordsFilter.repo.FavouriteRecordsFilterRepo
+import com.example.util.simpletimetracker.domain.scheduledReminder.repo.ScheduledReminderRepo
 import javax.inject.Inject
 
 class ClearDataInteractor @Inject constructor(
@@ -45,9 +52,25 @@ class ClearDataInteractor @Inject constructor(
     private val durationSuggestionRepo: DurationSuggestionRepo,
     private val favouriteRecordsFilterRepo: FavouriteRecordsFilterRepo,
     private val recordShortcutToRecordTagRepo: RecordShortcutToRecordTagRepo,
+    private val recordTypeToFavouriteCommentRepo: RecordTypeToFavouriteCommentRepo,
+    private val scheduledReminderRepo: ScheduledReminderRepo,
+    private val activityReminderOverrideRepo: ActivityReminderOverrideRepo,
+    private val notificationActivityInteractor: NotificationActivityInteractor,
+    private val notificationGoalTimeInteractor: NotificationGoalTimeInteractor,
+    private val notificationGoalRangeEndInteractor: NotificationGoalRangeEndInteractor,
+    private val scheduledReminderNotificationInteractor: ScheduledReminderNotificationInteractor,
 ) {
 
     suspend fun execute() {
+        // Cancel reminders.
+        notificationActivityInteractor.cancelAll()
+        recordTypeGoalRepo.getAll().map { it.idData }.distinct()
+            .forEach(notificationGoalTimeInteractor::cancel)
+        notificationGoalRangeEndInteractor.cancel()
+        scheduledReminderRepo.getAll().map { it.id }
+            .forEach(scheduledReminderNotificationInteractor::cancel)
+
+        // Clear data.
         recordTypeRepo.clear()
         recordRepo.clear()
         recordShortcutRepo.clear()
@@ -69,5 +92,8 @@ class ClearDataInteractor @Inject constructor(
         durationSuggestionRepo.clear()
         favouriteRecordsFilterRepo.clear()
         recordShortcutToRecordTagRepo.clear()
+        recordTypeToFavouriteCommentRepo.clear()
+        scheduledReminderRepo.clear()
+        activityReminderOverrideRepo.clear()
     }
 }

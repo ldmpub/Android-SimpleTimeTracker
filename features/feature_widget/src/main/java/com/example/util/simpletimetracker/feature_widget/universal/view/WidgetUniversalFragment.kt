@@ -7,10 +7,10 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseFragment
-import com.example.util.simpletimetracker.core.dialog.OnTagSelectedListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OnTagSelectedListener
 import com.example.util.simpletimetracker.core.utils.InsetConfiguration
 import com.example.util.simpletimetracker.core.utils.doOnApplyWindowInsetsListener
-import com.example.util.simpletimetracker.core.utils.getNavBarInsets
+import com.example.util.simpletimetracker.core.utils.getNavBarInsetsBottom
 import com.example.util.simpletimetracker.core.viewData.RecordTypeSuggestionType
 import com.example.util.simpletimetracker.feature_base_adapter.BaseRecyclerAdapter
 import com.example.util.simpletimetracker.feature_base_adapter.activityFilter.createActivityFilterAdapterDelegate
@@ -53,7 +53,11 @@ class WidgetUniversalFragment :
             createRecordTypeAdapterDelegate(viewModel::onRecordTypeClick),
             createRecordTypeSuggestionAdapterDelegate(RecordTypeSuggestionType, viewModel::onRecordTypeClick),
             createRunningRecordTypeSpecialAdapterDelegate(viewModel::onSpecialRecordTypeClick),
-            createRecordShortcutAdapterDelegate(viewModel::onShortcutClick),
+            createRecordShortcutAdapterDelegate(
+                onClick = viewModel::onShortcutClick,
+                onSpinnerPositionSelected = viewModel::onShortcutSpinnerPositionSelected,
+                onButtonClicked = viewModel::onShortcutButtonClick,
+            ),
             createButtonAdapterDelegate(viewModel::onButtonClick),
             createEmptySpaceAdapterDelegate(),
             createDividerAdapterDelegate(),
@@ -74,7 +78,7 @@ class WidgetUniversalFragment :
         }
 
         view?.doOnApplyWindowInsetsListener {
-            viewModel.onChangeInsets(navBarHeight = it.getNavBarInsets().bottom.pxToDp())
+            viewModel.onChangeInsets(navBarHeight = it.getNavBarInsetsBottom().pxToDp())
         }
     }
 

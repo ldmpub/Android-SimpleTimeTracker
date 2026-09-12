@@ -6,12 +6,12 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseFragment
-import com.example.util.simpletimetracker.core.dialog.ChartFilterDialogListener
-import com.example.util.simpletimetracker.core.dialog.OptionsListDialogListener
-import com.example.util.simpletimetracker.core.dialog.TypesSelectionDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.ChartFilterDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OptionsListDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.TypesSelectionDialogListener
 import com.example.util.simpletimetracker.core.utils.InsetConfiguration
 import com.example.util.simpletimetracker.core.utils.doOnApplyWindowInsetsListener
-import com.example.util.simpletimetracker.core.utils.getNavBarInsets
+import com.example.util.simpletimetracker.core.utils.getNavBarInsetsBottom
 import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.statistics.model.ChartFilterType
 import com.example.util.simpletimetracker.feature_base_adapter.BaseRecyclerAdapter
@@ -21,7 +21,10 @@ import com.example.util.simpletimetracker.feature_base_adapter.divider.createDiv
 import com.example.util.simpletimetracker.feature_base_adapter.emptySpace.createEmptySpaceAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.hint.createHintAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.loader.createLoaderAdapterDelegate
+import com.example.util.simpletimetracker.feature_base_adapter.recordTypeRelation.createActivitySuggestionListAdapterDelegate
+import com.example.util.simpletimetracker.feature_categories.adapter.createCategoriesRelationSpecialAdapterDelegate
 import com.example.util.simpletimetracker.feature_categories.viewData.CategoriesSearchState
+import com.example.util.simpletimetracker.feature_categories.viewData.CategoriesViewData
 import com.example.util.simpletimetracker.feature_categories.viewModel.CategoriesViewModel
 import com.example.util.simpletimetracker.feature_views.extension.pxToDp
 import com.example.util.simpletimetracker.feature_views.extension.setMargins
@@ -58,6 +61,8 @@ class CategoriesFragment :
             createHintAdapterDelegate(),
             createCategoryAdapterDelegate(onClickWithTransition = throttle(viewModel::onCategoryClick)),
             createCategoryAddAdapterDelegate(throttle(viewModel::onAddCategoryClick)),
+            createActivitySuggestionListAdapterDelegate(),
+            createCategoriesRelationSpecialAdapterDelegate(),
         )
     }
 
@@ -74,7 +79,7 @@ class CategoriesFragment :
         }
 
         btnCategoriesOptions.doOnApplyWindowInsetsListener {
-            val navBarHeight = it.getNavBarInsets().bottom.pxToDp()
+            val navBarHeight = it.getNavBarInsetsBottom().pxToDp()
             viewModel.onChangeInsets(navBarHeight = navBarHeight)
             setMargins(bottom = navBarHeight)
         }
@@ -91,7 +96,7 @@ class CategoriesFragment :
     }
 
     override fun initViewModel(): Unit = with(viewModel) {
-        categories.observe { categoriesAdapter.replace(it.items) }
+        categories.observe(::setState)
         showHint.observe(binding.tvCategoriesEditHint::isVisible::set)
         searchState.observe(::setSearchState)
     }
@@ -117,11 +122,23 @@ class CategoriesFragment :
     }
 
     override fun onDataSelected(
-        tag: String?,
+        tag: String,
         dataIds: List<Long>,
         tagValues: List<RecordBase.Tag>,
+        selectValueOnStartTagIds: List<Long>,
     ) {
         viewModel.onDataSelected(dataIds, tag)
+    }
+
+    private fun setState(
+        state: CategoriesViewData,
+    ) = with(binding) {
+        categoriesAdapter.replace(state.items)
+        val layoutManager = (rvCategoriesList.layoutManager as? FlexboxLayoutManager)
+        val justifyContent = if (state.centerContent) JustifyContent.CENTER else JustifyContent.FLEX_START
+        if (layoutManager?.justifyContent != justifyContent) {
+            layoutManager?.justifyContent = justifyContent
+        }
     }
 
     private fun setSearchState(

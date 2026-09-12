@@ -3,8 +3,8 @@ package com.example.util.simpletimetracker.feature_dialogs.recordQuickActions.in
 import android.text.SpannableStringBuilder
 import androidx.core.text.bold
 import com.example.util.simpletimetracker.core.extension.toViewData
+import com.example.util.simpletimetracker.core.mapper.CommonViewDataMapper
 import com.example.util.simpletimetracker.core.mapper.RecordQuickActionMapper
-import com.example.util.simpletimetracker.core.mapper.RecordViewDataMapper
 import com.example.util.simpletimetracker.core.mapper.TimeMapper
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.domain.base.DurationFormat
@@ -12,6 +12,7 @@ import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteracto
 import com.example.util.simpletimetracker.domain.record.interactor.RecordInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.RecordsContainerMultiselectInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.RunningRecordInteractor
+import com.example.util.simpletimetracker.domain.record.mapper.DurationMapper
 import com.example.util.simpletimetracker.domain.record.model.MultiSelectedRecordId
 import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.recordAction.model.RecordQuickAction
@@ -31,7 +32,8 @@ import javax.inject.Inject
 class RecordQuickActionsViewDataInteractor @Inject constructor(
     private val timeMapper: TimeMapper,
     private val resourceRepo: ResourceRepo,
-    private val recordViewDataMapper: RecordViewDataMapper,
+    private val commonViewDataMapper: CommonViewDataMapper,
+    private val durationMapper: DurationMapper,
     private val prefsInteractor: PrefsInteractor,
     private val recordInteractor: RecordInteractor,
     private val runningRecordInteractor: RunningRecordInteractor,
@@ -228,6 +230,7 @@ class RecordQuickActionsViewDataInteractor @Inject constructor(
             is Type.RecordRunning -> listOfNotNull(
                 RecordQuickActionsButton.STATISTICS,
                 RecordQuickActionsButton.DELETE,
+                RecordQuickActionsButton.DUPLICATE,
                 RecordQuickActionsButton.STOP,
                 RecordQuickActionsButton.MULTISELECT,
                 RecordQuickActionsButton.CHANGE_ACTIVITY,
@@ -348,7 +351,7 @@ class RecordQuickActionsViewDataInteractor @Inject constructor(
     ): RecordQuickActionsState.Hint.Record? {
         fun formatRecordDuration(timeStarted: Long, timeEnded: Long): String {
             return timeMapper.formatInterval(
-                interval = recordViewDataMapper.mapDuration(
+                interval = durationMapper.map(
                     timeStarted = timeStarted,
                     timeEnded = timeEnded,
                     showSeconds = showSeconds,
@@ -409,20 +412,8 @@ class RecordQuickActionsViewDataInteractor @Inject constructor(
     }
 
     private fun mapMultiSelectHint(): RecordQuickActionsState.Hint.MultiSelect {
-        // Ex. "Selected: 5 Records"
-        val recordsSelectedCount = recordsContainerMultiselectInteractor.selectedRecordIds.size
-        val recordsSelectedString = resourceRepo.getString(
-            R.string.separator_template,
-            recordsSelectedCount,
-            resourceRepo.getQuantityString(
-                R.plurals.statistics_detail_times_tracked,
-                recordsSelectedCount,
-            ).lowercase(),
-        )
-        val text = resourceRepo.getString(
-            R.string.separator_template,
-            resourceRepo.getString(R.string.something_selected),
-            recordsSelectedString,
+        val text = commonViewDataMapper.mapRecordsCountHint(
+            count = recordsContainerMultiselectInteractor.selectedRecordIds.size,
         )
         return RecordQuickActionsState.Hint.MultiSelect(text)
     }

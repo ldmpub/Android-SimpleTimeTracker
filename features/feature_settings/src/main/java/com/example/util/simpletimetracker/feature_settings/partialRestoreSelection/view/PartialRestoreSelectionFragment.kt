@@ -6,9 +6,8 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseBottomSheetFragment
-import com.example.util.simpletimetracker.core.delegates.iconSelection.adapter.createIconSelectionAdapterDelegate
 import com.example.util.simpletimetracker.core.extension.blockContentScroll
-import com.example.util.simpletimetracker.core.extension.findListener
+import com.example.util.simpletimetracker.core.extension.findListeners
 import com.example.util.simpletimetracker.core.extension.observeOnce
 import com.example.util.simpletimetracker.core.extension.setFullScreen
 import com.example.util.simpletimetracker.core.extension.setSkipCollapsed
@@ -25,10 +24,11 @@ import com.example.util.simpletimetracker.feature_base_adapter.record.createReco
 import com.example.util.simpletimetracker.feature_base_adapter.recordShortcut.createRecordShortcutAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.recordType.createRecordTypeAdapterDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.recordsDateDivider.createRecordsDateDividerAdapterDelegate
-import com.example.util.simpletimetracker.feature_settings.partialRestoreSelection.viewModel.PartialRestoreSelectionViewModel
 import com.example.util.simpletimetracker.feature_settings.partialRestoreSelection.model.PartialRestoreSelectionDialogListener
 import com.example.util.simpletimetracker.feature_settings.partialRestoreSelection.model.PartialRestoreSelectionDialogParams
+import com.example.util.simpletimetracker.feature_settings.partialRestoreSelection.viewModel.PartialRestoreSelectionViewModel
 import com.example.util.simpletimetracker.feature_views.extension.setOnClick
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -54,7 +54,9 @@ class PartialRestoreSelectionFragment : BaseBottomSheetFragment<Binding>() {
                 onDisableClick = {}, // Do nothing.
             ),
             createActivitySuggestionAdapterDelegate(viewModel::onActivitySuggestionClick),
-            createIconSelectionAdapterDelegate(viewModel::onIconClick),
+            viewModel.iconSelectionViewDelegateProvider.provideIconSelectionAdapterDelegate(
+                onIconItemClick = viewModel::onIconClick,
+            ),
             createEmojiAdapterDelegate(viewModel::onEmojiClick),
             createColorAdapterDelegate(viewModel::onColorClick),
             createRecordAdapterDelegate(viewModel::onRecordClick),
@@ -70,7 +72,7 @@ class PartialRestoreSelectionFragment : BaseBottomSheetFragment<Binding>() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        listener = context.findListener()
+        listener = context.findListeners<PartialRestoreSelectionDialogListener>().firstOrNull()
     }
 
     override fun initDialog() {
@@ -109,8 +111,6 @@ class PartialRestoreSelectionFragment : BaseBottomSheetFragment<Binding>() {
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_partial_restore_selection_params"
-
         fun createBundle(data: PartialRestoreSelectionDialogParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

@@ -14,7 +14,9 @@
     <string name="record_tag_hint">תגיות רשומה</string>
     <string name="record_tag_hint_short">תגיות</string>
     <string name="nothing_selected">לא נבחר כלום</string>
-    <string name="something_selected">נבחרו:</string>
+    <string name="something_selected">נבחרו</string>
+    <string name="something_available">זמין</string>
+    <string name="something_preselected">נבחר מראש</string>
     <string name="select_all">בחר הכל</string>
     <string name="select_nothing">בחר כלום</string>
     <string name="no_data">אין נתונים</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">המטרות יוצגו כאן</string>
+    <string name="all_goals_finished">כל היעדים הושלמו</string>
+    <string name="hide_finished_goals">הסתר יעדים שהושלמו</string>
     <string name="goal_add_hint">ערוך פעילות או קטגוריה כדי להקצות לה מטרה</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">הקצה תגיות שונות לרשומות כדי להבדיל ביניהן</string>
     <string name="categories_add_category">הוסף קטגוריה</string>
     <string name="categories_add_record_tag">הוסף תגית רשומה</string>
+    <string name="categories_show_relations">הצג קשרים</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>קטגוריות</b> עוזרות לך לקבץ פעילויות קשורות. לדוגמה:<br><br>
 • קטגוריית <custom-color-3>פרודוקטיבי</custom-color-3> עשויה לכלול <custom-color-3>קריאה</custom-color-3> ו<custom-color-3>חדר כושר</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">תגית הועברה לארכיון</string>
     <string name="change_record_tag_default_hint">מוקצה כברירת מחדל</string>
+    <string name="change_record_tag_type_general">כללי</string>
     <string name="change_record_tag_type_general_hint">ניתן להקצות לרשומות של כל פעילות</string>
     <string name="change_record_tag_type_typed_hint">ניתן רק להקצות לרשומות של פעילות ספציפית</string>
     <string name="change_record_tag_select_activity_hint">קח צבע וסמל מפעילות</string>
@@ -142,6 +148,7 @@
     <string name="change_record_last_comments_hint">הערות אחרונות</string>
     <string name="change_record_favourite_comments_hint">מועדף</string>
     <string name="change_record_favourite_comments_hint_long">הערות אהובות</string>
+    <string name="change_record_favourite_activity_selection">מועדף רק עבור פעילויות נבחרות</string>
     <string name="change_record_similar_comments_hint">הערות דומות</string>
     <string name="change_record_categories_empty">לא נוספו תגיות רשומה</string>
     <string name="change_record_save">שמור</string>
@@ -230,6 +237,8 @@
     <string name="change_complex_rule_removed">כלל הוסר</string>
     <string name="change_complex_rule_choose_action">בחר פעולה</string>
     <string name="change_complex_rule_choose_condition">בחר תנאים</string>
+    <string name="change_complex_tag_value_dialog_message">בחר מתי להגדיר את הערך</string>
+    <string name="change_complex_tag_value_set_later">בהתחלה</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">מציג הצעות לפעילות הבאה על סמך הפעילות הנוכחית או האחרונה</string>
@@ -289,6 +298,7 @@
     <string name="records_all_sort_order">מיין רשומות</string>
     <string name="records_all_sort_time_started">זמן התחלה</string>
     <string name="records_all_sort_duration">משך</string>
+    <string name="records_all_days_without_records">ימים ללא רשומות - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">כדי להתחיל מעקב, הוסף פעילויות על ידי לחיצה על כפתור %s או השתמש בקביעות ברירת מחדל על ידי לחיצה על כפתור %s</string>
@@ -309,7 +319,7 @@
     <string name="settings_display_title">הגדרות תצוגה</string>
     <string name="settings_additional_title">הגדרות נוספות</string>
     <string name="settings_notification_title">הגדרות התראה</string>
-    <string name="settings_backup_title">הגדרות גיבוי</string>
+    <string name="settings_backup_title">גיבוי</string>
     <string name="settings_export_title">ייצוא וייבוא</string>
     <string name="settings_sort_order">מיון פעילויות</string>
     <string name="settings_sort_order_category">מיון קטגוריות</string>
@@ -327,6 +337,7 @@
     <string name="settings_show_untracked_time_statistics">הצג זמן ללא מעקב בסטטיסטיקה</string>
     <string name="settings_ignore_short_untracked">התעלם מזמן קצר ללא מעקב</string>
     <string name="settings_ignore_short_untracked_hint">אל תציג זמן ללא מעקב אשר קצר מהזמן שצוין.</string>
+    <string name="settings_untracked_days_hint">יש לחשב זמן ללא מעקב רק בימים שנבחרו.</string>
     <string name="settings_untracked_range">טווח ללא מעקב</string>
     <string name="settings_untracked_range_hint">הצגת זמן לא מנוטר רק בטווח שנבחר.</string>
     <string name="settings_show_records_calendar">הצג רשומות בתצוגת לוח שנה</string>
@@ -360,11 +371,14 @@
     <string name="settings_inactivity_reminder">הצג תזכורת חוסר פעילות</string>
     <string name="settings_inactivity_reminder_hint">הצג התראה לאחר הזמן שצוין אם אין טיימרים פועלים.</string>
     <string name="settings_inactivity_reminder_recurrent">חוזרת</string>
+    <string name="settings_reminder_active_days">ימים פעילים</string>
     <string name="settings_activity_reminder">הצג תזכורת פעילות</string>
     <string name="settings_activity_reminder_hint">הצג התראה לאחר הזמן שצוין אם טיימרים פועלים.</string>
     <string name="settings_do_not_disturb">נא לא להפריע</string>
     <string name="settings_notifications_system_settings">הגדרות מערכת</string>
     <string name="settings_notifications_system_settings_hint">קול, רטט, הבזק ועוד</string>
+    <string name="settings_reminders_title">תזכורות</string>
+    <string name="settings_reminders_hint">ניהול תזכורות מתוזמנות</string>
     <string name="settings_ignore_short_records">התעלם מרשומות קצרות</string>
     <string name="settings_ignore_short_records_hint">אל תעקוב אחר פעילויות הקצרות מהזמן שצוין.</string>
     <string name="settings_inactivity_reminder_disabled">מושבת</string>
@@ -527,6 +541,7 @@
     <string name="statistics_detail_record_time">זמן שיא</string>
     <string name="statistics_detail_first_record">ראשון</string>
     <string name="statistics_detail_last_record">אחרון</string>
+    <string name="statistics_detail_record_span">טווח</string>
     <string name="statistics_detail_time_since">זמן שעבר</string>
     <string name="statistics_detail_streaks">סדרה</string>
     <string name="statistics_detail_streaks_longest">הכי ארוכה</string>
@@ -549,6 +564,8 @@
     <string name="statistics_detail_goals_deficit">גֵרָעוֹן</string>
     <string name="statistics_detail_tag_values_hint">ערכי תג</string>
     <string name="statistics_detail_tag_values_multiply_duration">הכפל במשך הזמן</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">מלא תקופות ריקות בנתונים קודמים</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">הגדלת ציר Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">רשומות</item>-->
@@ -673,6 +690,33 @@
     <string name="shortcut_navigation_records">רשומות</string>
     <string name="shortcut_navigation_statistics">סטטיסטיקה</string>
     <string name="shortcut_navigation_settings">הגדרות</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">יומי</string>
+    <string name="reminders_schedule_weekly">שבועי</string>
+    <string name="reminders_schedule_one_time">פעם אחת</string>
+    <string name="reminders_schedule_monthly">חודשי</string>
+    <string name="reminders_schedule_hourly">מדי שעה</string>
+    <string name="reminders_condition_activity_not_tracked">כאשר הפעילות לא תועדה היום</string>
+    <string name="activity_reminders_hint">עוקף את ההגדרה הכללית של תזכורת הפעילות</string>
+    <string name="activity_reminder_mode">מצב תזכורת</string>
+    <string name="activity_reminder_mode_disabled">מושבת</string>
+    <string name="activity_reminder_mode_custom">מותאם אישית</string>
+    <string name="activity_reminder_disabled_summary">התזכורות מושבתות עבור פעילות זו</string>
+    <string name="activity_reminder_positive_duration_required">יש להגדיר משך תזכורת גדול מאפס</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">הודעה</string>
+    <string name="change_reminder_schedule">תזמון</string>
+    <string name="change_reminder_day_of_month">יום בחודש</string>
+    <string name="change_reminder_interval">מרווח</string>
+    <string name="change_reminder_condition">תנאי תצוגה</string>
+    <string name="change_reminder_condition_always">תמיד</string>
+    <string name="change_reminder_message_prefill">לא לשכוח לבצע %s.</string>
+    <string name="change_reminder_message_required">יש להזין הודעת תזכורת</string>
+    <string name="change_reminder_future_required">יש לבחור זמן בעתיד</string>
+    <string name="change_reminder_interval_required">יש להגדיר מרווח גדול מאפס</string>
+    <string name="change_reminder_removed">התזכורת הוסרה</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">בדוק את החיבור שלך ונסה שוב</string>

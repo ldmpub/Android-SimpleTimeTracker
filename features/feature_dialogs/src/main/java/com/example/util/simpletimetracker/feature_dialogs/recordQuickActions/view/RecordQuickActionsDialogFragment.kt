@@ -10,10 +10,10 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.util.simpletimetracker.core.base.BaseBottomSheetFragment
 import com.example.util.simpletimetracker.core.di.BaseViewModelFactory
-import com.example.util.simpletimetracker.core.dialog.DateTimeDialogListener
-import com.example.util.simpletimetracker.core.dialog.RecordQuickActionDialogListener
-import com.example.util.simpletimetracker.core.dialog.TypesSelectionDialogListener
-import com.example.util.simpletimetracker.core.extension.findListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DateTimeDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.RecordQuickActionDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.TypesSelectionDialogListener
+import com.example.util.simpletimetracker.core.extension.findListeners
 import com.example.util.simpletimetracker.core.extension.setSkipCollapsed
 import com.example.util.simpletimetracker.core.sharedViewModel.RemoveRecordViewModel
 import com.example.util.simpletimetracker.core.utils.fragmentArgumentDelegate
@@ -26,6 +26,7 @@ import com.example.util.simpletimetracker.feature_dialogs.recordQuickActions.mod
 import com.example.util.simpletimetracker.feature_dialogs.recordQuickActions.viewModel.RecordQuickActionsViewModel
 import com.example.util.simpletimetracker.feature_views.extension.setOnClick
 import com.example.util.simpletimetracker.feature_views.extension.setSpanSizeLookup
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRecordParams
 import com.example.util.simpletimetracker.navigation.params.screen.RecordQuickActionsParams
 import dagger.hilt.android.AndroidEntryPoint
@@ -59,11 +60,11 @@ class RecordQuickActionsDialogFragment :
     private val params: RecordQuickActionsParams by fragmentArgumentDelegate(
         key = ARGS_PARAMS, default = RecordQuickActionsParams.Empty,
     )
-    private var listener: RecordQuickActionDialogListener? = null
+    private var listeners: List<RecordQuickActionDialogListener> = emptyList()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        listener = context.findListener<RecordQuickActionDialogListener>()
+        listeners = context.findListeners()
     }
 
     override fun initDialog() {
@@ -98,11 +99,16 @@ class RecordQuickActionsDialogFragment :
     }
 
     override fun onDataSelected(
-        tag: String?,
+        tag: String,
         dataIds: List<Long>,
         tagValues: List<RecordBase.Tag>,
+        selectValueOnStartTagIds: List<Long>,
     ) {
-        viewModel.onTypesSelected(tag, dataIds, tagValues)
+        viewModel.onTypesSelected(
+            tag = tag,
+            dataIds = dataIds,
+            tagValues = tagValues,
+        )
     }
 
     override fun onDateTimeSet(timestamp: Long, tag: String?) {
@@ -137,7 +143,7 @@ class RecordQuickActionsDialogFragment :
     }
 
     private fun onActionComplete() {
-        listener?.onActionComplete()
+        listeners.forEach { it.onActionComplete() }
     }
 
     private fun setIconsSpanSize(
@@ -153,7 +159,6 @@ class RecordQuickActionsDialogFragment :
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
         private const val SPAN_COUNT = 2
 
         fun createBundle(data: RecordQuickActionsParams): Bundle = Bundle().apply {

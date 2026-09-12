@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseBottomSheetFragment
-import com.example.util.simpletimetracker.core.dialog.OnTagValueSelectedListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OnTagValueSelectedListener
 import com.example.util.simpletimetracker.core.extension.findListeners
 import com.example.util.simpletimetracker.core.extension.hideKeyboard
 import com.example.util.simpletimetracker.core.extension.setSkipCollapsed
@@ -20,6 +20,7 @@ import com.example.util.simpletimetracker.feature_dialogs.R
 import com.example.util.simpletimetracker.feature_dialogs.recordTagValueSelection.viewModel.RecordTagValueSelectionViewModel
 import com.example.util.simpletimetracker.feature_views.extension.postDelayed
 import com.example.util.simpletimetracker.feature_views.extension.setOnClick
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.RecordTagValueSelectionParams
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
@@ -59,6 +60,9 @@ class RecordTagValueSelectionDialogFragment : BaseBottomSheetFragment<Binding>()
     }
 
     override fun initUi() {
+        binding.tvRecordTagValueSelection.text = params.title
+            ?: getString(R.string.change_record_type_value_type_field)
+
         binding.rvRecordTagValueSelectionList.apply {
             layoutManager = FlexboxLayoutManager(requireContext()).apply {
                 flexDirection = FlexDirection.ROW
@@ -101,8 +105,6 @@ class RecordTagValueSelectionDialogFragment : BaseBottomSheetFragment<Binding>()
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
-
         fun createBundle(data: RecordTagValueSelectionParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

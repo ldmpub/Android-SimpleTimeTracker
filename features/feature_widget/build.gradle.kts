@@ -17,8 +17,9 @@ android {
 dependencies {
     implementation(project(":core"))
     implementation(project(":resources"))
-    implementation(project(":feature_dialogs"))
+    implementation(project(":feature_dialogs:api"))
     implementation(project(":feature_views"))
+    implementation(project(":feature_running_records:api"))
 
     implementation(libs.ktx.navigationFragment)
     implementation(libs.ktx.navigationUi)

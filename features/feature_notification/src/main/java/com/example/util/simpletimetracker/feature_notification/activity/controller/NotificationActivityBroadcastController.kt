@@ -1,29 +1,41 @@
 package com.example.util.simpletimetracker.feature_notification.activity.controller
 
-import com.example.util.simpletimetracker.core.extension.allowDiskRead
 import com.example.util.simpletimetracker.domain.notifications.interactor.NotificationActivityInteractor
-import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class NotificationActivityBroadcastController @Inject constructor(
-    private val prefsInteractor: PrefsInteractor,
     private val notificationActivityInteractor: NotificationActivityInteractor,
 ) {
 
-    fun onActivityReminder() = allowDiskRead { MainScope() }.launch {
-        notificationActivityInteractor.show()
-        checkAndSchedule()
+    suspend fun onActivityReminder(
+        activityId: Long,
+        expectedTimerStart: Long,
+        expectedTriggerTimestamp: Long,
+    ) {
+        notificationActivityInteractor.onReminderFired(
+            activityId = activityId,
+            expectedTimerStart = expectedTimerStart,
+            expectedTriggerTimestamp = expectedTriggerTimestamp,
+        )
     }
 
-    fun onBootCompleted() = allowDiskRead { MainScope() }.launch {
-        checkAndSchedule()
+    suspend fun onBootCompleted() {
+        rescheduleRecurrent()
     }
 
-    private suspend fun checkAndSchedule() {
-        if (prefsInteractor.getActivityReminderRecurrent()) {
-            notificationActivityInteractor.checkAndSchedule()
-        }
+    suspend fun onExactAlarmPermissionStateChanged() {
+        rescheduleRecurrent()
+    }
+
+    suspend fun onPackageReplaced() {
+        rescheduleRecurrent()
+    }
+
+    suspend fun onDateTimeChanged() {
+        rescheduleRecurrent()
+    }
+
+    private suspend fun rescheduleRecurrent() {
+        notificationActivityInteractor.rescheduleRecurrent()
     }
 }

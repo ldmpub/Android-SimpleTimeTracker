@@ -7,9 +7,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseBottomSheetFragment
-import com.example.util.simpletimetracker.core.dialog.ChartFilterDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.ChartFilterDialogListener
 import com.example.util.simpletimetracker.core.extension.blockContentScroll
-import com.example.util.simpletimetracker.core.extension.findListener
+import com.example.util.simpletimetracker.core.extension.findListeners
 import com.example.util.simpletimetracker.core.extension.setSkipCollapsed
 import com.example.util.simpletimetracker.core.utils.fragmentArgumentDelegate
 import com.example.util.simpletimetracker.feature_base_adapter.BaseRecyclerAdapter
@@ -21,6 +21,7 @@ import com.example.util.simpletimetracker.feature_base_adapter.recordType.create
 import com.example.util.simpletimetracker.feature_dialogs.chartFilter.model.ChartFilterDataSelectionResult
 import com.example.util.simpletimetracker.feature_dialogs.chartFilter.viewModel.ChartFilterViewModel
 import com.example.util.simpletimetracker.feature_views.extension.setOnClick
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.ChartFilterDialogParams
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
@@ -48,17 +49,18 @@ class ChartFilterDialogFragment : BaseBottomSheetFragment<Binding>() {
     private val params: ChartFilterDialogParams by fragmentArgumentDelegate(
         key = ARGS_PARAMS, default = ChartFilterDialogParams.Empty,
     )
-    private var chartFilterDialogListener: ChartFilterDialogListener? = null
+    private var listeners: List<ChartFilterDialogListener> = emptyList()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        chartFilterDialogListener = context.findListener<ChartFilterDialogListener>()
-        chartFilterDialogListener?.onChartFilterDialogOpened()
+        listeners = context.findListeners()
+        // TODO will not work on screen rotated, same in other dialogs.
+        listeners.forEach { it.onChartFilterDialogOpened() }
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        chartFilterDialogListener?.onChartFilterDialogDismissed()
+        listeners.forEach { it.onChartFilterDialogDismissed() }
     }
 
     override fun initDialog() {
@@ -102,15 +104,15 @@ class ChartFilterDialogFragment : BaseBottomSheetFragment<Binding>() {
     }
 
     private fun onDataSelected(result: ChartFilterDataSelectionResult) {
-        chartFilterDialogListener?.onChartFilterDataSelected(
-            chartFilterType = result.chartFilterType,
-            dataIds = result.dataIds,
-        )
+        listeners.forEach {
+            it.onChartFilterDataSelected(
+                chartFilterType = result.chartFilterType,
+                dataIds = result.dataIds,
+            )
+        }
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
-
         fun createBundle(data: ChartFilterDialogParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

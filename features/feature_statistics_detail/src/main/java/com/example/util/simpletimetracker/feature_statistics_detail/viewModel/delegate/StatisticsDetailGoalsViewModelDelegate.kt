@@ -4,13 +4,18 @@ import androidx.lifecycle.LiveData
 import com.example.util.simpletimetracker.core.base.ViewModelDelegate
 import com.example.util.simpletimetracker.core.extension.lazySuspend
 import com.example.util.simpletimetracker.core.extension.set
+import com.example.util.simpletimetracker.feature_base_adapter.buttonsRow.ButtonsRowItemViewData
 import com.example.util.simpletimetracker.feature_base_adapter.buttonsRow.view.ButtonsRowViewData
+import com.example.util.simpletimetracker.feature_statistics_detail.adapter.StatisticsDetailBlock
 import com.example.util.simpletimetracker.feature_statistics_detail.interactor.StatisticsDetailGoalsInteractor
+import com.example.util.simpletimetracker.feature_statistics_detail.mapper.mapItems
+import com.example.util.simpletimetracker.feature_statistics_detail.mapper.mapToViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartGrouping
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartLength
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailChartLengthViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailGoalsCompositeViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailGroupingViewData
+import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailViewData
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -30,24 +35,40 @@ class StatisticsDetailGoalsViewModelDelegate @Inject constructor(
         this.parent = parent
     }
 
-    fun onChartGroupingClick(viewData: ButtonsRowViewData) {
+    override fun getViewData(): StatisticsDetailViewData? {
+        return viewData.value?.viewData?.mapItems()?.let(::mapToViewData)
+    }
+
+    override fun onButtonsRowClick(
+        block: ButtonsRowItemViewData.ButtonsRowId,
+        viewData: ButtonsRowViewData,
+    ) {
+        when (block) {
+            StatisticsDetailBlock.GoalChartGrouping -> onChartGroupingClick(viewData)
+            StatisticsDetailBlock.GoalChartLength -> onChartLengthClick(viewData)
+        }
+    }
+
+    private fun onChartGroupingClick(viewData: ButtonsRowViewData) {
         if (viewData !is StatisticsDetailGroupingViewData) return
         this.chartGrouping = viewData.chartGrouping
         updateViewData()
     }
 
-    fun onChartLengthClick(viewData: ButtonsRowViewData) {
+    private fun onChartLengthClick(viewData: ButtonsRowViewData) {
         if (viewData !is StatisticsDetailChartLengthViewData) return
         this.chartLength = viewData.chartLength
         updateViewData()
     }
 
-    fun updateViewData() = delegateScope.launch {
-        val data = loadViewData() ?: return@launch
-        viewData.set(data)
-        chartGrouping = data.appliedChartGrouping
-        chartLength = data.appliedChartLength
-        parent?.updateContent()
+    override fun updateViewData(animate: Boolean) {
+        delegateScope.launch {
+            val data = loadViewData() ?: return@launch
+            viewData.set(data)
+            chartGrouping = data.appliedChartGrouping
+            chartLength = data.appliedChartLength
+            parent?.updateContent()
+        }
     }
 
     private suspend fun loadViewData(): StatisticsDetailGoalsCompositeViewData? {
@@ -61,4 +82,6 @@ class StatisticsDetailGoalsViewModelDelegate @Inject constructor(
             rangePosition = parent.rangePosition,
         )
     }
+
+    companion object : StatisticsDetailViewData.Key
 }

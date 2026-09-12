@@ -71,7 +71,6 @@ class WearDataLocalMapper @Inject constructor(
     fun map(
         recordTag: RecordTag,
         types: Map<Long, RecordType>,
-        preselectedTagIds: Set<Long>,
     ): WearTagDTO {
         return WearTagDTO(
             id = recordTag.id,
@@ -80,7 +79,6 @@ class WearDataLocalMapper @Inject constructor(
                 tag = recordTag,
                 types = types,
             ).let(::mapColor),
-            preselected = recordTag.id in preselectedTagIds,
         )
     }
 

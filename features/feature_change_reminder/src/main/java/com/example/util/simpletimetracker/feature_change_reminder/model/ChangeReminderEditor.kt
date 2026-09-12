@@ -1,0 +1,235 @@
+package com.example.util.simpletimetracker.feature_change_reminder.model
+
+import com.example.util.simpletimetracker.domain.daysOfWeek.model.DayOfWeek
+import com.example.util.simpletimetracker.domain.extension.addOrRemove
+import com.example.util.simpletimetracker.domain.extension.orZero
+import com.example.util.simpletimetracker.domain.extension.toLocalDateTime
+import com.example.util.simpletimetracker.domain.recordType.model.RecordType
+import com.example.util.simpletimetracker.domain.scheduledReminder.model.ScheduledReminder
+import com.example.util.simpletimetracker.domain.utils.LocalDateMapper
+import java.time.LocalDate
+import java.util.TimeZone
+import java.util.concurrent.TimeUnit
+
+class ChangeReminderEditor private constructor(
+    val id: Long,
+    val enabled: Boolean,
+    var message: String,
+    private var messageTouched: Boolean,
+    var scheduleType: ScheduleType,
+    var daysOfWeek: Set<DayOfWeek>,
+    var date: Long,
+    var dayOfMonth: Int,
+    var timeOfDayMillis: Long,
+    var intervalSeconds: Long,
+    var doNotDisturbStartMillis: Long,
+    var doNotDisturbEndMillis: Long,
+    var conditionType: ConditionType,
+    var activityId: Long?,
+) {
+
+    fun onMessageChanged(value: String) {
+        message = value
+        messageTouched = true
+    }
+
+    fun selectSchedule(type: ScheduleType) {
+        scheduleType = type
+        conditionType = ConditionType.ALWAYS
+        activityId = null
+    }
+
+    fun selectCondition(type: ConditionType) {
+        if (scheduleType != ScheduleType.WEEKLY) {
+            conditionType = ConditionType.ALWAYS
+            activityId = null
+            return
+        }
+        conditionType = type
+        if (type == ConditionType.ALWAYS) activityId = null
+    }
+
+    fun toggleDay(day: DayOfWeek) {
+        daysOfWeek = daysOfWeek.addOrRemove(day)
+    }
+
+    fun selectActivity(type: RecordType, prefill: (String) -> String) {
+        activityId = type.id
+        if (!messageTouched || message.isBlank()) {
+            message = prefill(type.name)
+            messageTouched = false
+        }
+    }
+
+    fun validate(
+        nowTimestamp: Long,
+        localDateMapper: LocalDateMapper,
+    ): ValidationResult {
+        if (message.trim().isEmpty()) {
+            return ValidationResult.Error(ValidationError.MESSAGE_REQUIRED)
+        }
+        if (timeOfDayMillis !in 0 until TimeUnit.DAYS.toMillis(1)) {
+            timeOfDayMillis = 0
+        }
+
+        val schedule = when (scheduleType) {
+            ScheduleType.WEEKLY -> {
+                if (daysOfWeek.isEmpty()) daysOfWeek = DayOfWeek.entries.toSet()
+                ScheduledReminder.Schedule.Weekly(daysOfWeek, timeOfDayMillis)
+            }
+            ScheduleType.ONE_TIME -> {
+                val expectedTimestamp = localDateMapper.resolveDateTime(
+                    dateEpochDay = date,
+                    timeOfDayMillis = timeOfDayMillis,
+                    timeZone = TimeZone.getDefault(),
+                ).orZero()
+                if (expectedTimestamp <= nowTimestamp) {
+                    return ValidationResult.Error(ValidationError.FUTURE_REQUIRED)
+                }
+                ScheduledReminder.Schedule.OneTime(date, timeOfDayMillis)
+            }
+            ScheduleType.MONTHLY -> {
+                if (dayOfMonth !in 1..DAYS_IN_MONTH) dayOfMonth = 1
+                ScheduledReminder.Schedule.Monthly(dayOfMonth, timeOfDayMillis)
+            }
+            ScheduleType.HOURLY -> {
+                if (intervalSeconds <= 0L) {
+                    return ValidationResult.Error(ValidationError.INTERVAL_REQUIRED)
+                }
+                if (daysOfWeek.isEmpty()) daysOfWeek = DayOfWeek.entries.toSet()
+                ScheduledReminder.Schedule.Hourly(
+                    intervalSeconds = intervalSeconds,
+                    startDate = date,
+                    timeOfDayMillis = timeOfDayMillis,
+                    daysOfWeek = daysOfWeek,
+                    doNotDisturbStartMillis = doNotDisturbStartMillis,
+                    doNotDisturbEndMillis = doNotDisturbEndMillis,
+                )
+            }
+        }
+
+        val condition = when {
+            scheduleType != ScheduleType.WEEKLY -> ScheduledReminder.Condition.Always
+            conditionType == ConditionType.NOT_TRACKED -> {
+                activityId
+                    ?.let { ScheduledReminder.Condition.ActivityNotTrackedToday(it) }
+                    ?: ScheduledReminder.Condition.Always
+            }
+            else -> ScheduledReminder.Condition.Always
+        }
+
+        return ValidationResult.Valid(
+            reminder = ScheduledReminder(
+                id = id,
+                enabled = enabled,
+                text = message,
+                schedule = schedule,
+                condition = condition,
+            ),
+        )
+    }
+
+    enum class ScheduleType { WEEKLY, ONE_TIME, MONTHLY, HOURLY }
+    enum class ConditionType { ALWAYS, NOT_TRACKED }
+    enum class ValidationError {
+        MESSAGE_REQUIRED,
+        FUTURE_REQUIRED,
+        INTERVAL_REQUIRED,
+    }
+
+    sealed interface ValidationResult {
+        data class Valid(val reminder: ScheduledReminder) : ValidationResult
+        data class Error(val error: ValidationError) : ValidationResult
+    }
+
+    companion object {
+        const val DAYS_IN_MONTH = 31
+
+        private fun getTomorrow(nowTimestamp: Long): LocalDate {
+            return nowTimestamp
+                .toLocalDateTime(TimeZone.getDefault())
+                .toLocalDate()
+                .plusDays(1)
+        }
+
+        fun new(
+            nowTimestamp: Long,
+        ): ChangeReminderEditor {
+            val tomorrow = getTomorrow(nowTimestamp)
+            return ChangeReminderEditor(
+                id = 0,
+                enabled = true,
+                message = "",
+                messageTouched = false,
+                scheduleType = ScheduleType.ONE_TIME,
+                daysOfWeek = DayOfWeek.entries.toSet(),
+                date = tomorrow.toEpochDay(),
+                dayOfMonth = tomorrow.dayOfMonth,
+                timeOfDayMillis = TimeUnit.HOURS.toMillis(9),
+                intervalSeconds = TimeUnit.HOURS.toSeconds(1),
+                doNotDisturbStartMillis = 0L,
+                doNotDisturbEndMillis = TimeUnit.HOURS.toMillis(8),
+                conditionType = ConditionType.ALWAYS,
+                activityId = null,
+            )
+        }
+
+        fun from(
+            nowTimestamp: Long,
+            reminder: ScheduledReminder,
+        ): ChangeReminderEditor {
+            val tomorrow = getTomorrow(nowTimestamp)
+            val scheduleType: ScheduleType
+            var daysOfWeek = DayOfWeek.entries.toSet()
+            var date = tomorrow.toEpochDay()
+            var dayOfMonth = tomorrow.dayOfMonth
+            var intervalSeconds = TimeUnit.HOURS.toSeconds(1)
+            var doNotDisturbStartMillis = 0L
+            var doNotDisturbEndMillis = TimeUnit.HOURS.toMillis(8)
+
+            when (val schedule = reminder.schedule) {
+                is ScheduledReminder.Schedule.Weekly -> {
+                    scheduleType = ScheduleType.WEEKLY
+                    daysOfWeek = schedule.daysOfWeek
+                }
+                is ScheduledReminder.Schedule.OneTime -> {
+                    scheduleType = ScheduleType.ONE_TIME
+                    date = schedule.oneTimeDate
+                }
+                is ScheduledReminder.Schedule.Monthly -> {
+                    scheduleType = ScheduleType.MONTHLY
+                    dayOfMonth = schedule.dayOfMonth
+                }
+                is ScheduledReminder.Schedule.Hourly -> {
+                    scheduleType = ScheduleType.HOURLY
+                    daysOfWeek = schedule.daysOfWeek
+                    date = schedule.startDate
+                    intervalSeconds = schedule.intervalSeconds
+                    doNotDisturbStartMillis = schedule.doNotDisturbStartMillis
+                    doNotDisturbEndMillis = schedule.doNotDisturbEndMillis
+                }
+            }
+            val condition = reminder.condition as? ScheduledReminder.Condition.ActivityNotTrackedToday
+            return ChangeReminderEditor(
+                id = reminder.id,
+                enabled = reminder.enabled,
+                message = reminder.text,
+                messageTouched = true,
+                scheduleType = scheduleType,
+                daysOfWeek = daysOfWeek,
+                date = date,
+                dayOfMonth = dayOfMonth,
+                timeOfDayMillis = reminder.schedule.timeOfDayMillis,
+                intervalSeconds = intervalSeconds,
+                doNotDisturbStartMillis = doNotDisturbStartMillis,
+                doNotDisturbEndMillis = doNotDisturbEndMillis,
+                conditionType = if (condition == null) {
+                    ConditionType.ALWAYS
+                } else {
+                    ConditionType.NOT_TRACKED
+                },
+                activityId = condition?.activityId,
+            )
+        }
+    }
+}

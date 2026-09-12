@@ -2,6 +2,9 @@ package com.example.util.simpletimetracker.data_local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.example.util.simpletimetracker.data_local.activityReminder.ActivityReminderOverrideDBO
+import com.example.util.simpletimetracker.data_local.activityReminder.ActivityReminderOverrideDao
+import com.example.util.simpletimetracker.data_local.activityReminder.ActivityReminderRuleDBO
 import com.example.util.simpletimetracker.data_local.activityFilter.ActivityFilterDBO
 import com.example.util.simpletimetracker.data_local.activityFilter.ActivityFilterDao
 import com.example.util.simpletimetracker.data_local.activitySuggestion.ActivitySuggestionDBO
@@ -20,6 +23,8 @@ import com.example.util.simpletimetracker.data_local.favourite.FavouriteCommentD
 import com.example.util.simpletimetracker.data_local.favourite.FavouriteCommentDao
 import com.example.util.simpletimetracker.data_local.favourite.FavouriteIconDBO
 import com.example.util.simpletimetracker.data_local.favourite.FavouriteIconDao
+import com.example.util.simpletimetracker.data_local.favourite.RecordTypeToFavouriteCommentDBO
+import com.example.util.simpletimetracker.data_local.favourite.RecordTypeToFavouriteCommentDao
 import com.example.util.simpletimetracker.data_local.record.RecordDBO
 import com.example.util.simpletimetracker.data_local.record.RecordDao
 import com.example.util.simpletimetracker.data_local.record.RunningRecordDBO
@@ -44,6 +49,8 @@ import com.example.util.simpletimetracker.data_local.recordType.RecordTypeGoalDB
 import com.example.util.simpletimetracker.data_local.recordType.RecordTypeGoalDao
 import com.example.util.simpletimetracker.data_local.recordsFilter.FavouriteRecordsFilterDBO
 import com.example.util.simpletimetracker.data_local.recordsFilter.FavouriteRecordsFilterDao
+import com.example.util.simpletimetracker.data_local.scheduledReminder.ScheduledReminderDBO
+import com.example.util.simpletimetracker.data_local.scheduledReminder.ScheduledReminderDao
 
 @Database(
     entities = [
@@ -60,6 +67,7 @@ import com.example.util.simpletimetracker.data_local.recordsFilter.FavouriteReco
         RecordTypeToDefaultTagDBO::class,
         ActivityFilterDBO::class,
         FavouriteCommentDBO::class,
+        RecordTypeToFavouriteCommentDBO::class,
         RecordTypeGoalDBO::class,
         FavouriteIconDBO::class,
         ComplexRuleDBO::class,
@@ -69,8 +77,11 @@ import com.example.util.simpletimetracker.data_local.recordsFilter.FavouriteReco
         RecordShortcutDBO::class,
         FavouriteRecordsFilterDBO.MainDBO::class,
         FavouriteRecordsFilterDBO.FilterDBO::class,
+        ScheduledReminderDBO::class,
+        ActivityReminderOverrideDBO::class,
+        ActivityReminderRuleDBO::class,
     ],
-    version = 31,
+    version = 37,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -103,6 +114,8 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun favouriteCommentDao(): FavouriteCommentDao
 
+    abstract fun recordTypeToFavouriteCommentDao(): RecordTypeToFavouriteCommentDao
+
     abstract fun recordTypeGoalDao(): RecordTypeGoalDao
 
     abstract fun favouriteIconDao(): FavouriteIconDao
@@ -116,6 +129,10 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun recordShortcutDao(): RecordShortcutDao
 
     abstract fun favouriteRecordsFilterDao(): FavouriteRecordsFilterDao
+
+    abstract fun scheduledReminderDao(): ScheduledReminderDao
+
+    abstract fun activityReminderOverrideDao(): ActivityReminderOverrideDao
 
     companion object {
         const val DATABASE_NAME = "simpleTimeTrackerDB"

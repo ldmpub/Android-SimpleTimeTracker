@@ -1,5 +1,6 @@
 package com.example.util.simpletimetracker.domain.notifications.interactor
 
+import com.example.util.simpletimetracker.domain.category.interactor.RecordTypeCategoryInteractor
 import com.example.util.simpletimetracker.domain.wear.WearInteractor
 import com.example.util.simpletimetracker.domain.recordType.model.RecordTypeGoal
 import com.example.util.simpletimetracker.domain.record.model.RunningRecord
@@ -11,12 +12,14 @@ import com.example.util.simpletimetracker.domain.widget.interactor.WidgetInterac
 import javax.inject.Inject
 
 class UpdateExternalViewsInteractor @Inject constructor(
+    private val recordTypeCategoryInteractor: RecordTypeCategoryInteractor,
     private val runningRecordInteractor: RunningRecordInteractor,
     private val notificationTypeInteractor: NotificationTypeInteractor,
     private val notificationActivitySwitchInteractor: NotificationActivitySwitchInteractor,
     private val notificationInactivityInteractor: NotificationInactivityInteractor,
     private val notificationActivityInteractor: NotificationActivityInteractor,
     private val notificationGoalTimeInteractor: NotificationGoalTimeInteractor,
+    private val scheduledReminderNotificationInteractor: ScheduledReminderNotificationInteractor,
     private val widgetInteractor: WidgetInteractor,
     private val wearInteractor: WearInteractor,
     private val prefsInteractor: PrefsInteractor,
@@ -24,6 +27,8 @@ class UpdateExternalViewsInteractor @Inject constructor(
 
     // Also removes running records and records.
     // Categories are affected.
+    // Activity reminder is not called intentionally, because it is called from running record remove
+    // which is called just before this type remove call.
     suspend fun onTypeRemove(
         typeId: Long,
         fromArchive: Boolean,
@@ -31,7 +36,7 @@ class UpdateExternalViewsInteractor @Inject constructor(
         val runningRecordIds = runningRecordInteractor.getAll().map(RunningRecord::id)
 
         runUpdates(
-            Update.GoalCancel(RecordTypeGoal.IdData.Type(typeId)),
+            Update.GoalCancel(listOf(RecordTypeGoal.IdData.Type(typeId))),
             Update.GoalReschedule(runningRecordIds + typeId),
             Update.GoalTagReschedule(),
             Update.WidgetStatistics,
@@ -56,11 +61,19 @@ class UpdateExternalViewsInteractor @Inject constructor(
 
     suspend fun onTypeAddOrChange(
         typeId: Long,
+        initialCategories: Set<Long>,
+        removedCategories: Set<Long>,
     ) {
+        val remainingTypeIds = removedCategories
+            .flatMap { recordTypeCategoryInteractor.getTypes(it) }
+
         runUpdates(
             Update.NotificationTypes,
             Update.NotificationWithControls,
-            Update.GoalReschedule(listOf(typeId)), // Goals changed, or categories assigned changed.
+            // Category goals will be rescheduled after this.
+            Update.GoalCancel(initialCategories.map(RecordTypeGoal.IdData::Category)),
+            // Goals changed, or categories assigned changed.
+            Update.GoalReschedule((remainingTypeIds + typeId).distinct()),
             Update.WidgetSingleTypes,
             Update.WidgetUniversal,
             Update.WidgetGrid,
@@ -82,15 +95,17 @@ class UpdateExternalViewsInteractor @Inject constructor(
         categoryId: Long,
     ) {
         runUpdates(
-            Update.GoalCancel(RecordTypeGoal.IdData.Category(categoryId)),
+            Update.GoalCancel(listOf(RecordTypeGoal.IdData.Category(categoryId))),
             Update.WidgetStatistics,
         )
     }
 
     suspend fun onCategoryAddOrChange(
+        categoryId: Long,
         typeIds: List<Long>,
     ) {
         runUpdates(
+            Update.GoalCancel(listOf(RecordTypeGoal.IdData.Category(categoryId))),
             Update.GoalReschedule(typeIds), // Goals changed, or activities assigned changed.
             Update.WidgetStatistics,
         )
@@ -104,18 +119,15 @@ class UpdateExternalViewsInteractor @Inject constructor(
     ) {
         val runningRecords = runningRecordInteractor.getAll()
         val runningRecordIds = runningRecords.map(RunningRecord::id)
-        val runningRecordTagIds = runningRecords.map(RunningRecord::tags)
-            .flatten().map(RecordBase.Tag::tagId)
+        val runningRecordTagIds = runningRecords.flatMap(RunningRecord::tags)
+            .map(RecordBase.Tag::tagId)
         val fullTagIds = runningRecordTagIds + tagIds
 
         runUpdates(
             Update.NotificationTypeHide(typeId),
             Update.NotificationWithControls.takeIf { updateNotificationSwitch },
             Update.InactivityReminderReschedule,
-            Update.ActivityReminderCancel.takeIf {
-                // Cancel if no activity tracked.
-                runningRecordIds.isEmpty()
-            },
+            Update.ActivityReminderStopped(typeId),
             Update.GoalReschedule(runningRecordIds + typeId),
             Update.GoalTagReschedule(fullTagIds).takeIf { fullTagIds.isNotEmpty() },
             Update.WidgetSingleTypes.takeIf { updateWidgets },
@@ -135,10 +147,7 @@ class UpdateExternalViewsInteractor @Inject constructor(
             Update.NotificationType(listOf(typeId)),
             Update.NotificationWithControls.takeIf { updateNotificationSwitch },
             Update.InactivityReminderCancel,
-            Update.ActivityReminderReschedule.takeIf {
-                // Schedule only on first activity start.
-                runningRecordInteractor.getAll().size == 1
-            },
+            Update.ActivityReminderStarted(typeId),
             Update.GoalReschedule(listOf(typeId)),
             Update.GoalTagReschedule(tagIds).takeIf { tagIds.isNotEmpty() },
             Update.WidgetSingleTypes,
@@ -237,7 +246,7 @@ class UpdateExternalViewsInteractor @Inject constructor(
         runUpdates(
             Update.NotificationTypes.takeIf { !fromArchive },
             Update.NotificationWithControls.takeIf { !fromArchive },
-            Update.GoalCancel(RecordTypeGoal.IdData.Tag(tagId)),
+            Update.GoalCancel(listOf(RecordTypeGoal.IdData.Tag(tagId))),
             Update.Wear,
         )
     }
@@ -248,6 +257,7 @@ class UpdateExternalViewsInteractor @Inject constructor(
         runUpdates(
             Update.NotificationTypes,
             Update.NotificationWithControls,
+            Update.GoalCancel(listOf(RecordTypeGoal.IdData.Tag(tagId))),
             Update.GoalTagReschedule(listOf(tagId)), // Goals changed.
             Update.Wear,
         )
@@ -385,8 +395,7 @@ class UpdateExternalViewsInteractor @Inject constructor(
 
     suspend fun onActivityReminderChange() {
         runUpdates(
-            Update.ActivityReminderCancel,
-            Update.ActivityReminderReschedule,
+            Update.ActivityReminderRescheduleDefault,
         )
     }
 
@@ -430,6 +439,7 @@ class UpdateExternalViewsInteractor @Inject constructor(
             Update.NotificationWithControls,
             Update.GoalReschedule(),
             Update.GoalTagReschedule(),
+            Update.ScheduledReminderReschedule,
             Update.WidgetSingleTypes,
             Update.WidgetUniversal,
             Update.WidgetGrid,
@@ -460,11 +470,17 @@ class UpdateExternalViewsInteractor @Inject constructor(
         )
     }
 
-    // Update everything except goals.
+    // Update everything except goals (consuming).
+    // Reminders rescheduled in order to handle exact alarm permission being revoked.
+    // Activity reminders are not rescheduled in order to not lose current timer,
+    // need to reschedule only on actual state change.
+    // TODO Goals and Pomodoro need equivalent exact alarm revocation recovery.
+    //  Persist the last observed permission state and fully recover them only when it changes.
     suspend fun onAppStart() {
         runUpdates(
             Update.NotificationTypes,
             Update.NotificationWithControls,
+            Update.ScheduledReminderReschedule,
             Update.WidgetSingleTypes,
             Update.WidgetUniversal,
             Update.WidgetGrid,
@@ -524,19 +540,25 @@ class UpdateExternalViewsInteractor @Inject constructor(
                 notificationGoalTimeInteractor.checkAndRescheduleTags(update.tagIds)
             }
             is Update.GoalCancel -> {
-                notificationGoalTimeInteractor.cancel(update.idData)
+                update.idData.forEach { notificationGoalTimeInteractor.cancel(it) }
             }
-            is Update.ActivityReminderCancel -> {
-                notificationActivityInteractor.cancel()
+            is Update.ActivityReminderStarted -> {
+                notificationActivityInteractor.onActivityStarted(update.activityId)
             }
-            is Update.ActivityReminderReschedule -> {
-                notificationActivityInteractor.checkAndSchedule()
+            is Update.ActivityReminderStopped -> {
+                notificationActivityInteractor.onActivityStopped(update.activityId)
+            }
+            is Update.ActivityReminderRescheduleDefault -> {
+                notificationActivityInteractor.rescheduleDefault()
             }
             is Update.InactivityReminderCancel -> {
                 notificationInactivityInteractor.cancel()
             }
             is Update.InactivityReminderReschedule -> {
                 notificationInactivityInteractor.checkAndSchedule()
+            }
+            is Update.ScheduledReminderReschedule -> {
+                scheduledReminderNotificationInteractor.rescheduleAll()
             }
         }
     }
@@ -555,10 +577,12 @@ class UpdateExternalViewsInteractor @Inject constructor(
         data object Wear : Update
         data class GoalReschedule(val typeIds: List<Long> = emptyList()) : Update
         data class GoalTagReschedule(val tagIds: List<Long> = emptyList()) : Update
-        data class GoalCancel(val idData: RecordTypeGoal.IdData) : Update
-        data object ActivityReminderCancel : Update
-        data object ActivityReminderReschedule : Update
+        data class GoalCancel(val idData: List<RecordTypeGoal.IdData>) : Update
+        data class ActivityReminderStarted(val activityId: Long) : Update
+        data class ActivityReminderStopped(val activityId: Long) : Update
+        data object ActivityReminderRescheduleDefault : Update
         data object InactivityReminderCancel : Update
         data object InactivityReminderReschedule : Update
+        data object ScheduledReminderReschedule : Update
     }
 }

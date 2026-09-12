@@ -5,37 +5,43 @@ import com.example.util.simpletimetracker.feature_settings.api.SettingsBlock
 import com.example.util.simpletimetracker.domain.extension.flip
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
-import com.example.util.simpletimetracker.feature_settings.interactor.SettingsAdvancedOptionsUpdateInteractor
+import com.example.util.simpletimetracker.feature_settings.interactor.SettingsOptionsUpdateInteractor
 import com.example.util.simpletimetracker.feature_settings.interactor.SettingsExportViewDataInteractor
 import com.example.util.simpletimetracker.feature_settings.mapper.SettingsMapper
-import com.example.util.simpletimetracker.navigation.Router
-import com.example.util.simpletimetracker.navigation.params.screen.ExportOptionsParams
+import com.example.util.simpletimetracker.feature_settings.model.OptionsContent
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class SettingsExportViewModelDelegate @Inject constructor(
-    private val router: Router,
     private val settingsExportViewDataInteractor: SettingsExportViewDataInteractor,
     private val settingsMapper: SettingsMapper,
     private val prefsInteractor: PrefsInteractor,
     private val settingsFileWorkDelegate: SettingsFileWorkDelegate,
-    private val settingsAdvancedOptionsUpdateInteractor: SettingsAdvancedOptionsUpdateInteractor,
-) : ViewModelDelegate() {
+    private val settingsOptionsUpdateInteractor: SettingsOptionsUpdateInteractor,
+) : SettingsDelegate, ViewModelDelegate() {
 
     private var parent: SettingsParent? = null
     private var isCollapsed: Boolean = true
 
-    fun init(parent: SettingsParent) {
+    override fun init(parent: SettingsParent) {
         this.parent = parent
     }
 
-    suspend fun getViewData(): List<ViewHolderType> {
-        return settingsExportViewDataInteractor.execute(
-            isCollapsed = isCollapsed,
+    override suspend fun getViewData(): SettingsDelegate.ViewData {
+        return SettingsDelegate.ViewData(
+            key = Companion,
+            data = settingsExportViewDataInteractor.execute(isCollapsed),
         )
     }
 
-    fun onBlockClicked(block: SettingsBlock) {
+    override suspend fun getSheetViewData(content: OptionsContent): List<ViewHolderType>? {
+        return when (content) {
+            OptionsContent.ExportAdvanced -> settingsExportViewDataInteractor.executeAdvanced()
+            else -> null
+        }
+    }
+
+    override fun onBlockClicked(block: SettingsBlock) {
         when (block) {
             SettingsBlock.ExportCustomized -> onCustomizeClick()
             SettingsBlock.ExportCollapse -> onCollapseClick()
@@ -46,7 +52,7 @@ class SettingsExportViewModelDelegate @Inject constructor(
         }
     }
 
-    fun onSpinnerPositionSelected(block: SettingsBlock, position: Int) {
+    override fun onSpinnerPositionSelected(block: SettingsBlock, position: Int) {
         when (block) {
             SettingsBlock.ExportSpreadsheetDateTimeFormat -> onDateTimeFormatSelected(position)
             else -> {
@@ -55,17 +61,17 @@ class SettingsExportViewModelDelegate @Inject constructor(
         }
     }
 
-    fun collapse() {
+    override fun collapse() {
         isCollapsed = true
     }
 
     private fun onTriggerAutoExportClick() = delegateScope.launch {
-        settingsAdvancedOptionsUpdateInteractor.sendDismiss()
+        settingsOptionsUpdateInteractor.sendDismiss()
         settingsFileWorkDelegate.onTriggerAutoExportClick()
     }
 
     private fun onCustomizeClick() {
-        router.navigate(ExportOptionsParams)
+        parent?.openOptions(OptionsContent.ExportAdvanced)
     }
 
     private fun onCollapseClick() = delegateScope.launch {
@@ -80,4 +86,6 @@ class SettingsExportViewModelDelegate @Inject constructor(
             parent?.updateContent()
         }
     }
+
+    companion object : SettingsDelegate.Key
 }

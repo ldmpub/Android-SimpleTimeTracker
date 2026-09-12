@@ -8,21 +8,21 @@ import com.example.util.simpletimetracker.domain.record.model.Record
 import com.example.util.simpletimetracker.domain.recordAction.model.RecordQuickAction
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
 import com.example.util.simpletimetracker.feature_base_adapter.hint.HintViewData
-import com.example.util.simpletimetracker.feature_change_record.adapter.ChangeRecordChangePreviewViewData
-import com.example.util.simpletimetracker.feature_change_record.adapter.ChangeRecordSliderViewData
-import com.example.util.simpletimetracker.feature_change_record.adapter.ChangeRecordTimeAdjustmentViewData
-import com.example.util.simpletimetracker.feature_change_record.adapter.ChangeRecordTimePreviewViewData
+import com.example.util.simpletimetracker.feature_change_record.api.model.ChangeRecordActionsBlock
+import com.example.util.simpletimetracker.feature_change_record.api.model.ChangeRecordDateTimeFieldsState
+import com.example.util.simpletimetracker.feature_change_record.api.viewData.ChangeRecordChangePreviewViewData
+import com.example.util.simpletimetracker.feature_change_record.api.viewData.ChangeRecordSliderViewData
+import com.example.util.simpletimetracker.feature_change_record.api.viewData.ChangeRecordTimeAdjustmentViewData
+import com.example.util.simpletimetracker.feature_change_record.api.viewData.ChangeRecordTimePreviewViewData
 import com.example.util.simpletimetracker.feature_change_record.interactor.ChangeRecordViewDataInteractor
 import com.example.util.simpletimetracker.feature_change_record.mapper.ChangeRecordViewDataMapper
-import com.example.util.simpletimetracker.feature_change_record.model.ChangeRecordActionsBlock
-import com.example.util.simpletimetracker.feature_change_record.model.ChangeRecordDateTimeFieldsState
 import com.example.util.simpletimetracker.feature_change_record.viewData.ChangeRecordPreview
-import com.example.util.simpletimetracker.feature_change_record.viewModel.base.ChangeRecordDelegateBridge
 import com.example.util.simpletimetracker.feature_change_record.viewModel.base.ChangeRecordActionsSubDelegate
+import com.example.util.simpletimetracker.feature_change_record.viewModel.base.ChangeRecordDelegateBridge
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import kotlinx.coroutines.ensureActive
 
 class ChangeRecordActionsSplitDelegate @Inject constructor(
     private val prefsInteractor: PrefsInteractor,
@@ -53,14 +53,24 @@ class ChangeRecordActionsSplitDelegate @Inject constructor(
 
     suspend fun onSplitClickDelegate() {
         val params = bridge?.getParams() ?: return
+        val firstTypeId = params.splitParams.newBeforeTypeId
+        val newBeforeTags = when (firstTypeId) {
+            // Override type not selected - use same tags.
+            // Override same as new type - use same tags.
+            params.baseParams.newTypeId -> params.baseParams.newTags
+            // Override same as original - use original tags.
+            params.splitParams.originalTypeId -> params.splitParams.originalTags
+            // Override to new type - use empty tags.
+            else -> emptyList()
+        }
 
         Record(
             id = 0L, // Zero id creates new record
-            typeId = params.baseParams.newTypeId,
+            typeId = firstTypeId,
             timeStarted = params.baseParams.newTimeStarted,
             timeEnded = params.splitParams.newTimeSplit,
             comment = params.baseParams.newComment,
-            tags = params.baseParams.newTags,
+            tags = newBeforeTags,
         ).let {
             addRecordMediator.add(it)
         }
@@ -71,7 +81,8 @@ class ChangeRecordActionsSplitDelegate @Inject constructor(
         val params = bridge?.getParams()
             ?: return emptyList()
         val newTimeSplit = params.splitParams.newTimeSplit
-        val newTypeId = params.baseParams.newTypeId
+        val firstTypeId = params.splitParams.newBeforeTypeId
+        val secondTypeId = params.baseParams.newTypeId
         val newTimeStarted = params.baseParams.newTimeStarted
         val newTimeEnded = params.splitParams.splitPreviewTimeEnded
         val showTimeEnded = params.splitParams.showTimeEndedOnSplitPreview
@@ -97,7 +108,8 @@ class ChangeRecordActionsSplitDelegate @Inject constructor(
             value = TimeUnit.MILLISECONDS.toSeconds(newTimeSplit - newTimeStarted).toFloat(),
         )
         val previewData = loadSplitPreviewViewData(
-            newTypeId = newTypeId,
+            firstTypeId = firstTypeId,
+            secondTypeId = secondTypeId,
             newTimeStarted = newTimeStarted,
             newTimeSplit = newTimeSplit,
             newTimeEnded = newTimeEnded,
@@ -112,6 +124,8 @@ class ChangeRecordActionsSplitDelegate @Inject constructor(
             isRemoveVisible = false,
             isCheckVisible = false,
             isCompareVisible = false,
+            isBeforeActionVisible = true,
+            isAfterActionVisible = true,
         )
         result += changeRecordViewDataMapper.mapRecordActionButton(
             action = action,
@@ -134,7 +148,8 @@ class ChangeRecordActionsSplitDelegate @Inject constructor(
     }
 
     private suspend fun loadSplitPreviewViewData(
-        newTypeId: Long,
+        firstTypeId: Long,
+        secondTypeId: Long,
         newTimeStarted: Long,
         newTimeSplit: Long,
         newTimeEnded: Long,
@@ -145,7 +160,7 @@ class ChangeRecordActionsSplitDelegate @Inject constructor(
             end = ChangeRecordDateTimeFieldsState.State.DateTime,
         )
         val firstRecord = Record(
-            typeId = newTypeId,
+            typeId = firstTypeId,
             timeStarted = newTimeStarted,
             timeEnded = newTimeSplit,
             comment = "",
@@ -154,7 +169,7 @@ class ChangeRecordActionsSplitDelegate @Inject constructor(
             changeRecordViewDataInteractor.getPreviewViewData(it, dateTimeFieldState)
         }
         val secondRecord = Record(
-            typeId = newTypeId,
+            typeId = secondTypeId,
             timeStarted = newTimeSplit,
             timeEnded = newTimeEnded,
             comment = "",

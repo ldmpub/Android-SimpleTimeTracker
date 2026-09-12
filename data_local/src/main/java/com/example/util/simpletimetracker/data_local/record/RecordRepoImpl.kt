@@ -38,12 +38,12 @@ class RecordRepoImpl @Inject constructor(
         recordDao.getAll().map(::mapItem)
     }
 
-    override suspend fun getByType(typeIds: List<Long>): List<Record> = withContext(Dispatchers.IO) {
+    override suspend fun getByType(typeIds: Set<Long>): List<Record> = withContext(Dispatchers.IO) {
         logDataAccess("getByType")
         recordDao.getByType(typeIds).map(::mapItem)
     }
 
-    override suspend fun getByTypeWithAnyComment(typeIds: List<Long>): List<Record> = withContext(Dispatchers.IO) {
+    override suspend fun getByTypeWithAnyComment(typeIds: Set<Long>): List<Record> = withContext(Dispatchers.IO) {
         logDataAccess("getByTypeWithAnyComment")
         recordDao.getByTypeWithAnyComment(typeIds).map(::mapItem)
     }
@@ -55,8 +55,24 @@ class RecordRepoImpl @Inject constructor(
         recordDao.searchComment(text).map(::mapItem)
     }
 
+    override suspend fun searchSimilarComments(
+        text: String,
+        limit: Int,
+    ): List<String> = withContext(Dispatchers.IO) {
+        logDataAccess("searchSimilarComments")
+        recordDao.searchSimilarComments(text, limit)
+    }
+
+    override suspend fun getRecentComments(
+        typeId: Long,
+        limit: Int,
+    ): List<String> = withContext(Dispatchers.IO) {
+        logDataAccess("getRecentComments")
+        recordDao.getRecentComments(typeId, limit)
+    }
+
     override suspend fun searchByTypeWithComment(
-        typeIds: List<Long>,
+        typeIds: Set<Long>,
         text: String,
     ): List<Record> = withContext(Dispatchers.IO) {
         logDataAccess("searchByTypeWithComment")
@@ -66,6 +82,16 @@ class RecordRepoImpl @Inject constructor(
     override suspend fun searchAnyComments(): List<Record> = withContext(Dispatchers.IO) {
         logDataAccess("searchAnyComments")
         recordDao.searchAnyComments().map(::mapItem)
+    }
+
+    override suspend fun getTagged(tagIds: Set<Long>): List<Record> = withContext(Dispatchers.IO) {
+        logDataAccess("getTagged")
+        recordDao.getTagged(tagIds).map(::mapItem)
+    }
+
+    override suspend fun getUntagged(): List<Record> = withContext(Dispatchers.IO) {
+        logDataAccess("getUntagged")
+        recordDao.getUntagged().map(::mapItem)
     }
 
     override suspend fun get(id: Long): Record? = mutex.withLockedCache(
@@ -79,7 +105,7 @@ class RecordRepoImpl @Inject constructor(
         val cacheKey = GetFromRangeKey(range)
         return mutex.withLockedCache(
             logMessage = "getFromRange",
-            accessCache = { getFromRangeCache.get(cacheKey) },
+            accessCache = { getFromRangeCache[cacheKey] },
             accessSource = {
                 recordDao.getFromRange(
                     start = range.timeStarted,
@@ -90,7 +116,7 @@ class RecordRepoImpl @Inject constructor(
         )
     }
 
-    override suspend fun getFromRangeByType(typeIds: List<Long>, range: Range): List<Record> {
+    override suspend fun getFromRangeByType(typeIds: Set<Long>, range: Range): List<Record> {
         val cacheKey = GetFromRangeByTypeKey(typeIds, range)
         return mutex.withLockedCache(
             logMessage = "getFromRangeByType",
@@ -219,7 +245,7 @@ class RecordRepoImpl @Inject constructor(
     }
 
     private data class GetFromRangeByTypeKey(
-        val typeIds: List<Long>,
+        val typeIds: Set<Long>,
         val range: Range,
     )
 

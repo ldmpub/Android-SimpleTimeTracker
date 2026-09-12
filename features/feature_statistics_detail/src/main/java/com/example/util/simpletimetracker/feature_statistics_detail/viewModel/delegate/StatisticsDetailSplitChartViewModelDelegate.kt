@@ -5,26 +5,36 @@ import androidx.lifecycle.MutableLiveData
 import com.example.util.simpletimetracker.core.base.ViewModelDelegate
 import com.example.util.simpletimetracker.core.extension.lazySuspend
 import com.example.util.simpletimetracker.core.extension.set
+import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.feature_base_adapter.buttonsRow.view.ButtonsRowViewData
 import com.example.util.simpletimetracker.domain.statistics.model.RangeLength
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
+import com.example.util.simpletimetracker.feature_base_adapter.buttonsRow.ButtonsRowItemViewData
+import com.example.util.simpletimetracker.feature_statistics_detail.R
+import com.example.util.simpletimetracker.feature_statistics_detail.adapter.StatisticsDetailBarChartViewData
+import com.example.util.simpletimetracker.feature_statistics_detail.adapter.StatisticsDetailBlock
+import com.example.util.simpletimetracker.feature_statistics_detail.adapter.StatisticsDetailHintViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.interactor.StatisticsDetailSplitChartInteractor
 import com.example.util.simpletimetracker.feature_statistics_detail.mapper.StatisticsDetailViewDataMapper
+import com.example.util.simpletimetracker.feature_statistics_detail.mapper.mapItem
+import com.example.util.simpletimetracker.feature_statistics_detail.mapper.mapItems
+import com.example.util.simpletimetracker.feature_statistics_detail.mapper.mapToViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.model.SplitChartGrouping
-import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailChartViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailSplitGroupingViewData
+import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailViewData
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class StatisticsDetailSplitChartViewModelDelegate @Inject constructor(
+    private val resourceRepo: ResourceRepo,
     private val splitChartInteractor: StatisticsDetailSplitChartInteractor,
     private val mapper: StatisticsDetailViewDataMapper,
 ) : StatisticsDetailViewModelDelegate, ViewModelDelegate() {
 
-    val splitChartViewData: LiveData<StatisticsDetailChartViewData?> by lazy {
+    val splitChartViewData: LiveData<List<StatisticsDetailViewData.Item<*>>> by lazy {
         return@lazy MutableLiveData()
     }
-    val comparisonSplitChartViewData: LiveData<StatisticsDetailChartViewData?> by lazy {
+    val comparisonSplitChartViewData: LiveData<List<StatisticsDetailViewData.Item<*>>> by lazy {
         return@lazy MutableLiveData()
     }
     val splitChartGroupingViewData: LiveData<List<ViewHolderType>> by lazySuspend {
@@ -38,19 +48,41 @@ class StatisticsDetailSplitChartViewModelDelegate @Inject constructor(
         this.parent = parent
     }
 
-    fun onSplitChartGroupingClick(viewData: ButtonsRowViewData) {
+    override fun getViewData(): StatisticsDetailViewData {
+        return listOfNotNull(
+            splitChartViewData.value,
+            comparisonSplitChartViewData.value,
+            splitChartGroupingViewData.value?.mapItems(),
+        ).flatten().let(::mapToViewData)
+    }
+
+    override fun onButtonsRowClick(
+        block: ButtonsRowItemViewData.ButtonsRowId,
+        viewData: ButtonsRowViewData,
+    ) {
+        when (block) {
+            StatisticsDetailBlock.SplitChartGrouping -> onSplitChartGroupingClick(viewData)
+        }
+    }
+
+    private fun onSplitChartGroupingClick(viewData: ButtonsRowViewData) {
         if (viewData !is StatisticsDetailSplitGroupingViewData) return
         this.splitChartGrouping = viewData.splitChartGrouping
         updateSplitChartGroupingViewData()
         updateSplitChartViewData()
     }
 
-    fun updateSplitChartGroupingViewData() {
+    override fun updateViewData(animate: Boolean) {
+        updateSplitChartViewData()
+        updateSplitChartGroupingViewData()
+    }
+
+    private fun updateSplitChartGroupingViewData() {
         splitChartGroupingViewData.set(loadSplitChartGroupingViewData())
         parent?.updateContent()
     }
 
-    fun updateSplitChartViewData() = delegateScope.launch {
+    private fun updateSplitChartViewData() = delegateScope.launch {
         splitChartViewData.set(loadSplitChartViewData(isForComparison = false))
         comparisonSplitChartViewData.set(loadSplitChartViewData(isForComparison = true))
         parent?.updateContent()
@@ -64,20 +96,43 @@ class StatisticsDetailSplitChartViewModelDelegate @Inject constructor(
         )
     }
 
-    private suspend fun loadSplitChartViewData(isForComparison: Boolean): StatisticsDetailChartViewData? {
-        val parent = parent ?: return null
+    private suspend fun loadSplitChartViewData(isForComparison: Boolean): List<StatisticsDetailViewData.Item<*>> {
+        val parent = parent ?: return emptyList()
 
         val grouping = splitChartGrouping
             .takeUnless { parent.rangeLength is RangeLength.Day }
             ?: SplitChartGrouping.HOURLY
 
-        return splitChartInteractor.getSplitChartViewData(
+        val viewData = splitChartInteractor.getSplitChartViewData(
             records = if (isForComparison) parent.compareRecords else parent.records,
             filter = if (isForComparison) parent.comparisonFilter else parent.filter,
             isForComparison = isForComparison,
             rangeLength = parent.rangeLength,
             rangePosition = parent.rangePosition,
             splitChartGrouping = grouping,
+        ) ?: return emptyList()
+
+        return listOfNotNull(
+            if (!isForComparison) {
+                StatisticsDetailHintViewData(
+                    block = StatisticsDetailBlock.SplitHint,
+                    text = resourceRepo.getString(R.string.statistics_detail_day_split_hint),
+                ).mapItem()
+            } else {
+                null
+            },
+            StatisticsDetailBarChartViewData(
+                block = if (isForComparison) {
+                    StatisticsDetailBlock.SplitChartComparison
+                } else {
+                    StatisticsDetailBlock.SplitChart
+                },
+                singleColor = null, // Replaced later.
+                marginTopDp = 0,
+                data = viewData,
+            ).mapItem(forComparison = isForComparison),
         )
     }
+
+    companion object : StatisticsDetailViewData.Key
 }

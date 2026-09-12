@@ -11,14 +11,17 @@ import com.example.util.simpletimetracker.domain.base.Coordinates
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
 import com.example.util.simpletimetracker.domain.recordType.model.RecordTypeGoal
 import com.example.util.simpletimetracker.domain.record.model.RecordsFilter
-import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
+import com.example.util.simpletimetracker.feature_base_adapter.buttonsRow.ButtonsRowItemViewData
+import com.example.util.simpletimetracker.feature_statistics_detail.adapter.StatisticsDetailBlock
 import com.example.util.simpletimetracker.feature_statistics_detail.customView.SeriesCalendarView
 import com.example.util.simpletimetracker.feature_statistics_detail.interactor.StatisticsDetailGetGoalFromFilterInteractor
 import com.example.util.simpletimetracker.feature_statistics_detail.interactor.StatisticsDetailStreaksInteractor
+import com.example.util.simpletimetracker.feature_statistics_detail.mapper.mapToViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.model.StreaksGoal
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailStreaksGoalViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailStreaksTypeViewData
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailStreaksViewData
+import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailViewData
 import com.example.util.simpletimetracker.navigation.Router
 import com.example.util.simpletimetracker.navigation.params.notification.PopupParams
 import kotlinx.coroutines.launch
@@ -35,12 +38,6 @@ class StatisticsDetailStreaksViewModelDelegate @Inject constructor(
     val streaksViewData: LiveData<StatisticsDetailStreaksViewData?> by lazySuspend {
         loadEmptyStreaksViewData().also { parent?.updateContent() }
     }
-    val streaksTypeViewData: LiveData<List<ViewHolderType>> by lazySuspend {
-        loadStreaksTypeViewData().also { parent?.updateContent() }
-    }
-    val streaksGoalViewData: LiveData<List<ViewHolderType>> by lazySuspend {
-        loadStreaksGoalViewData().also { parent?.updateContent() }
-    }
 
     private var parent: StatisticsDetailViewModelDelegate.Parent? = null
     private var streaksGoal: StreaksGoal = StreaksGoal.ANY
@@ -51,43 +48,46 @@ class StatisticsDetailStreaksViewModelDelegate @Inject constructor(
         this.parent = parent
     }
 
-    fun updateStreaksViewData() = delegateScope.launch {
-        streaksViewData.set(loadStreaksViewData())
-        parent?.updateContent()
+    override fun getViewData(): StatisticsDetailViewData? {
+        return streaksViewData.value?.viewData?.let(::mapToViewData)
     }
 
-    fun updateStreaksGoalViewData() = delegateScope.launch {
-        streaksGoalViewData.set(loadStreaksGoalViewData())
-        parent?.updateContent()
+    override fun updateViewData(animate: Boolean) {
+        delegateScope.launch {
+            streaksViewData.set(loadStreaksViewData())
+            parent?.updateContent()
+        }
     }
 
-    @Suppress("MemberVisibilityCanBePrivate")
-    fun updateStreaksTypeViewData() = delegateScope.launch {
-        streaksTypeViewData.set(loadStreaksTypeViewData())
-        parent?.updateContent()
-    }
-
-    suspend fun onTypesFilterDismissed() {
+    override suspend fun doOnFiltersChanged() {
         val parent = parent ?: return
         dailyGoal = Result.success(getDailyGoalType(parent.filter))
         compareDailyGoal = Result.success(getDailyGoalType(parent.comparisonFilter))
     }
 
-    fun onStreaksTypeClick(viewData: ButtonsRowViewData) = delegateScope.launch {
+    override fun onButtonsRowClick(
+        block: ButtonsRowItemViewData.ButtonsRowId,
+        viewData: ButtonsRowViewData,
+    ) {
+        when (block) {
+            StatisticsDetailBlock.SeriesGoal -> onStreaksGoalClick(viewData)
+            StatisticsDetailBlock.SeriesType -> onStreaksTypeClick(viewData)
+        }
+    }
+
+    private fun onStreaksTypeClick(viewData: ButtonsRowViewData) = delegateScope.launch {
         if (viewData !is StatisticsDetailStreaksTypeViewData) return@launch
         prefsInteractor.setStatisticsStreaksType(viewData.type)
-        updateStreaksTypeViewData()
-        updateStreaksViewData()
+        updateViewData()
     }
 
-    fun onStreaksGoalClick(viewData: ButtonsRowViewData) {
+    private fun onStreaksGoalClick(viewData: ButtonsRowViewData) {
         if (viewData !is StatisticsDetailStreaksGoalViewData) return
         streaksGoal = viewData.type
-        updateStreaksGoalViewData()
-        updateStreaksViewData()
+        updateViewData()
     }
 
-    fun onStreaksCalendarClick(
+    override fun onStreaksCalendarClick(
         viewData: SeriesCalendarView.ViewData,
         coordinates: Coordinates,
     ) {
@@ -148,19 +148,5 @@ class StatisticsDetailStreaksViewModelDelegate @Inject constructor(
         )
     }
 
-    private suspend fun loadStreaksTypeViewData(): List<ViewHolderType> {
-        val streaksType = prefsInteractor.getStatisticsStreaksType()
-        return streaksInteractor.mapToStreaksTypeViewData(streaksType)
-    }
-
-    private suspend fun loadStreaksGoalViewData(): List<ViewHolderType> {
-        val parent = parent ?: return emptyList()
-
-        return streaksInteractor.mapToStreaksGoalViewData(
-            streaksGoal = streaksGoal,
-            dailyGoal = getDailyGoal(),
-            compareGoalType = getCompareDailyGoal(),
-            rangeLength = parent.rangeLength,
-        )
-    }
+    companion object : StatisticsDetailViewData.Key
 }

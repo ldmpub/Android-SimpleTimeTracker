@@ -1,12 +1,12 @@
 package com.example.util.simpletimetracker.feature_running_records.viewModel
 
-import android.os.Parcelable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.util.simpletimetracker.core.base.BaseViewModel
 import com.example.util.simpletimetracker.core.base.SingleLiveEvent
 import com.example.util.simpletimetracker.core.extension.set
+import com.example.util.simpletimetracker.core.extension.toPreview
 import com.example.util.simpletimetracker.core.extension.toParams
 import com.example.util.simpletimetracker.core.interactor.GetChangeRecordNavigationParamsInteractor
 import com.example.util.simpletimetracker.core.interactor.RecordRepeatInteractor
@@ -19,12 +19,12 @@ import com.example.util.simpletimetracker.domain.darkMode.interactor.ThemeChange
 import com.example.util.simpletimetracker.domain.extension.orZero
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.AddRunningRecordMediator
+import com.example.util.simpletimetracker.domain.record.interactor.RecordInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.RemoveRunningRecordMediator
 import com.example.util.simpletimetracker.domain.record.interactor.RunningRecordInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.UpdateRunningRecordsInteractor
+import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.record.model.RecordDataSelectionDialogResult
-import com.example.util.simpletimetracker.domain.recordAction.interactor.RecordActionRepeatMediator
-import com.example.util.simpletimetracker.domain.recordShortcut.interactor.RecordShortcutInteractor
 import com.example.util.simpletimetracker.domain.recordType.interactor.RecordTypeInteractor
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
 import com.example.util.simpletimetracker.feature_base_adapter.activityFilter.ActivityFilterAddViewData
@@ -36,7 +36,9 @@ import com.example.util.simpletimetracker.feature_base_adapter.recordType.Record
 import com.example.util.simpletimetracker.feature_base_adapter.recordTypeSpecial.RunningRecordTypeSpecialViewData
 import com.example.util.simpletimetracker.feature_base_adapter.recordWithHint.RecordWithHintViewData
 import com.example.util.simpletimetracker.feature_base_adapter.runningRecord.RunningRecordViewData
+import com.example.util.simpletimetracker.feature_dialogs.api.interactor.CardOrderChangedInteractor
 import com.example.util.simpletimetracker.feature_running_records.R
+import com.example.util.simpletimetracker.feature_running_records.api.OnShortcutClickInteractor
 import com.example.util.simpletimetracker.feature_running_records.interactor.RunningRecordsViewDataInteractor
 import com.example.util.simpletimetracker.navigation.Router
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeActivityFilterParams
@@ -45,17 +47,16 @@ import com.example.util.simpletimetracker.navigation.params.screen.ChangeRecordP
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRecordTypeParams
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRunningRecordFromMainParams
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRunningRecordParams
+import com.example.util.simpletimetracker.navigation.params.screen.ChangeShortcutParams
 import com.example.util.simpletimetracker.navigation.params.screen.DefaultTypesSelectionDialogParams
 import com.example.util.simpletimetracker.navigation.params.screen.PomodoroParams
 import com.example.util.simpletimetracker.navigation.params.screen.RecordTagSelectionParams
 import com.example.util.simpletimetracker.navigation.params.screen.StandardDialogParams
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.parcelize.Parcelize
 import javax.inject.Inject
 
 @HiltViewModel
@@ -65,8 +66,8 @@ class RunningRecordsViewModel @Inject constructor(
     private val addRunningRecordMediator: AddRunningRecordMediator,
     private val removeRunningRecordMediator: RemoveRunningRecordMediator,
     private val runningRecordInteractor: RunningRecordInteractor,
+    private val recordInteractor: RecordInteractor,
     private val recordRepeatInteractor: RecordRepeatInteractor,
-    private val recordShortcutInteractor: RecordShortcutInteractor,
     private val runningRecordsViewDataInteractor: RunningRecordsViewDataInteractor,
     private val changeSelectedActivityFilterMediator: ChangeSelectedActivityFilterMediator,
     private val prefsInteractor: PrefsInteractor,
@@ -74,7 +75,8 @@ class RunningRecordsViewModel @Inject constructor(
     private val recordTypeInteractor: RecordTypeInteractor,
     private val getChangeRecordNavigationParamsInteractor: GetChangeRecordNavigationParamsInteractor,
     private val themeChangedInteractor: ThemeChangedInteractor,
-    private val recordActionRepeatMediator: RecordActionRepeatMediator,
+    private val onShortcutClickInteractor: OnShortcutClickInteractor,
+    private val cardOrderChangedInteractor: CardOrderChangedInteractor,
 ) : BaseViewModel() {
 
     override var delayDataLoad: Boolean = false
@@ -219,7 +221,7 @@ class RunningRecordsViewModel @Inject constructor(
     ) = viewModelScope.launch {
         val startByLongClick = prefsInteractor.getStartTimerByLongClick()
         if (!startByLongClick) {
-            // Do nothing.
+            onRecordStart(item)
         } else {
             onRecordEdit(item)
         }
@@ -232,8 +234,20 @@ class RunningRecordsViewModel @Inject constructor(
         if (!startByLongClick) {
             onRecordEdit(item)
         } else {
-            // Do nothing.
+            onRecordStart(item)
         }
+    }
+
+    private suspend fun onRecordStart(
+        item: RecordWithHintViewData,
+    ) {
+        val prevRecord = recordInteractor.get(item.record.id) ?: return
+        addRunningRecordMediator.startTimer(
+            typeId = prevRecord.typeId,
+            tags = prevRecord.tags,
+            comment = prevRecord.comment,
+        )
+        updateRunningRecords()
     }
 
     private suspend fun onRecordEdit(
@@ -292,6 +306,7 @@ class RunningRecordsViewModel @Inject constructor(
                 timeStarted = item.timeStarted,
                 timeFinished = "",
                 duration = item.timer,
+                durationTotal = "",
                 iconId = item.iconId,
                 color = item.color,
             )
@@ -365,44 +380,57 @@ class RunningRecordsViewModel @Inject constructor(
         }
     }
 
-    fun onShortcutClick(item: RecordShortcutViewData) = viewModelScope.launch {
+    fun onShortcutClick(
+        item: RecordShortcutViewData,
+        sharedElements: Pair<Any, String>?,
+    ) = viewModelScope.launch {
         val startByLongClick = prefsInteractor.getStartTimerByLongClick()
         if (!startByLongClick) {
             onShortcutStart(item)
         } else {
-            onShortcutEdit(item)
+            onShortcutEdit(item, sharedElements)
         }
     }
 
-    fun onShortcutLongClick(item: RecordShortcutViewData) = viewModelScope.launch {
+    fun onShortcutLongClick(
+        item: RecordShortcutViewData,
+        sharedElements: Pair<Any, String>?,
+    ) = viewModelScope.launch {
         val startByLongClick = prefsInteractor.getStartTimerByLongClick()
         if (!startByLongClick) {
-            onShortcutEdit(item)
+            onShortcutEdit(item, sharedElements)
         } else {
             onShortcutStart(item)
         }
     }
 
-    private suspend fun onShortcutStart(item: RecordShortcutViewData) {
-        val shortcut = recordShortcutInteractor.get(item.id) ?: return
-        recordActionRepeatMediator.execute(
-            typeId = shortcut.typeId,
-            comment = shortcut.comment,
-            tags = shortcut.tags,
-        )
+    fun onShortcutSpinnerPositionSelected(block: RecordShortcutViewData, position: Int) = viewModelScope.launch {
+        onShortcutClickInteractor.onSpinnerPositionSelected(block, position)
         updateRunningRecords()
     }
 
-    private fun onShortcutEdit(item: RecordShortcutViewData) {
+    fun onShortcutButtonClick(
+        item: RecordShortcutViewData,
+    ) {
+        onShortcutClickInteractor.onButtonClick(item)
+    }
+
+    private suspend fun onShortcutStart(item: RecordShortcutViewData) {
+        onShortcutClickInteractor.execute(item)
+        updateRunningRecords()
+    }
+
+    private fun onShortcutEdit(
+        item: RecordShortcutViewData,
+        sharedElements: Pair<Any, String>?,
+    ) {
         router.navigate(
-            StandardDialogParams(
-                tag = DELETE_SHORTCUT_ALERT_DIALOG_TAG,
-                data = DeleteShortcutAlertDialogData(item.id),
-                title = resourceRepo.getString(R.string.change_record_type_delete_alert),
-                message = resourceRepo.getString(R.string.archive_deletion_alert),
-                btnPositive = resourceRepo.getString(R.string.ok),
-                btnNegative = resourceRepo.getString(R.string.cancel),
+            data = ChangeShortcutParams.Change(
+                id = item.id,
+                transitionName = sharedElements?.second.orEmpty(),
+                preview = item.toPreview(),
             ),
+            sharedElements = sharedElements?.let { mapOf(it) },
         )
     }
 
@@ -444,14 +472,10 @@ class RunningRecordsViewModel @Inject constructor(
         }
     }
 
-    fun onPositiveClick(tag: String?, data: Any?) = viewModelScope.launch {
+    fun onPositiveClick(tag: String?) = viewModelScope.launch {
         when (tag) {
             RETRO_MULTITASKING_HINT_TAG -> {
                 prefsInteractor.setRetroactiveMultitaskingHintWasHidden(true)
-            }
-            DELETE_SHORTCUT_ALERT_DIALOG_TAG -> {
-                val shortcutId = (data as? DeleteShortcutAlertDialogData)?.shortcutId ?: return@launch
-                deleteShortcut(shortcutId)
             }
         }
     }
@@ -473,7 +497,14 @@ class RunningRecordsViewModel @Inject constructor(
         typeId: Long,
         result: RecordDataSelectionDialogResult,
     ) {
-        router.navigate(RecordTagSelectionParams(typeId, result.toParams()))
+        router.navigate(
+            RecordTagSelectionParams(
+                typeId = typeId,
+                fields = result.fields.toParams(),
+                preselectedTags = result.preselectedTags.map(RecordBase.Tag::toParams),
+                requiredValueSelectionTagIds = result.requiredValueSelectionTagIds,
+            ),
+        )
     }
 
     private fun checkForRetroActiveMultitaskHint() = viewModelScope.launch {
@@ -492,11 +523,6 @@ class RunningRecordsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun deleteShortcut(shortcutId: Long) {
-        recordShortcutInteractor.remove(shortcutId)
-        updateRunningRecords()
-    }
-
     private fun subscribeToUpdates() {
         viewModelScope.launch {
             updateRunningRecordsInteractor.dataUpdated.collect { onUpdateReceived(it) }
@@ -506,6 +532,9 @@ class RunningRecordsViewModel @Inject constructor(
         }
         viewModelScope.launch {
             themeChangedInteractor.themeChanged.collect { updateRunningRecords() }
+        }
+        viewModelScope.launch {
+            cardOrderChangedInteractor.update.collect { updateRunningRecords() }
         }
     }
 
@@ -537,8 +566,8 @@ class RunningRecordsViewModel @Inject constructor(
     }
 
     private fun startUpdate() {
+        timerJob?.cancel()
         timerJob = viewModelScope.launch {
-            timerJob?.cancelAndJoin()
             delayLoad()
             while (isActive) {
                 updateRunningRecords()
@@ -548,20 +577,12 @@ class RunningRecordsViewModel @Inject constructor(
     }
 
     private fun stopUpdate() {
-        viewModelScope.launch {
-            timerJob?.cancelAndJoin()
-        }
+        timerJob?.cancel()
     }
-
-    @Parcelize
-    private data class DeleteShortcutAlertDialogData(
-        val shortcutId: Long,
-    ) : Parcelable
 
     companion object {
         private const val TIMER_UPDATE_MS = 1000L
         private const val COMPLETE_TYPE_ANIMATION_MS = 1000L
         private const val RETRO_MULTITASKING_HINT_TAG = "RETRO_MULTITASKING_HINT_TAG"
-        private const val DELETE_SHORTCUT_ALERT_DIALOG_TAG = "DELETE_SHORTCUT_ALERT_DIALOG_TAG"
     }
 }

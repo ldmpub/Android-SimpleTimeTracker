@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Kayıt etiketleri</string>
     <string name="record_tag_hint_short">Etiketler</string>
     <string name="nothing_selected">Hiçbir şey seçilmedi</string>
-    <string name="something_selected">Seçildi:</string>
+    <string name="something_selected">Seçildi</string>
+    <string name="something_available">Kullanılabilir</string>
+    <string name="something_preselected">Önceden seçildi</string>
     <string name="select_all">Hepsini seç</string>
     <string name="select_nothing">Hiçbir şey seçme</string>
     <string name="no_data">Veri yok</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Hedefler burada gösterilecektir</string>
+    <string name="all_goals_finished">Tüm hedefler tamamlandı</string>
+    <string name="hide_finished_goals">Tamamlanan hedefleri gizle</string>
     <string name="goal_add_hint">Hedef atamak için etkinliği veya kategoriyi düzenleyin</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Aralarında ayrım yapabilmek için kayıtlara farklı etiketler atayın</string>
     <string name="categories_add_category">Kategori ekle</string>
     <string name="categories_add_record_tag">Kayıt etiketi ekle</string>
+    <string name="categories_show_relations">İlişkileri göster</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>Kategoriler</b>, ilgili aktiviteleri gruplamanıza yardımcı olur. Örneğin:<br><br>
 • <custom-color-3>Verimli</custom-color-3> kategorisi, <custom-color-3>Okuma</custom-color-3> ve <custom-color-3>Spor Salonu</custom-color-3> gibi aktiviteleri içerebilir.<br><br>
@@ -123,6 +128,7 @@ Bu, genel olarak verimli ve verimsiz aktivitelere ne kadar zaman harcadığını
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Etiket arşivlendi</string>
     <string name="change_record_tag_default_hint">Varsayılan olarak atandı</string>
+    <string name="change_record_tag_type_general">Genel</string>
     <string name="change_record_tag_type_general_hint">Herhangi bir aktivitenin kayıtlarına atanabilir</string>
     <string name="change_record_tag_type_typed_hint">Sadece seçilen aktivitenin kayıtlarına atanabilir</string>
     <string name="change_record_tag_select_activity_hint">Etkinlikten renk ve simge alın</string>
@@ -142,6 +148,7 @@ Bu, genel olarak verimli ve verimsiz aktivitelere ne kadar zaman harcadığını
     <string name="change_record_last_comments_hint">Son yorumlar</string>
     <string name="change_record_favourite_comments_hint">Favori</string>
     <string name="change_record_favourite_comments_hint_long">Favori yorumlar</string>
+    <string name="change_record_favourite_activity_selection">Yalnızca seçilen aktiviteler için favori</string>
     <string name="change_record_similar_comments_hint">Benzer yorumlar</string>
     <string name="change_record_categories_empty">Kayıt etiketi eklenmedi</string>
     <string name="change_record_save">Kaydet</string>
@@ -230,6 +237,8 @@ Bu, genel olarak verimli ve verimsiz aktivitelere ne kadar zaman harcadığını
     <string name="change_complex_rule_removed">Kural kaldırıldı</string>
     <string name="change_complex_rule_choose_action">Eylem seçin</string>
     <string name="change_complex_rule_choose_condition">Koşulları seçin</string>
+    <string name="change_complex_tag_value_dialog_message">Değerin ne zaman ayarlanacağını seçin</string>
+    <string name="change_complex_tag_value_set_later">Başlangıçta</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Mevcut veya son aktiviteye göre bir sonraki aktivite için öneriler gösterir</string>
@@ -289,6 +298,7 @@ Bu, genel olarak verimli ve verimsiz aktivitelere ne kadar zaman harcadığını
     <string name="records_all_sort_order">Kayıtları sırala</string>
     <string name="records_all_sort_time_started">Başlangıç zamanı</string>
     <string name="records_all_sort_duration">Süre</string>
+    <string name="records_all_days_without_records">Kayıt olmayan günler - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">İzlemeye başlamak için %s düğmesine tıklayarak etkinlikler ekleyin veya %s düğmesine tıklayarak varsayılan ön ayarları kullanın</string>
@@ -309,7 +319,7 @@ Bu, genel olarak verimli ve verimsiz aktivitelere ne kadar zaman harcadığını
     <string name="settings_display_title">Görüntü ayarları</string>
     <string name="settings_additional_title">Ek ayarlar</string>
     <string name="settings_notification_title">Bildirim ayarları</string>
-    <string name="settings_backup_title">Yedekleme ayarları</string>
+    <string name="settings_backup_title">Yedekleme</string>
     <string name="settings_export_title">Ihracat ve ithalat</string>
     <string name="settings_sort_order">Aktiviteleri sırala</string>
     <string name="settings_sort_order_category">Kategorileri sırala</string>
@@ -327,6 +337,7 @@ Bu, genel olarak verimli ve verimsiz aktivitelere ne kadar zaman harcadığını
     <string name="settings_show_untracked_time_statistics">İstatistiklerde takipsiz zamanı göster</string>
     <string name="settings_ignore_short_untracked">Takip edilmeyen kısa süreyi yoksay</string>
     <string name="settings_ignore_short_untracked_hint">Belirtilen süreden daha kısa olan izlenmeyen süreyi gösterme.</string>
+    <string name="settings_untracked_days_hint">Takip edilmeyen süreyi yalnızca seçilen günlerde hesapla.</string>
     <string name="settings_untracked_range">Izlenmeyen aralık</string>
     <string name="settings_untracked_range_hint">Takip edilmeyen zamanı yalnızca seçilen aralıkta göster.</string>
     <string name="settings_show_records_calendar">Kayıtları takvim görünümünde göster</string>
@@ -360,11 +371,14 @@ Bu, genel olarak verimli ve verimsiz aktivitelere ne kadar zaman harcadığını
     <string name="settings_inactivity_reminder">İnaktivite hatırlatıcısı göster</string>
     <string name="settings_inactivity_reminder_hint">Eğer herhangi bir zamanlayıcı çalışmıyorsa belirtilen süre sonunda bildirim göster.</string>
     <string name="settings_inactivity_reminder_recurrent">Tekrarlayan</string>
+    <string name="settings_reminder_active_days">Etkin günler</string>
     <string name="settings_activity_reminder">Etkinlik hatırlatıcısını göster</string>
     <string name="settings_activity_reminder_hint">Zamanlayıcılar çalışıyorsa, belirtilen süreden sonra bildirim göster.</string>
     <string name="settings_do_not_disturb">Rahatsız etme</string>
     <string name="settings_notifications_system_settings">Sistem ayarları</string>
     <string name="settings_notifications_system_settings_hint">Ses, titreşim, flaş ve diğer</string>
+    <string name="settings_reminders_title">Hatırlatıcılar</string>
+    <string name="settings_reminders_hint">Planlanmış hatırlatıcıları yönet</string>
     <string name="settings_ignore_short_records">Kısa kayıtları yoksay</string>
     <string name="settings_ignore_short_records_hint">Belirtilen süreden daha kısa olan kayıtları yoksay.</string>
     <string name="settings_inactivity_reminder_disabled">Devre dışı</string>
@@ -527,6 +541,7 @@ CSV dosyası virgülle ayrılmış şu sütunları içermelidir:<br/>
     <string name="statistics_detail_record_time">Kayıt zamanı</string>
     <string name="statistics_detail_first_record">İlk</string>
     <string name="statistics_detail_last_record">Son</string>
+    <string name="statistics_detail_record_span">Aralık</string>
     <string name="statistics_detail_time_since">Geçen süre</string>
     <string name="statistics_detail_streaks">Diziler</string>
     <string name="statistics_detail_streaks_longest">En uzun</string>
@@ -549,6 +564,8 @@ CSV dosyası virgülle ayrılmış şu sütunları içermelidir:<br/>
     <string name="statistics_detail_goals_deficit">Açık</string>
     <string name="statistics_detail_tag_values_hint">Etiket değerleri</string>
     <string name="statistics_detail_tag_values_multiply_duration">Süre ile çarp</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Boş dönemleri önceki verilerle doldur</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Y eksenini yakınlaştır</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">Kayıt</item>-->
@@ -673,6 +690,33 @@ CSV dosyası virgülle ayrılmış şu sütunları içermelidir:<br/>
     <string name="shortcut_navigation_records">Kayıtlar</string>
     <string name="shortcut_navigation_statistics">İstatistikler</string>
     <string name="shortcut_navigation_settings">Ayarlar</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Günlük</string>
+    <string name="reminders_schedule_weekly">Haftalık</string>
+    <string name="reminders_schedule_one_time">Bir kez</string>
+    <string name="reminders_schedule_monthly">Aylık</string>
+    <string name="reminders_schedule_hourly">Saatlik</string>
+    <string name="reminders_condition_activity_not_tracked">Etkinlik bugün takip edilmediğinde</string>
+    <string name="activity_reminders_hint">Genel etkinlik hatırlatıcısı ayarını geçersiz kılar</string>
+    <string name="activity_reminder_mode">Hatırlatıcı modu</string>
+    <string name="activity_reminder_mode_disabled">Devre dışı</string>
+    <string name="activity_reminder_mode_custom">Özel</string>
+    <string name="activity_reminder_disabled_summary">Bu etkinlik için hatırlatıcılar devre dışı bırakıldı</string>
+    <string name="activity_reminder_positive_duration_required">Sıfırdan büyük bir hatırlatıcı süresi ayarlayın</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Mesaj</string>
+    <string name="change_reminder_schedule">Program</string>
+    <string name="change_reminder_day_of_month">Ayın günü</string>
+    <string name="change_reminder_interval">Aralık</string>
+    <string name="change_reminder_condition">Görüntüleme koşulu</string>
+    <string name="change_reminder_condition_always">Her zaman</string>
+    <string name="change_reminder_message_prefill">%s yapmayı unutmayın.</string>
+    <string name="change_reminder_message_required">Bir hatırlatıcı mesajı girin</string>
+    <string name="change_reminder_future_required">Gelecekte bir zaman seçin</string>
+    <string name="change_reminder_interval_required">Sıfırdan büyük bir aralık ayarlayın</string>
+    <string name="change_reminder_removed">Hatırlatıcı kaldırıldı</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Bağlantınızı kontrol edip tekrar deneyin</string>

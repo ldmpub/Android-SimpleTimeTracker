@@ -6,11 +6,20 @@ import androidx.annotation.StringRes
 import androidx.core.net.toUri
 import com.example.util.simpletimetracker.core.R
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
-import com.example.util.simpletimetracker.data_local.daysOfWeek.DaysOfWeekDataLocalMapper
+import com.example.util.simpletimetracker.data_local.activityReminder.ActivityReminderOverrideDBO
+import com.example.util.simpletimetracker.data_local.activityReminder.ActivityReminderOverrideDao
+import com.example.util.simpletimetracker.data_local.activityReminder.ActivityReminderRuleDBO
+import com.example.util.simpletimetracker.data_local.complexRule.ComplexRuleTagValuesMapper
+import com.example.util.simpletimetracker.domain.daysOfWeek.mapper.DaysOfWeekDataLocalMapper
+import com.example.util.simpletimetracker.data_local.recordShortcut.RecordShortcutDataLocalMapper
 import com.example.util.simpletimetracker.data_local.recordsFilter.FavouriteRecordsFilterDBO
 import com.example.util.simpletimetracker.data_local.recordsFilter.FavouriteRecordsFilterDao
+import com.example.util.simpletimetracker.data_local.scheduledReminder.ScheduledReminderDBO
+import com.example.util.simpletimetracker.data_local.scheduledReminder.ScheduledReminderDataLocalMapper
 import com.example.util.simpletimetracker.domain.activityFilter.model.ActivityFilter
 import com.example.util.simpletimetracker.domain.activityFilter.repo.ActivityFilterRepo
+import com.example.util.simpletimetracker.domain.activityReminder.model.ActivityReminderOverride
+import com.example.util.simpletimetracker.domain.activityReminder.repo.ActivityReminderOverrideRepo
 import com.example.util.simpletimetracker.domain.activitySuggestion.model.ActivitySuggestion
 import com.example.util.simpletimetracker.domain.activitySuggestion.repo.ActivitySuggestionRepo
 import com.example.util.simpletimetracker.domain.backup.interactor.ClearDataInteractor
@@ -30,11 +39,14 @@ import com.example.util.simpletimetracker.domain.extension.orZero
 import com.example.util.simpletimetracker.domain.favourite.model.FavouriteColor
 import com.example.util.simpletimetracker.domain.favourite.model.FavouriteComment
 import com.example.util.simpletimetracker.domain.favourite.model.FavouriteIcon
+import com.example.util.simpletimetracker.domain.favourite.model.RecordTypeToFavouriteComment
 import com.example.util.simpletimetracker.domain.favourite.repo.FavouriteColorRepo
 import com.example.util.simpletimetracker.domain.favourite.repo.FavouriteCommentRepo
 import com.example.util.simpletimetracker.domain.favourite.repo.FavouriteIconRepo
+import com.example.util.simpletimetracker.domain.favourite.repo.RecordTypeToFavouriteCommentRepo
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
 import com.example.util.simpletimetracker.domain.record.model.Record
+import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.record.repo.RecordRepo
 import com.example.util.simpletimetracker.domain.recordShortcut.model.RecordShortcut
 import com.example.util.simpletimetracker.domain.recordShortcut.repo.RecordShortcutRepo
@@ -53,6 +65,8 @@ import com.example.util.simpletimetracker.domain.recordType.model.RecordType
 import com.example.util.simpletimetracker.domain.recordType.model.RecordTypeGoal
 import com.example.util.simpletimetracker.domain.recordType.repo.RecordTypeGoalRepo
 import com.example.util.simpletimetracker.domain.recordType.repo.RecordTypeRepo
+import com.example.util.simpletimetracker.domain.scheduledReminder.model.ScheduledReminder
+import com.example.util.simpletimetracker.domain.scheduledReminder.repo.ScheduledReminderRepo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -64,10 +78,11 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.text.orEmpty
 
 /**
  * Do not change backup parts order, always add new to the end.
- * Otherwise previous version's backups will be broken.
+ * Otherwise, previous version's backups will be broken.
  */
 @Singleton
 class BackupRepoImpl @Inject constructor(
@@ -84,6 +99,7 @@ class BackupRepoImpl @Inject constructor(
     private val activityFilterRepo: ActivityFilterRepo,
     private val activitySuggestionRepo: ActivitySuggestionRepo,
     private val favouriteCommentRepo: FavouriteCommentRepo,
+    private val recordTypeToFavouriteCommentRepo: RecordTypeToFavouriteCommentRepo,
     private val favouriteColorRepo: FavouriteColorRepo,
     private val favouriteIconRepo: FavouriteIconRepo,
     private val recordTypeGoalRepo: RecordTypeGoalRepo,
@@ -95,6 +111,12 @@ class BackupRepoImpl @Inject constructor(
     private val resourceRepo: ResourceRepo,
     private val daysOfWeekDataLocalMapper: DaysOfWeekDataLocalMapper,
     private val backupPrefsRepo: BackupPrefsRepo,
+    private val complexRuleTagValuesMapper: ComplexRuleTagValuesMapper,
+    private val recordShortcutDataLocalMapper: RecordShortcutDataLocalMapper,
+    private val scheduledReminderRepo: ScheduledReminderRepo,
+    private val scheduledReminderDataLocalMapper: ScheduledReminderDataLocalMapper,
+    private val activityReminderOverrideRepo: ActivityReminderOverrideRepo,
+    private val activityReminderOverrideDao: ActivityReminderOverrideDao,
 ) : BackupRepo {
 
     override suspend fun saveBackupFile(
@@ -161,6 +183,9 @@ class BackupRepoImpl @Inject constructor(
             favouriteCommentRepo.getAll().forEach {
                 fileOutputStream?.write(it.let(::toBackupString).toByteArray())
             }
+            recordTypeToFavouriteCommentRepo.getAll().forEach {
+                fileOutputStream?.write(it.let(::toBackupString).toByteArray())
+            }
             favouriteColorRepo.getAll().forEach {
                 fileOutputStream?.write(it.let(::toBackupString).toByteArray())
             }
@@ -182,8 +207,17 @@ class BackupRepoImpl @Inject constructor(
                     fileOutputStream?.write(filter.let(::toBackupString).toByteArray())
                 }
             }
+            scheduledReminderRepo.getAll().forEach {
+                fileOutputStream?.write(it.let(::toBackupString).toByteArray())
+            }
             backupPrefsRepo.saveToBackupString().let {
                 fileOutputStream?.write(it.toByteArray())
+            }
+            activityReminderOverrideRepo.getAll().forEach { data ->
+                fileOutputStream?.write(data.let(::toBackupString).toByteArray())
+                (data.mode as? ActivityReminderOverride.Mode.Custom)?.rule?.let { rule ->
+                    fileOutputStream?.write(toBackupString(data.activityId, rule).toByteArray())
+                }
             }
 
             fileOutputStream?.close()
@@ -240,6 +274,7 @@ class BackupRepoImpl @Inject constructor(
                 typeToDefaultTag = recordTypeToDefaultTagRepo::add,
                 activityFilters = activityFilterRepo::add,
                 favouriteComments = favouriteCommentRepo::add,
+                typeToFavouriteComment = recordTypeToFavouriteCommentRepo::add,
                 favouriteColors = favouriteColorRepo::add,
                 favouriteIcon = favouriteIconRepo::add,
                 goals = recordTypeGoalRepo::add,
@@ -248,6 +283,9 @@ class BackupRepoImpl @Inject constructor(
                 favRecordsFilters = favouriteRecordsFilterDao::insertMain,
                 favRecordsFilter = favouriteRecordsFilterDao::insertFilter,
                 settings = { if (restoreSettings) backupPrefsRepo.restoreFromBackupString(it) },
+                scheduledReminders = scheduledReminderRepo::add,
+                activityReminderOverride = activityReminderOverrideDao::insertOverride,
+                activityReminderRule = activityReminderOverrideDao::insertRule,
             ),
         )
     }
@@ -371,6 +409,12 @@ class BackupRepoImpl @Inject constructor(
                         }
                     }
 
+                    ROW_TYPE_TO_FAVOURITE_COMMENT -> {
+                        typeToFavouriteCommentFromBackupString(parts).let {
+                            dataHandler.typeToFavouriteComment.invoke(it)
+                        }
+                    }
+
                     ROW_FAVOURITE_COLOR -> {
                         favouriteColorFromBackupString(parts)?.let {
                             dataHandler.favouriteColors.invoke(it)
@@ -410,6 +454,24 @@ class BackupRepoImpl @Inject constructor(
                     ROW_FAV_RECORD_FILTER -> {
                         favRecordsFilterFromBackupString(parts).let {
                             dataHandler.favRecordsFilter.invoke(it)
+                        }
+                    }
+
+                    ROW_SCHEDULED_REMINDER -> {
+                        scheduledReminderFromBackupString(parts).let {
+                            dataHandler.scheduledReminders.invoke(it)
+                        }
+                    }
+
+                    ROW_ACTIVITY_REMINDER_OVERRIDE -> {
+                        activityReminderOverrideFromBackupString(parts).let {
+                            dataHandler.activityReminderOverride.invoke(it)
+                        }
+                    }
+
+                    ROW_ACTIVITY_REMINDER_RULE -> {
+                        activityReminderRuleFromBackupString(parts).let {
+                            dataHandler.activityReminderRule.invoke(it)
                         }
                     }
 
@@ -465,11 +527,22 @@ class BackupRepoImpl @Inject constructor(
     }
 
     private fun toBackupString(recordShortcut: RecordShortcut): String {
+        val recordTarget = recordShortcut.target as? RecordShortcut.Target.Record
+        val settingTarget = recordShortcut.target as? RecordShortcut.Target.Setting
+        val targetType = when (recordShortcut.target) {
+            is RecordShortcut.Target.Record -> 0L
+            is RecordShortcut.Target.Setting -> 1L
+        }
+
         return String.format(
-            "$ROW_RECORD_SHORTCUT\t%s\t%s\t%s\n",
+            "$ROW_RECORD_SHORTCUT\t%s\t%s\t%s\t%s\t%s\n",
             recordShortcut.id.toString(),
-            recordShortcut.typeId.toString(),
-            recordShortcut.comment.cleanTabs().replaceNewline(),
+            recordTarget?.typeId.orZero().toString(),
+            recordTarget?.comment.orEmpty().cleanTabs().replaceNewline(),
+            targetType.toString(),
+            settingTarget?.action
+                ?.let(recordShortcutDataLocalMapper::mapSettingAction)
+                .orZero().toString(),
         )
     }
 
@@ -572,6 +645,14 @@ class BackupRepoImpl @Inject constructor(
         )
     }
 
+    private fun toBackupString(typeToTag: RecordTypeToFavouriteComment): String {
+        return String.format(
+            "$ROW_TYPE_TO_FAVOURITE_COMMENT\t%s\t%s\n",
+            typeToTag.recordTypeId.toString(),
+            typeToTag.commentId.toString(),
+        )
+    }
+
     private fun toBackupString(favouriteColor: FavouriteColor): String {
         return String.format(
             "$ROW_FAVOURITE_COLOR\t%s\t%s\n",
@@ -630,9 +711,13 @@ class BackupRepoImpl @Inject constructor(
             .mapDaysOfWeek(complexRule.conditionDaysOfWeek)
         val disallowOnlyPreviousString = (if (complexRule.actionDisallowOnlyPrevious) 1 else 0)
             .toString()
+        val valuesString = complexRuleTagValuesMapper.serialize(
+            data = complexRule.actionAssignTagValues,
+            tagIdsToSelectValueOnStart = complexRule.actionAssignTagValueOnStartIds,
+        )
 
         return String.format(
-            "$ROW_COMPLEX_RULE\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+            "$ROW_COMPLEX_RULE\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
             complexRule.id.toString(),
             (if (complexRule.disabled) 1 else 0).toString(),
             actionString,
@@ -641,6 +726,7 @@ class BackupRepoImpl @Inject constructor(
             complexRule.conditionCurrentTypeIds.joinToString(separator = ","),
             daysOfWeekString,
             disallowOnlyPreviousString,
+            valuesString,
         )
     }
 
@@ -682,6 +768,55 @@ class BackupRepoImpl @Inject constructor(
             data.rangeLength?.position?.toString().orEmpty(),
             data.daysOfWeek.orEmpty(),
         )
+    }
+
+    // TODO use joinToString(separator = "\t", postfix = "\n") in other places.
+    private fun toBackupString(data: ScheduledReminder): String {
+        val dbo = scheduledReminderDataLocalMapper.map(data)
+        return listOf(
+            ROW_SCHEDULED_REMINDER,
+            dbo.id.toString(),
+            if (dbo.enabled) "1" else "0",
+            dbo.text.cleanTabs().replaceNewline(),
+            dbo.scheduleType.toString(),
+            dbo.timeOfDayMillis.toString(),
+            dbo.weekdays.orEmpty(),
+            dbo.date?.toString().orEmpty(),
+            dbo.monthlyDayOfMonth?.toString().orEmpty(),
+            dbo.conditionType.toString(),
+            dbo.activityId?.toString().orEmpty(),
+            dbo.intervalSeconds?.toString().orEmpty(),
+            dbo.doNotDisturbStartMillis?.toString().orEmpty(),
+            dbo.doNotDisturbEndMillis?.toString().orEmpty(),
+        ).joinToString(separator = "\t", postfix = "\n")
+    }
+
+    private fun toBackupString(data: ActivityReminderOverride): String {
+        val mode = when (data.mode) {
+            is ActivityReminderOverride.Mode.Disabled -> ActivityReminderOverrideDao.MODE_DISABLED
+            is ActivityReminderOverride.Mode.Custom -> ActivityReminderOverrideDao.MODE_CUSTOM
+        }
+        return listOf(
+            ROW_ACTIVITY_REMINDER_OVERRIDE,
+            data.activityId.toString(),
+            mode.toString(),
+        ).joinToString(separator = "\t", postfix = "\n")
+    }
+
+    private fun toBackupString(
+        activityId: Long,
+        data: ActivityReminderOverride.Rule,
+    ): String {
+        return listOf(
+            ROW_ACTIVITY_REMINDER_RULE,
+            data.id.toString(),
+            activityId.toString(),
+            data.durationSeconds.toString(),
+            if (data.recurrent) "1" else "0",
+            daysOfWeekDataLocalMapper.mapDaysOfWeek(data.applicableDaysOfWeek),
+            data.doNotDisturbStartMillis.toString(),
+            data.doNotDisturbEndMillis.toString(),
+        ).joinToString(separator = "\t", postfix = "\n")
     }
 
     private fun recordTypeFromBackupString(parts: List<String>): Pair<RecordType, List<RecordTypeGoal>> {
@@ -775,11 +910,26 @@ class BackupRepoImpl @Inject constructor(
     }
 
     private fun recordShortcutFromBackupString(parts: List<String>): RecordShortcut {
+        val typeId = parts.getOrNull(2)?.toLongOrNull() ?: 1L
+        val comment = parts.getOrNull(3)?.restoreNewline().orEmpty()
+        val targetType = parts.getOrNull(4)?.toLongOrNull()
+        val settingAction = parts.getOrNull(5)?.toLongOrNull()
+            .let(recordShortcutDataLocalMapper::mapSettingAction)
+        val target = if (targetType == 1L) {
+            RecordShortcut.Target.Setting(
+                action = settingAction,
+            )
+        } else {
+            RecordShortcut.Target.Record(
+                typeId = typeId,
+                comment = comment,
+                tags = emptyList(), // Stored separately.
+            )
+        }
+
         return RecordShortcut(
             id = parts.getOrNull(1)?.toLongOrNull().orZero(),
-            typeId = parts.getOrNull(2)?.toLongOrNull() ?: 1L,
-            comment = parts.getOrNull(3)?.restoreNewline().orEmpty(),
-            tags = emptyList(), // Stored separately.
+            target = target,
         )
     }
 
@@ -886,6 +1036,13 @@ class BackupRepoImpl @Inject constructor(
         )
     }
 
+    private fun typeToFavouriteCommentFromBackupString(parts: List<String>): RecordTypeToFavouriteComment {
+        return RecordTypeToFavouriteComment(
+            recordTypeId = parts.getOrNull(1)?.toLongOrNull().orZero(),
+            commentId = parts.getOrNull(2)?.toLongOrNull().orZero(),
+        )
+    }
+
     private fun favouriteColorFromBackupString(parts: List<String>): FavouriteColor? {
         return FavouriteColor(
             id = parts.getOrNull(1)?.toLongOrNull().orZero(),
@@ -942,6 +1099,14 @@ class BackupRepoImpl @Inject constructor(
     }
 
     private fun complexRuleFromBackupString(parts: List<String>): ComplexRule {
+        val assignTagIds = parts.getOrNull(4)?.split(",")
+            ?.mapNotNull { it.toLongOrNull() }.orEmpty().toSet()
+        val parsedTagValues = complexRuleTagValuesMapper.parse(parts.getOrNull(9))
+        val assignTagValues = parsedTagValues.tagsWithValues.associateBy { it.tagId }
+        val assignTagValueOnStartIds = assignTagIds
+            .filter { parsedTagValues.tagIdsToSelectValueOnStart.contains(it) }
+            .toSet()
+
         return ComplexRule(
             id = parts.getOrNull(1)?.toLongOrNull().orZero(),
             disabled = parts.getOrNull(2)?.toIntOrNull() == 1,
@@ -952,8 +1117,10 @@ class BackupRepoImpl @Inject constructor(
                 else -> ComplexRule.Action.AllowMultitasking
             },
             actionDisallowOnlyPrevious = parts.getOrNull(8)?.toIntOrNull() == 1,
-            actionAssignTagIds = parts.getOrNull(4)?.split(",")
-                ?.mapNotNull { it.toLongOrNull() }.orEmpty().toSet(),
+            actionAssignTagValues = assignTagIds.map {
+                RecordBase.Tag(tagId = it, numericValue = assignTagValues[it]?.numericValue)
+            },
+            actionAssignTagValueOnStartIds = assignTagValueOnStartIds,
             conditionStartingTypeIds = parts.getOrNull(5)?.split(",")
                 ?.mapNotNull { it.toLongOrNull() }.orEmpty().toSet(),
             conditionCurrentTypeIds = parts.getOrNull(6)?.split(",")
@@ -1009,6 +1176,49 @@ class BackupRepoImpl @Inject constructor(
         )
     }
 
+    private fun scheduledReminderFromBackupString(parts: List<String>): ScheduledReminder {
+        val dbo = ScheduledReminderDBO(
+            id = parts.getOrNull(1)?.toLongOrNull().orZero(),
+            enabled = parts.getOrNull(2)?.toIntOrNull() == 1,
+            text = parts.getOrNull(3).orEmpty().restoreNewline(),
+            scheduleType = parts.getOrNull(4)?.toIntOrNull().orZero(),
+            timeOfDayMillis = parts.getOrNull(5)?.toLongOrNull().orZero(),
+            weekdays = parts.getOrNull(6)?.takeUnless(String::isEmpty),
+            date = parts.getOrNull(7)?.toLongOrNull(),
+            monthlyDayOfMonth = parts.getOrNull(8)?.toIntOrNull(),
+            conditionType = parts.getOrNull(9)?.toIntOrNull().orZero(),
+            activityId = parts.getOrNull(10)?.toLongOrNull(),
+            intervalSeconds = parts.getOrNull(11)?.toLongOrNull(),
+            doNotDisturbStartMillis = parts.getOrNull(12)?.toLongOrNull(),
+            doNotDisturbEndMillis = parts.getOrNull(13)?.toLongOrNull(),
+        )
+        // TODO use data local mappers in other places? Avoids mapping duplication.
+        return scheduledReminderDataLocalMapper.map(dbo)
+    }
+
+    private fun activityReminderOverrideFromBackupString(
+        parts: List<String>,
+    ): ActivityReminderOverrideDBO {
+        return ActivityReminderOverrideDBO(
+            activityId = parts.getOrNull(1)?.toLongOrNull().orZero(),
+            mode = parts.getOrNull(2)?.toIntOrNull().orZero(),
+        )
+    }
+
+    private fun activityReminderRuleFromBackupString(
+        parts: List<String>,
+    ): ActivityReminderRuleDBO {
+        return ActivityReminderRuleDBO(
+            id = parts.getOrNull(1)?.toLongOrNull().orZero(),
+            activityId = parts.getOrNull(2)?.toLongOrNull().orZero(),
+            durationSeconds = parts.getOrNull(3)?.toLongOrNull().orZero(),
+            recurrent = parts.getOrNull(4)?.toIntOrNull() == 1,
+            weekdays = parts.getOrNull(5).orEmpty(),
+            doNotDisturbStartMillis = parts.getOrNull(6)?.toLongOrNull().orZero(),
+            doNotDisturbEndMillis = parts.getOrNull(7)?.toLongOrNull().orZero(),
+        )
+    }
+
     fun migrateTags(
         types: List<RecordType>,
         data: List<Pair<RecordTag, Long>>,
@@ -1054,6 +1264,7 @@ class BackupRepoImpl @Inject constructor(
         val typeToDefaultTag: suspend (RecordTypeToDefaultTag) -> Unit,
         val activityFilters: suspend (ActivityFilter) -> Unit,
         val favouriteComments: suspend (FavouriteComment) -> Unit,
+        val typeToFavouriteComment: suspend (RecordTypeToFavouriteComment) -> Unit,
         val favouriteColors: suspend (FavouriteColor) -> Unit,
         val favouriteIcon: suspend (FavouriteIcon) -> Unit,
         val goals: suspend (RecordTypeGoal) -> Unit,
@@ -1062,6 +1273,9 @@ class BackupRepoImpl @Inject constructor(
         val favRecordsFilters: suspend (FavouriteRecordsFilterDBO.MainDBO) -> Unit,
         val favRecordsFilter: suspend (FavouriteRecordsFilterDBO.FilterDBO) -> Unit,
         val settings: suspend (List<String>) -> Unit,
+        val scheduledReminders: suspend (ScheduledReminder) -> Unit = {},
+        val activityReminderOverride: suspend (ActivityReminderOverrideDBO) -> Unit = {},
+        val activityReminderRule: suspend (ActivityReminderRuleDBO) -> Unit = {},
     )
 
     companion object {
@@ -1079,11 +1293,15 @@ class BackupRepoImpl @Inject constructor(
         private const val ROW_ACTIVITY_FILTER = "activityFilter"
         private const val ROW_ACTIVITY_SUGGESTION = "activitySuggestion"
         private const val ROW_FAVOURITE_COMMENT = "favouriteComment"
+        private const val ROW_TYPE_TO_FAVOURITE_COMMENT = "typeToFavouriteComment"
         private const val ROW_FAVOURITE_COLOR = "favouriteColor"
         private const val ROW_FAVOURITE_ICON = "favouriteIcon"
         private const val ROW_RECORD_TYPE_GOAL = "recordTypeGoal"
         private const val ROW_COMPLEX_RULE = "complexRule"
         private const val ROW_FAV_RECORD_FILTERS = "favRecordsFilters"
         private const val ROW_FAV_RECORD_FILTER = "favRecordsFilter"
+        private const val ROW_SCHEDULED_REMINDER = "scheduledReminder"
+        private const val ROW_ACTIVITY_REMINDER_OVERRIDE = "activityReminderOverride"
+        private const val ROW_ACTIVITY_REMINDER_RULE = "activityReminderRule"
     }
 }

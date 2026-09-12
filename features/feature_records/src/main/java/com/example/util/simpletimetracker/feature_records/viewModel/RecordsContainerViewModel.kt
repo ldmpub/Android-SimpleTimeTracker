@@ -3,8 +3,6 @@ package com.example.util.simpletimetracker.feature_records.viewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import com.example.util.simpletimetracker.core.base.BaseViewModel
-import com.example.util.simpletimetracker.core.delegates.dateSelector.mapper.DateSelectorMapper
-import com.example.util.simpletimetracker.core.delegates.dateSelector.viewModelDelegate.DateSelectorViewModelDelegate
 import com.example.util.simpletimetracker.core.extension.lazySuspend
 import com.example.util.simpletimetracker.core.extension.set
 import com.example.util.simpletimetracker.core.extension.shiftTimeStamp
@@ -20,6 +18,9 @@ import com.example.util.simpletimetracker.domain.record.interactor.RecordsContai
 import com.example.util.simpletimetracker.domain.record.interactor.RecordsShareUpdateInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.RecordsUpdateInteractor
 import com.example.util.simpletimetracker.domain.statistics.model.RangeLength
+import com.example.util.simpletimetracker.feature_base_adapter.InfiniteRecyclerAdapter
+import com.example.util.simpletimetracker.feature_date_selection.api.DateSelectorMapper
+import com.example.util.simpletimetracker.feature_date_selection.api.DateSelectorViewModelDelegate
 import com.example.util.simpletimetracker.feature_records.R
 import com.example.util.simpletimetracker.feature_records.api.RecordsContainerOptionsListMapper
 import com.example.util.simpletimetracker.feature_records.api.RecordsContainerOptionsListItem
@@ -55,6 +56,7 @@ class RecordsContainerViewModel @Inject constructor(
         by lazySuspend { loadPosition(newPosition = 0, animate = false) }
 
     private var lastListShift: Int = 0
+    private var lastRenderedDateItem: InfiniteRecyclerAdapter.Data? = null
     private val currentPosition: Int get() = position.value?.position.orZero()
 
     init {
@@ -65,6 +67,20 @@ class RecordsContainerViewModel @Inject constructor(
     fun initialize() {
         viewModelScope.launch {
             dateSelectorViewModelDelegate.initialize(currentPosition)
+            lastRenderedDateItem = dateSelectorViewModelDelegate.dataProvider.getItem(currentPosition)
+        }
+    }
+
+    fun onVisible() {
+        val dataProvider = dateSelectorViewModelDelegate.dataProvider
+        if (!dataProvider.isInitialized()) return
+
+        // System date-change events refresh it at midnight, but a custom
+        // logical boundary such as 04:00 produces no system event.
+        // This will update date selector on date change.
+        viewModelScope.launch {
+            dateSelectorViewModelDelegate.setup()
+            updateDateSelectorPosition(currentPosition)
         }
     }
 
@@ -190,7 +206,7 @@ class RecordsContainerViewModel @Inject constructor(
                 .collect {
                     viewModelScope.launch {
                         dateSelectorViewModelDelegate.setup()
-                        dateSelectorViewModelDelegate.updatePosition(currentPosition)
+                        updateDateSelectorPosition(currentPosition)
                     }
                 }
         }
@@ -291,8 +307,16 @@ class RecordsContainerViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             val data = loadPosition(shift, animate)
-            dateSelectorViewModelDelegate.updatePosition(shift)
             position.set(data)
+            updateDateSelectorPosition(shift)
+        }
+    }
+
+    private fun updateDateSelectorPosition(newPosition: Int) {
+        val currentItem = dateSelectorViewModelDelegate.dataProvider.getItem(currentPosition)
+        if (lastRenderedDateItem != currentItem) {
+            dateSelectorViewModelDelegate.updatePosition(newPosition)
+            lastRenderedDateItem = dateSelectorViewModelDelegate.dataProvider.getItem(newPosition)
         }
     }
 

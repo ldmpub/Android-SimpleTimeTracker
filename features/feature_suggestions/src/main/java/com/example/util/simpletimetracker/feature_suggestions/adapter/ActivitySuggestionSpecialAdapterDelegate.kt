@@ -2,9 +2,11 @@ package com.example.util.simpletimetracker.feature_suggestions.adapter
 
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
 import com.example.util.simpletimetracker.feature_base_adapter.createRecyclerBindingAdapterDelegate
+import com.example.util.simpletimetracker.feature_base_adapter.recordTypeRelation.ActivitySuggestionListViewData
+import com.example.util.simpletimetracker.feature_base_adapter.recordTypeRelation.activitySuggestionListAdapterBindDelegate
 import com.example.util.simpletimetracker.feature_views.extension.setOnClickWith
 import com.example.util.simpletimetracker.feature_suggestions.adapter.ActivitySuggestionSpecialViewData as ViewData
-import com.example.util.simpletimetracker.feature_suggestions.databinding.ItemActivitySuggestionListLayoutBinding as Binding
+import com.example.util.simpletimetracker.feature_base_adapter.databinding.ItemActivitySuggestionListLayoutBinding as Binding
 
 fun createActivitySuggestionSpecialAdapterDelegate(
     onItemClick: ((ViewData) -> Unit),

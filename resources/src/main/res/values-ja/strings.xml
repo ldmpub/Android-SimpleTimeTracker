@@ -14,7 +14,9 @@
     <string name="record_tag_hint">計測タグ</string>
     <string name="record_tag_hint_short">タグ</string>
     <string name="nothing_selected">何も選択されていません</string>
-    <string name="something_selected">選択済み:</string>
+    <string name="something_selected">選択済み</string>
+    <string name="something_available">利用可能</string>
+    <string name="something_preselected">事前選択済み</string>
     <string name="select_all">すべて選択</string>
     <string name="select_nothing">何も選択しない</string>
     <string name="no_data">データなし</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">ここに目標が表示されます</string>
+    <string name="all_goals_finished">すべての目標が完了しました</string>
+    <string name="hide_finished_goals">完了した目標を非表示</string>
     <string name="goal_add_hint">アクティビティまたはカテゴリを編集して目標を割り当てます</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">計測記録に異なるタグを付与し、計測記録を区別することが可能です</string>
     <string name="categories_add_category">カテゴリを追加</string>
     <string name="categories_add_record_tag">計測タグを追加</string>
+    <string name="categories_show_relations">関連を表示</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>カテゴリ</b>は、関連するアクティビティをグループ化するのに役立ちます。例えば：<br><br>
 • <custom-color-3>生産的</custom-color-3>カテゴリには、<custom-color-3>読書</custom-color-3>や<custom-color-3>ジム</custom-color-3>が含まれるかもしれません。<br><br>
@@ -123,6 +128,7 @@
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">タグをアーカイブ</string>
     <string name="change_record_tag_default_hint">デフォルトで割り当てられる</string>
+    <string name="change_record_tag_type_general">共通</string>
     <string name="change_record_tag_type_general_hint">あらゆるアクティビティに割り当てることができます</string>
     <string name="change_record_tag_type_typed_hint">特定のアクティビティのみに割り当てることができます</string>
     <string name="change_record_tag_select_activity_hint">アクティビティから色とアイコンを取得する</string>
@@ -142,6 +148,7 @@
     <string name="change_record_last_comments_hint">最新コメント</string>
     <string name="change_record_favourite_comments_hint">お気に入り</string>
     <string name="change_record_favourite_comments_hint_long">お気に入りのコメント</string>
+    <string name="change_record_favourite_activity_selection">選択したアクティビティのみお気に入り</string>
     <string name="change_record_similar_comments_hint">同様のコメント</string>
     <string name="change_record_categories_empty">計測タグがありません</string>
     <string name="change_record_save">保存</string>
@@ -230,6 +237,8 @@
     <string name="change_complex_rule_removed">ルールが削除されました</string>
     <string name="change_complex_rule_choose_action">アクションを選択してください</string>
     <string name="change_complex_rule_choose_condition">条件を選択してください</string>
+    <string name="change_complex_tag_value_dialog_message">値を設定するタイミングを選択</string>
+    <string name="change_complex_tag_value_set_later">開始時</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">現在のアクティビティまたは最後のアクティビティに基づいて次のアクティビティの提案を表示します</string>
@@ -289,6 +298,7 @@
     <string name="records_all_sort_order">計測記録をソート</string>
     <string name="records_all_sort_time_started">時間の開始</string>
     <string name="records_all_sort_duration">期間</string>
+    <string name="records_all_days_without_records">記録のない日数 - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">追跡を開始するには、%s ボタンをクリックしてアクティビティを追加するか、%s ボタンをクリックしてデフォルトのプリセットを使用します。</string>
@@ -309,7 +319,7 @@
     <string name="settings_display_title">設定を表示</string>
     <string name="settings_additional_title">追加設定</string>
     <string name="settings_notification_title">通知設定</string>
-    <string name="settings_backup_title">バックアップ設定</string>
+    <string name="settings_backup_title">バックアップ</string>
     <string name="settings_export_title">エクスポートとインポート</string>
     <string name="settings_sort_order">アクティビティをソート</string>
     <string name="settings_sort_order_category">カテゴリを並べ替える</string>
@@ -327,6 +337,7 @@
     <string name="settings_show_untracked_time_statistics">追跡されていない時間を統計で表示する</string>
     <string name="settings_ignore_short_untracked">追跡されていない短い時間を無視する</string>
     <string name="settings_ignore_short_untracked_hint">指定された時間より短い未追跡時間を表示しません。</string>
+    <string name="settings_untracked_days_hint">選択した日のみ未記録時間を計算します。</string>
     <string name="settings_untracked_range">追跡されていない範囲</string>
     <string name="settings_untracked_range_hint">選択した範囲内のみ未記録の時間を表示します。</string>
     <string name="settings_show_records_calendar">カレンダービューで計測記録を表示</string>
@@ -360,11 +371,14 @@
     <string name="settings_inactivity_reminder">非アクティブ時のリマインダーを表示</string>
     <string name="settings_inactivity_reminder_hint">タイマーが作動していない場合、指定時間後に通知を表示する。</string>
     <string name="settings_inactivity_reminder_recurrent">繰り返す</string>
+    <string name="settings_reminder_active_days">有効な曜日</string>
     <string name="settings_activity_reminder">アクティビティリマインダーを表示</string>
     <string name="settings_activity_reminder_hint">タイマーが実行されている場合、指定した時間後に通知を表示します。</string>
     <string name="settings_do_not_disturb">邪魔しないでください</string>
     <string name="settings_notifications_system_settings">システム設定</string>
     <string name="settings_notifications_system_settings_hint">音、振動、フラッシュなど</string>
+    <string name="settings_reminders_title">リマインダー</string>
+    <string name="settings_reminders_hint">予定されたリマインダーを管理</string>
     <string name="settings_ignore_short_records">短い記録は無視</string>
     <string name="settings_ignore_short_records_hint">指定された時間より短いアクティビティは計測しません。</string>
     <string name="settings_inactivity_reminder_disabled">未設定</string>
@@ -527,6 +541,7 @@ CSV ファイルには、カンマで区切られた次の列が含まれてい�
     <string name="statistics_detail_record_time">計測記録時間</string>
     <string name="statistics_detail_first_record">最初</string>
     <string name="statistics_detail_last_record">最後</string>
+    <string name="statistics_detail_record_span">期間</string>
     <string name="statistics_detail_time_since">経過時間</string>
     <string name="statistics_detail_streaks">シリーズ</string>
     <string name="statistics_detail_streaks_longest">最長</string>
@@ -549,6 +564,8 @@ CSV ファイルには、カンマで区切られた次の列が含まれてい�
     <string name="statistics_detail_goals_deficit">赤字</string>
     <string name="statistics_detail_tag_values_hint">タグ値</string>
     <string name="statistics_detail_tag_values_multiply_duration">時間で掛け算</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">空の期間を前のデータで埋める</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Y軸をズーム</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">記録</item>-->
@@ -673,6 +690,33 @@ CSV ファイルには、カンマで区切られた次の列が含まれてい�
     <string name="shortcut_navigation_records">計測記録</string>
     <string name="shortcut_navigation_statistics">統計</string>
     <string name="shortcut_navigation_settings">設定</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">毎日</string>
+    <string name="reminders_schedule_weekly">毎週</string>
+    <string name="reminders_schedule_one_time">1回のみ</string>
+    <string name="reminders_schedule_monthly">毎月</string>
+    <string name="reminders_schedule_hourly">1時間ごと</string>
+    <string name="reminders_condition_activity_not_tracked">今日アクティビティが記録されていないとき</string>
+    <string name="activity_reminders_hint">グローバルなアクティビティリマインダー設定を上書きします</string>
+    <string name="activity_reminder_mode">リマインダーモード</string>
+    <string name="activity_reminder_mode_disabled">無効</string>
+    <string name="activity_reminder_mode_custom">カスタム</string>
+    <string name="activity_reminder_disabled_summary">このアクティビティのリマインダーは無効です</string>
+    <string name="activity_reminder_positive_duration_required">リマインダーの時間を 0 より大きく設定してください</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">メッセージ</string>
+    <string name="change_reminder_schedule">スケジュール</string>
+    <string name="change_reminder_day_of_month">日付</string>
+    <string name="change_reminder_interval">間隔</string>
+    <string name="change_reminder_condition">表示条件</string>
+    <string name="change_reminder_condition_always">常に</string>
+    <string name="change_reminder_message_prefill">%sを忘れずに。</string>
+    <string name="change_reminder_message_required">リマインダーのメッセージを入力してください</string>
+    <string name="change_reminder_future_required">未来の時刻を選択してください</string>
+    <string name="change_reminder_interval_required">0より大きい間隔を設定してください</string>
+    <string name="change_reminder_removed">リマインダーを削除しました</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">接続を確認して再試行してください</string>

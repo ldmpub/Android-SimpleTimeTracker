@@ -16,7 +16,9 @@ import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartG
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartLength
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartMode
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartSplitSortMode
-import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartValueMode
+import com.example.util.simpletimetracker.domain.statistics.model.StatisticsDetailTagValueSettings
+import com.example.util.simpletimetracker.feature_statistics_detail.adapter.StatisticsDetailBarChartViewData
+import com.example.util.simpletimetracker.feature_statistics_detail.mapper.mapItem
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailTagValuesCompositeViewData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -29,27 +31,19 @@ class StatisticsDetailTagValueInteractor @Inject constructor(
     private val statisticsDetailTagValuesViewDataMapper: StatisticsDetailTagValuesViewDataMapper,
     private val recordTypeInteractor: RecordTypeInteractor,
     private val recordTagInteractor: RecordTagInteractor,
+    private val fillEmptyBarsWithPreviousValueInteractor: FillEmptyBarsWithPreviousValueInteractor,
 ) {
 
     // TODO compare?
     suspend fun getViewData(
+        valuedTag: RecordTag,
         records: List<RecordBase>,
-        filter: List<RecordsFilter>,
         currentChartGrouping: ChartGrouping,
         currentChartLength: ChartLength,
-        currentChartValueMode: ChartValueMode,
-        multiplyDuration: Boolean,
+        settings: StatisticsDetailTagValueSettings,
         rangeLength: RangeLength,
         rangePosition: Int,
     ): StatisticsDetailTagValuesCompositeViewData = withContext(Dispatchers.Default) {
-        val tags = recordTagInteractor.getAll()
-        val valuedTag = getSingleSelectedTagWithValue(filter, tags)
-            ?: return@withContext StatisticsDetailTagValuesCompositeViewData(
-                viewData = emptyList(),
-                appliedChartGrouping = currentChartGrouping,
-                appliedChartLength = currentChartLength,
-            )
-
         val firstDayOfWeek = prefsInteractor.getFirstDayOfWeek()
         val startOfDayShift = prefsInteractor.getStartOfDayShift()
         val durationFormat = prefsInteractor.getDurationFormat()
@@ -61,7 +55,7 @@ class StatisticsDetailTagValueInteractor @Inject constructor(
         val typesOrder = types.map(RecordType::id)
         val chartMode = ChartMode.TAG_VALUE(
             tagId = valuedTag.id,
-            multiplyDuration = multiplyDuration,
+            multiplyDuration = settings.multiplyDuration,
         )
 
         val compositeData = chartInteractor.getChartRangeSelectionData(
@@ -85,8 +79,8 @@ class StatisticsDetailTagValueInteractor @Inject constructor(
             typesMap = typesMap,
             isDarkTheme = isDarkTheme,
             chartMode = chartMode,
-            chartValueMode = currentChartValueMode,
-            multiplyDuration = multiplyDuration,
+            chartValueMode = settings.chartValueMode,
+            multiplyDuration = settings.multiplyDuration,
             splitByActivity = false,
             splitSortMode = ChartSplitSortMode.ACTIVITY_ORDER,
         )
@@ -102,32 +96,56 @@ class StatisticsDetailTagValueInteractor @Inject constructor(
             typesMap = typesMap,
             isDarkTheme = isDarkTheme,
             chartMode = chartMode,
-            chartValueMode = currentChartValueMode,
-            multiplyDuration = multiplyDuration,
+            chartValueMode = settings.chartValueMode,
+            multiplyDuration = settings.multiplyDuration,
             splitSortMode = ChartSplitSortMode.ACTIVITY_ORDER,
         )
+        val preparedPrevData = if (settings.fillEmptyPeriods) {
+            fillEmptyBarsWithPreviousValueInteractor.invoke(prevData, null)
+        } else {
+            prevData
+        }
+        val preparedData = if (settings.fillEmptyPeriods) {
+            fillEmptyBarsWithPreviousValueInteractor.invoke(data, preparedPrevData)
+        } else {
+            data
+        }
 
         val chartViewData = statisticsDetailTagValuesViewDataMapper.mapTagValueChartViewData(
-            data = data,
-            prevData = prevData,
+            data = preparedData,
+            prevData = preparedPrevData,
             rangeLength = rangeLength,
             availableChartGroupings = compositeData.availableChartGroupings,
             appliedChartGrouping = compositeData.appliedChartGrouping,
             availableChartLengths = compositeData.availableChartLengths,
             appliedChartLength = compositeData.appliedChartLength,
             chartMode = chartMode,
-            chartValueMode = currentChartValueMode,
+            chartValueMode = settings.chartValueMode,
+            yAxisZoomed = settings.yAxisZoomed,
             valueSuffix = valuedTag.valueSuffix,
             durationFormat = durationFormat,
             showSeconds = showSeconds,
             isDarkTheme = isDarkTheme,
-        )
+        ).map {
+            if (it is StatisticsDetailBarChartViewData) {
+                it.mapItem(forComparison = false)
+            } else {
+                it.mapItem()
+            }
+        }
 
         return@withContext StatisticsDetailTagValuesCompositeViewData(
             viewData = chartViewData,
             appliedChartGrouping = compositeData.appliedChartGrouping,
             appliedChartLength = compositeData.appliedChartLength,
         )
+    }
+
+    suspend fun getSelectedTagWithValueId(
+        filter: List<RecordsFilter>,
+    ): RecordTag? = withContext(Dispatchers.Default) {
+        val tags = recordTagInteractor.getAll()
+        getSingleSelectedTagWithValue(filter, tags)
     }
 
     private fun getSingleSelectedTagWithValue(

@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseBottomSheetFragment
-import com.example.util.simpletimetracker.core.dialog.DataExportSettingsDialogListener
-import com.example.util.simpletimetracker.core.dialog.DateTimeDialogListener
-import com.example.util.simpletimetracker.core.extension.findListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DataExportSettingsDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DateTimeDialogListener
+import com.example.util.simpletimetracker.core.extension.findListeners
 import com.example.util.simpletimetracker.core.extension.observeOnce
 import com.example.util.simpletimetracker.core.extension.setSkipCollapsed
 import com.example.util.simpletimetracker.core.utils.fragmentArgumentDelegate
@@ -18,6 +18,7 @@ import com.example.util.simpletimetracker.feature_base_adapter.recordFilter.crea
 import com.example.util.simpletimetracker.feature_dialogs.csvExportSettings.viewData.CsvExportSettingsViewData
 import com.example.util.simpletimetracker.feature_dialogs.csvExportSettings.viewModel.CsvExportSettingsViewModel
 import com.example.util.simpletimetracker.feature_views.extension.setOnClick
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.DataExportSettingDialogParams
 import com.example.util.simpletimetracker.navigation.params.screen.DataExportSettingsResult
 import com.google.android.flexbox.FlexDirection
@@ -46,11 +47,11 @@ class CsvExportSettingsDialogFragment :
         key = ARGS_PARAMS, default = DataExportSettingDialogParams.Empty,
     )
 
-    private var dialogListener: DataExportSettingsDialogListener? = null
+    private var listener: DataExportSettingsDialogListener? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        dialogListener = context.findListener()
+        listener = context.findListeners<DataExportSettingsDialogListener>().firstOrNull()
     }
 
     override fun initDialog() {
@@ -103,13 +104,11 @@ class CsvExportSettingsDialogFragment :
     private fun onResult(
         params: DataExportSettingsResult,
     ) {
-        dialogListener?.onDataExportSettingsSelected(params)
+        listener?.onDataExportSettingsSelected(params)
         dismiss()
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_params"
-
         fun createBundle(data: DataExportSettingDialogParams): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data)
         }

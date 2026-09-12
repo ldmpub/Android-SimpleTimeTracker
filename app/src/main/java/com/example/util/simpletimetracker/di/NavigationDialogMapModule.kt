@@ -22,6 +22,7 @@ import com.example.util.simpletimetracker.feature_records_filter.view.RecordsFil
 import com.example.util.simpletimetracker.feature_settings.customizeOptionsMenu.CustomizeOptionsMenuDialogFragment
 import com.example.util.simpletimetracker.feature_settings.partialRestoreSelection.model.PartialRestoreSelectionDialogParams
 import com.example.util.simpletimetracker.feature_settings.partialRestoreSelection.view.PartialRestoreSelectionFragment
+import com.example.util.simpletimetracker.feature_statistics_detail.settings.view.StatisticsTagValuesSettingsDialogFragment
 import com.example.util.simpletimetracker.navigation.NavigationData
 import com.example.util.simpletimetracker.navigation.bundleCreator.BundleCreator
 import com.example.util.simpletimetracker.navigation.bundleCreator.bundleCreatorDelegate
@@ -42,7 +43,6 @@ import com.example.util.simpletimetracker.navigation.params.screen.DebugMenuDial
 import com.example.util.simpletimetracker.navigation.params.screen.DefaultTypesSelectionDialogParams
 import com.example.util.simpletimetracker.navigation.params.screen.DurationDialogParams
 import com.example.util.simpletimetracker.navigation.params.screen.EmojiSelectionDialogParams
-import com.example.util.simpletimetracker.navigation.params.screen.ExportOptionsParams
 import com.example.util.simpletimetracker.navigation.params.screen.HelpDialogParams
 import com.example.util.simpletimetracker.navigation.params.screen.OptionsListParams
 import com.example.util.simpletimetracker.navigation.params.screen.PartialRestoreParams
@@ -51,7 +51,9 @@ import com.example.util.simpletimetracker.navigation.params.screen.RecordQuickAc
 import com.example.util.simpletimetracker.navigation.params.screen.RecordTagSelectionParams
 import com.example.util.simpletimetracker.navigation.params.screen.RecordTagValueSelectionParams
 import com.example.util.simpletimetracker.navigation.params.screen.RecordsFilterParams
+import com.example.util.simpletimetracker.navigation.params.screen.StatisticsTagValuesSettingsParams
 import com.example.util.simpletimetracker.navigation.params.screen.StandardDialogParams
+import com.example.util.simpletimetracker.navigation.params.screen.SettingsOptionsParams
 import com.example.util.simpletimetracker.navigation.params.screen.TypesSelectionDialogParams
 import dagger.Module
 import dagger.Provides
@@ -305,6 +307,16 @@ class NavigationDialogMapModule {
 
     @IntoMap
     @Provides
+    @ScreenKey(StatisticsTagValuesSettingsParams::class)
+    fun statisticsTagValuesSettings(): NavigationData {
+        return NavigationData(
+            R.id.action_to_statisticsTagValuesSettingsDialogFragment,
+            bundleCreatorDelegate(StatisticsTagValuesSettingsDialogFragment::createBundle),
+        )
+    }
+
+    @IntoMap
+    @Provides
     @ScreenKey(RecordQuickActionsParams::class)
     fun recordQuickActionsDialog(): NavigationData {
         return NavigationData(
@@ -325,10 +337,10 @@ class NavigationDialogMapModule {
 
     @IntoMap
     @Provides
-    @ScreenKey(ExportOptionsParams::class)
-    fun exportOptionsDialogFragment(): NavigationData {
+    @ScreenKey(SettingsOptionsParams::class)
+    fun settingsOptionsDialogFragment(): NavigationData {
         return NavigationData(
-            R.id.exportOptionsDialogFragment,
+            R.id.settingsOptionsDialogFragment,
             BundleCreator.empty(),
         )
     }

@@ -35,6 +35,8 @@ interface PrefsRepo {
     var statisticsDetailRangeCustomEnd: Long
     var statisticsDetailRangeLastDays: Int
 
+    var statisticsDetailTagValueSettings: Set<String>
+
     var fileExportRange: Int
     var fileExportRangeCustomStart: Long
     var fileExportRangeCustomEnd: Long
@@ -97,6 +99,8 @@ interface PrefsRepo {
 
     var showGoalsSeparately: Boolean
 
+    var hideFinishedGoals: Boolean
+
     var allowMultitasking: Boolean
 
     var showNotifications: Boolean
@@ -109,6 +113,8 @@ interface PrefsRepo {
 
     var inactivityReminderRecurrent: Boolean
 
+    var inactivityReminderDaysOfWeek: String
+
     var inactivityReminderDoNotDisturbStart: Long // in milliseconds
 
     var inactivityReminderDoNotDisturbEnd: Long // in milliseconds
@@ -117,6 +123,8 @@ interface PrefsRepo {
 
     var activityReminderRecurrent: Boolean
 
+    var activityReminderDaysOfWeek: String
+
     var activityReminderDoNotDisturbStart: Long // in milliseconds
 
     var activityReminderDoNotDisturbEnd: Long // in milliseconds
@@ -124,6 +132,8 @@ interface PrefsRepo {
     var ignoreShortRecordsDuration: Long // in seconds
 
     var ignoreShortUntrackedDuration: Long // in seconds
+
+    var untrackedDaysOfWeek: String
 
     var untrackedRangeEnabled: Boolean
 
@@ -188,8 +198,13 @@ interface PrefsRepo {
     var isNavBarAtTheBottom: Boolean
 
     var isCategoriesSearchEnabled: Boolean
+    var isCategoriesRelationsEnabled: Boolean
 
     var isArchiveSearchEnabled: Boolean
+
+    var isTagSearchEnabled: Boolean
+
+    var isShowAllTagsEnabled: Boolean
 
     var hiddenCommentFilters: Set<String>
 

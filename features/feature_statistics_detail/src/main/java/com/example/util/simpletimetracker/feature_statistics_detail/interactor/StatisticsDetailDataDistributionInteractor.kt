@@ -86,7 +86,7 @@ class StatisticsDetailDataDistributionInteractor @Inject constructor(
             mode = dataDistributionMode,
             graph = dataDistributionGraph,
             selectedItemId = selectedItemId,
-            records = if (range.timeStarted == 0L && range.timeEnded == 0L) {
+            records = if (range.isUndefined) {
                 records
             } else {
                 rangeMapper.getRecordsFromRange(records, range)
@@ -180,7 +180,12 @@ class StatisticsDetailDataDistributionInteractor @Inject constructor(
                     addUncategorized = true,
                 )
             }
-        }.let(statisticsInteractor::getStatisticsData)
+        }.let {
+            statisticsInteractor.getStatisticsData(
+                allRecords = it,
+                showSeconds = true, // All detailed statistics accounts for seconds.
+            )
+        }
     }
 
     private fun mapItemsList(
@@ -253,7 +258,7 @@ class StatisticsDetailDataDistributionInteractor @Inject constructor(
                 ).let { chartData ->
                     StatisticsDetailBarChartViewData(
                         block = StatisticsDetailBlock.DataDistributionBarChart,
-                        singleColor = null,
+                        singleColor = null, // Replaced later.
                         marginTopDp = 0,
                         data = chartData,
                     )
@@ -287,7 +292,6 @@ class StatisticsDetailDataDistributionInteractor @Inject constructor(
             .let { statisticsDetailViewDataMapper.mapLegendSuffix(it) }
 
         return StatisticsDetailChartViewData(
-            visible = true,
             data = chartData.map { (chart, statistic) ->
                 val value = chart.durations.map { (duration, color) ->
                     statisticsDetailViewDataMapper.formatInterval(duration, isMinutes) to color
@@ -304,6 +308,7 @@ class StatisticsDetailDataDistributionInteractor @Inject constructor(
             showSelectedBarOnStart = false,
             selectedBarPosition = selectedBarPosition,
             goalValue = 0f,
+            yAxisZoomed = false,
             useSingleColor = true,
             drawRoundCaps = true,
             animate = OneShotValue(animate),

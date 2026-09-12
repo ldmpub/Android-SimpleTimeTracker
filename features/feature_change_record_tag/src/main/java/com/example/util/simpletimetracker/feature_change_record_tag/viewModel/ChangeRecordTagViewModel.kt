@@ -5,10 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.util.simpletimetracker.core.base.BaseViewModel
 import com.example.util.simpletimetracker.core.base.ViewModelDelegate
-import com.example.util.simpletimetracker.core.delegates.colorSelection.ColorSelectionViewModelDelegate
-import com.example.util.simpletimetracker.core.delegates.colorSelection.ColorSelectionViewModelDelegateImpl
-import com.example.util.simpletimetracker.core.delegates.iconSelection.viewModelDelegate.IconSelectionViewModelDelegate
-import com.example.util.simpletimetracker.core.delegates.iconSelection.viewModelDelegate.IconSelectionViewModelDelegateImpl
 import com.example.util.simpletimetracker.core.extension.set
 import com.example.util.simpletimetracker.core.extension.trimIfNotBlank
 import com.example.util.simpletimetracker.core.interactor.SnackBarMessageNavigationInteractor
@@ -43,6 +39,8 @@ import com.example.util.simpletimetracker.feature_change_record_tag.viewData.Cha
 import com.example.util.simpletimetracker.feature_change_record_tag.viewData.ChangeRecordTagTypesViewData
 import com.example.util.simpletimetracker.feature_change_record_tag.viewData.ChangeRecordTagValueTypeViewData
 import com.example.util.simpletimetracker.feature_change_record_tag.viewData.ChangeRecordTagValueViewData
+import com.example.util.simpletimetracker.feature_color_selection.api.ColorSelectionViewModelDelegate
+import com.example.util.simpletimetracker.feature_icon_selection.api.IconSelectionViewModelDelegate
 import com.example.util.simpletimetracker.navigation.Router
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeTagData
 import com.example.util.simpletimetracker.navigation.params.screen.StandardDialogParams
@@ -67,11 +65,11 @@ class ChangeRecordTagViewModel @Inject constructor(
     private val removeRecordTagMediator: RemoveRecordTagMediator,
     private val externalViewsInteractor: UpdateExternalViewsInteractor,
     private val goalsViewModelDelegate: GoalsViewModelDelegate,
-    private val colorSelectionViewModelDelegateImpl: ColorSelectionViewModelDelegateImpl,
-    private val iconSelectionViewModelDelegateImpl: IconSelectionViewModelDelegateImpl,
+    private val colorSelectionViewModelDelegate: ColorSelectionViewModelDelegate,
+    private val iconSelectionViewModelDelegateImpl: IconSelectionViewModelDelegate,
 ) : BaseViewModel(),
     GoalsViewModelDelegate by goalsViewModelDelegate,
-    ColorSelectionViewModelDelegate by colorSelectionViewModelDelegateImpl,
+    ColorSelectionViewModelDelegate by colorSelectionViewModelDelegate,
     IconSelectionViewModelDelegate by iconSelectionViewModelDelegateImpl {
 
     lateinit var extra: ChangeTagData
@@ -152,14 +150,14 @@ class ChangeRecordTagViewModel @Inject constructor(
     private var newValueSuffix: String = ""
 
     init {
-        colorSelectionViewModelDelegateImpl.attach(getColorSelectionDelegateParent())
+        colorSelectionViewModelDelegate.attach(getColorSelectionDelegateParent())
         iconSelectionViewModelDelegateImpl.attach(getIconSelectionDelegateParent())
     }
 
     override fun onCleared() {
         (goalsViewModelDelegate as? ViewModelDelegate)?.clear()
-        colorSelectionViewModelDelegateImpl.clear()
-        iconSelectionViewModelDelegateImpl.clear()
+        colorSelectionViewModelDelegate.clearColorDelegate()
+        iconSelectionViewModelDelegateImpl.clearIconDelegate()
         super.onCleared()
     }
 
@@ -236,6 +234,7 @@ class ChangeRecordTagViewModel @Inject constructor(
             type = TypesSelectionDialogParams.Type.Activity,
             selectedTypeIds = listOf(newIconColorSource),
             selectedTagValues = emptyList(),
+            selectedTagValueOnStart = emptyList(),
             isMultiSelectAvailable = false,
             idsShouldBeVisible = listOf(newIconColorSource),
             showHints = true,
@@ -243,16 +242,16 @@ class ChangeRecordTagViewModel @Inject constructor(
         ).let(router::navigate)
     }
 
-    fun onTypesSelected(typeIds: List<Long>, tag: String?) = viewModelScope.launch {
+    fun onTypesSelected(typeIds: List<Long>, tag: String) = viewModelScope.launch {
         if (tag != TYPE_SELECTION_TAG) return@launch
 
         val typeId = typeIds.firstOrNull() ?: return@launch
         val type = recordTypeInteractor.get(typeId) ?: return@launch
 
         iconSelectionViewModelDelegateImpl.newIcon = type.icon
-        colorSelectionViewModelDelegateImpl.newColor = type.color
+        colorSelectionViewModelDelegate.newColor = type.color
         newIconColorSource = type.id
-        colorSelectionViewModelDelegateImpl.update()
+        colorSelectionViewModelDelegate.updateColorViewData()
         updatePreview()
         updateIconColorSourceSelected()
     }
@@ -345,7 +344,7 @@ class ChangeRecordTagViewModel @Inject constructor(
                 id = recordTagId,
                 name = newName.trimIfNotBlank(),
                 icon = iconSelectionViewModelDelegateImpl.newIcon,
-                color = colorSelectionViewModelDelegateImpl.newColor,
+                color = colorSelectionViewModelDelegate.newColor,
                 iconColorSource = newIconColorSource,
                 note = newNote,
                 valueType = newValueType,
@@ -470,13 +469,13 @@ class ChangeRecordTagViewModel @Inject constructor(
                     newName = it.name
                     goalsViewModelDelegate.initialize(RecordTypeGoal.IdData.Tag(it.id))
                     iconSelectionViewModelDelegateImpl.newIcon = it.icon
-                    colorSelectionViewModelDelegateImpl.newColor = it.color
+                    colorSelectionViewModelDelegate.newColor = it.color
                     newIconColorSource = it.iconColorSource
                     newNote = it.note
                     newValueType = it.valueType
                     newValueSuffix = it.valueSuffix
-                    iconSelectionViewModelDelegateImpl.update()
-                    colorSelectionViewModelDelegateImpl.update()
+                    iconSelectionViewModelDelegateImpl.updateIconViewData()
+                    colorSelectionViewModelDelegate.updateColorViewData()
                     updateIconColorSourceSelected()
                     updateNoteState()
                     updateValueState()
@@ -485,10 +484,10 @@ class ChangeRecordTagViewModel @Inject constructor(
             is ChangeTagData.New -> {
                 recordTypeInteractor.get(extra.preselectedTypeId.orZero())?.let { type ->
                     iconSelectionViewModelDelegateImpl.newIcon = type.icon
-                    colorSelectionViewModelDelegateImpl.newColor = type.color
+                    colorSelectionViewModelDelegate.newColor = type.color
                     newIconColorSource = type.id
-                    iconSelectionViewModelDelegateImpl.update()
-                    colorSelectionViewModelDelegateImpl.update()
+                    iconSelectionViewModelDelegateImpl.updateIconViewData()
+                    colorSelectionViewModelDelegate.updateColorViewData()
                     updateIconColorSourceSelected()
                 }
             }
@@ -497,10 +496,12 @@ class ChangeRecordTagViewModel @Inject constructor(
 
     private fun getColorSelectionDelegateParent(): ColorSelectionViewModelDelegate.Parent {
         return object : ColorSelectionViewModelDelegate.Parent {
+            override fun getDialogTag(): String = COLOR_SELECTION_DIALOG_TAG
+
             override suspend fun update() {
                 updatePreview()
                 updateIconColorSourceSelected()
-                iconSelectionViewModelDelegateImpl.update()
+                iconSelectionViewModelDelegateImpl.updateIconViewData()
             }
 
             override fun onColorSelected() {
@@ -513,17 +514,15 @@ class ChangeRecordTagViewModel @Inject constructor(
                 newIconColorSource = 0
             }
 
-            override suspend fun isColorSelectedCheck(): Boolean {
-                return newIconColorSource == 0L
-            }
+            override suspend fun isColorSelectedCheck(): Boolean = newIconColorSource == 0L
         }
     }
 
     private fun getIconSelectionDelegateParent(): IconSelectionViewModelDelegate.Parent {
         return object : IconSelectionViewModelDelegate.Parent {
-            override fun keyboardVisibility(isVisible: Boolean) {
-                keyboardVisibility.set(isVisible)
-            }
+            override fun getDialogTag(): String = ICON_SELECTION_DIALOG_TAG
+
+            override fun keyboardVisibility(isVisible: Boolean) = keyboardVisibility.set(isVisible)
 
             override suspend fun update() {
                 updatePreview()
@@ -535,14 +534,12 @@ class ChangeRecordTagViewModel @Inject constructor(
                     if (newIconColorSource == 0L) return@launch
                     val type = recordTypeInteractor.get(newIconColorSource)
                         ?: return@launch
-                    colorSelectionViewModelDelegateImpl.newColor = type.color
+                    colorSelectionViewModelDelegate.newColor = type.color
                 }
                 newIconColorSource = 0
             }
 
-            override fun getColor(): AppColor {
-                return colorSelectionViewModelDelegateImpl.newColor
-            }
+            override fun getColor(): AppColor = colorSelectionViewModelDelegate.newColor
         }
     }
 
@@ -558,7 +555,7 @@ class ChangeRecordTagViewModel @Inject constructor(
         val tag = RecordTag(
             name = newName,
             icon = iconSelectionViewModelDelegateImpl.newIcon,
-            color = colorSelectionViewModelDelegateImpl.newColor,
+            color = colorSelectionViewModelDelegate.newColor,
             iconColorSource = newIconColorSource,
             note = newNote,
             valueType = newValueType,
@@ -632,5 +629,7 @@ class ChangeRecordTagViewModel @Inject constructor(
     companion object {
         private const val TYPE_SELECTION_TAG = "types_selection_tag"
         private const val DELETE_ALERT_DIALOG_TAG = "delete_alert_dialog_tag"
+        private const val COLOR_SELECTION_DIALOG_TAG = "change_record_tag_color_selection_dialog_tag"
+        private const val ICON_SELECTION_DIALOG_TAG = "change_record_tag_icon_selection_dialog_tag"
     }
 }

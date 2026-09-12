@@ -7,12 +7,14 @@ package com.example.util.simpletimetracker.domain.mediator
 
 import com.example.util.simpletimetracker.data.WearDataRepo
 import com.example.util.simpletimetracker.data.WearRPCException
+import com.example.util.simpletimetracker.domain.interactor.WearTagSelectionDataInteractor
 import com.example.util.simpletimetracker.domain.model.WearRecordRepeatResult
 import com.example.util.simpletimetracker.domain.model.WearRecordTag
 import javax.inject.Inject
 
 class StartActivityMediator @Inject constructor(
     private val wearDataRepo: WearDataRepo,
+    private val wearTagSelectionDataInteractor: WearTagSelectionDataInteractor,
 ) {
 
     suspend fun requestStart(
@@ -25,20 +27,30 @@ class StartActivityMediator @Inject constructor(
         val shouldShowTagSelection = wearDataRepo.loadShouldShowTagSelection(activityId)
             .getOrNull() ?: return Result.failure(WearRPCException)
 
-        return if (shouldShowTagSelection) {
+        return if (shouldShowTagSelection.shouldShow) {
             onProgressChanged(false)
+            wearTagSelectionDataInteractor.data[activityId] = shouldShowTagSelection
             onRequestTagSelection()
             Result.success(Unit)
         } else {
-            start(activityId, emptyList())
+            start(
+                activityId = activityId,
+                tags = emptyList(),
+                useSelectedTags = false,
+            )
         }
     }
 
     suspend fun start(
         activityId: Long,
         tags: List<WearRecordTag>,
+        useSelectedTags: Boolean,
     ): Result<Unit> {
-        return wearDataRepo.startActivity(activityId, tags)
+        return wearDataRepo.startActivity(
+            id = activityId,
+            tags = tags,
+            useSelectedTags = useSelectedTags,
+        )
     }
 
     suspend fun stop(currentId: Long): Result<Unit> {

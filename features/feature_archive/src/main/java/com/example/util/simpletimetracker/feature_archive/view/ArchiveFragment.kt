@@ -6,12 +6,12 @@ import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseFragment
-import com.example.util.simpletimetracker.core.dialog.ArchiveDialogListener
-import com.example.util.simpletimetracker.core.dialog.OptionsListDialogListener
-import com.example.util.simpletimetracker.core.dialog.StandardDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.ArchiveDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OptionsListDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.StandardDialogListener
 import com.example.util.simpletimetracker.core.utils.InsetConfiguration
 import com.example.util.simpletimetracker.core.utils.doOnApplyWindowInsetsListener
-import com.example.util.simpletimetracker.core.utils.getNavBarInsets
+import com.example.util.simpletimetracker.core.utils.getNavBarInsetsBottom
 import com.example.util.simpletimetracker.feature_archive.viewData.ArchiveSearchState
 import com.example.util.simpletimetracker.feature_archive.viewModel.ArchiveViewModel
 import com.example.util.simpletimetracker.feature_base_adapter.BaseRecyclerAdapter
@@ -73,7 +73,7 @@ class ArchiveFragment :
         }
 
         btnArchiveOptions.doOnApplyWindowInsetsListener {
-            val navBarHeight = it.getNavBarInsets().bottom.pxToDp()
+            val navBarHeight = it.getNavBarInsetsBottom().pxToDp()
             viewModel.onChangeInsets(navBarHeight = navBarHeight)
             setMargins(bottom = navBarHeight)
         }

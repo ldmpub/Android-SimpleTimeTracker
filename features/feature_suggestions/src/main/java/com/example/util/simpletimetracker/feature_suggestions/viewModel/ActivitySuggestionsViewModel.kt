@@ -12,9 +12,9 @@ import com.example.util.simpletimetracker.domain.notifications.interactor.Update
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
 import com.example.util.simpletimetracker.feature_base_adapter.button.ButtonViewData
 import com.example.util.simpletimetracker.feature_base_adapter.loader.LoaderViewData
+import com.example.util.simpletimetracker.feature_base_adapter.recordTypeRelation.ActivitySuggestionListViewData
 import com.example.util.simpletimetracker.feature_suggestions.viewData.ActivitySuggestionsButtonViewData
 import com.example.util.simpletimetracker.feature_suggestions.R
-import com.example.util.simpletimetracker.feature_suggestions.adapter.ActivitySuggestionListViewData
 import com.example.util.simpletimetracker.feature_suggestions.adapter.ActivitySuggestionSpecialViewData
 import com.example.util.simpletimetracker.feature_suggestions.interactor.ActivitySuggestionsCalculateInteractor
 import com.example.util.simpletimetracker.feature_suggestions.interactor.ActivitySuggestionsViewDataInteractor
@@ -43,7 +43,7 @@ class ActivitySuggestionsViewModel @Inject constructor(
     private var selectingSuggestionsForTypeId: Long = 0L
     private var loadJob: Job? = null
 
-    fun onTypesSelected(typeIds: List<Long>, tag: String?) {
+    fun onTypesSelected(typeIds: List<Long>, tag: String) {
         when (tag) {
             ACTIVITY_SUGGESTIONS_TYPE_SELECTION_TAG -> {
                 onNewTypesSelected(
@@ -73,6 +73,7 @@ class ActivitySuggestionsViewModel @Inject constructor(
                     type = TypesSelectionDialogParams.Type.Activity,
                     selectedTypeIds = suggestions[forTypeId].orEmpty().toList(),
                     selectedTagValues = emptyList(),
+                    selectedTagValueOnStart = emptyList(),
                     isMultiSelectAvailable = true,
                     idsShouldBeVisible = emptyList(),
                     showHints = true,
@@ -105,6 +106,7 @@ class ActivitySuggestionsViewModel @Inject constructor(
                     type = TypesSelectionDialogParams.Type.Activity,
                     selectedTypeIds = suggestions.keys.toList(),
                     selectedTagValues = emptyList(),
+                    selectedTagValueOnStart = emptyList(),
                     isMultiSelectAvailable = true,
                     idsShouldBeVisible = emptyList(),
                     showHints = true,

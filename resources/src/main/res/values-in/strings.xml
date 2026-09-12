@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Label rekaman</string>
     <string name="record_tag_hint_short">Label</string>
     <string name="nothing_selected">Tidak ada yang dipilih</string>
-    <string name="something_selected">Terpilih:</string>
+    <string name="something_selected">Terpilih</string>
+    <string name="something_available">Tersedia</string>
+    <string name="something_preselected">Dipilih sebelumnya</string>
     <string name="select_all">Pilih Semua</string>
     <string name="select_nothing">Pilih apa pun</string>
     <string name="no_data">Tidak ada data</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Tujuan akan ditampilkan di sini</string>
+    <string name="all_goals_finished">Semua target telah selesai</string>
+    <string name="hide_finished_goals">Sembunyikan target yang selesai</string>
     <string name="goal_add_hint">Edit aktivitas atau kategori untuk menetapkan tujuan</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Tetapkan label yang berbeda ke rekaman untuk membedakannya</string>
     <string name="categories_add_category">Tambahkan kategori</string>
     <string name="categories_add_record_tag">Tambahkan label rekaman</string>
+    <string name="categories_show_relations">Tampilkan hubungan</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>Kategori</b> membantu Anda mengelompokkan aktivitas yang berhubungan. Contohnya:<br><br>
 • Kategori <custom-color-3>Produktif</custom-color-3> bisa mencakup <custom-color-3>Membaca</custom-color-3> dan <custom-color-3>Gym</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@ Ini memungkinkan Anda melihat berapa banyak waktu yang dihabiskan untuk aktivita
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Label diarsipkan</string>
     <string name="change_record_tag_default_hint">Ditugaskan secara default</string>
+    <string name="change_record_tag_type_general">Umum</string>
     <string name="change_record_tag_type_general_hint">Dapat ditugaskan ke catatan aktivitas apa pun</string>
     <string name="change_record_tag_type_typed_hint">Hanya dapat ditetapkan ke catatan aktivitas tertentu</string>
     <string name="change_record_tag_select_activity_hint">Ambil warna dan ikon dari aktivitas</string>
@@ -142,6 +148,7 @@ Ini memungkinkan Anda melihat berapa banyak waktu yang dihabiskan untuk aktivita
     <string name="change_record_last_comments_hint">Komentar terakhir</string>
     <string name="change_record_favourite_comments_hint">Favorit</string>
     <string name="change_record_favourite_comments_hint_long">Komentar favorit</string>
+    <string name="change_record_favourite_activity_selection">Favorit hanya untuk aktivitas yang dipilih</string>
     <string name="change_record_similar_comments_hint">Komentar serupa</string>
     <string name="change_record_categories_empty">Tidak ada label rekaman yang ditambahkan</string>
     <string name="change_record_save">Simpan</string>
@@ -230,6 +237,8 @@ Ini memungkinkan Anda melihat berapa banyak waktu yang dihabiskan untuk aktivita
     <string name="change_complex_rule_removed">Aturan dihapus</string>
     <string name="change_complex_rule_choose_action">Pilih tindakan</string>
     <string name="change_complex_rule_choose_condition">Pilih kondisi</string>
+    <string name="change_complex_tag_value_dialog_message">Pilih kapan menetapkan nilai</string>
+    <string name="change_complex_tag_value_set_later">Saat mulai</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Menampilkan saran untuk aktivitas berikutnya berdasarkan aktivitas saat ini atau terakhir</string>
@@ -289,6 +298,7 @@ Ini memungkinkan Anda melihat berapa banyak waktu yang dihabiskan untuk aktivita
     <string name="records_all_sort_order">Urutkan rekor</string>
     <string name="records_all_sort_time_started">Waktu dimulai</string>
     <string name="records_all_sort_duration">Durasi</string>
+    <string name="records_all_days_without_records">Hari tanpa catatan - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">Untuk memulai pelacakan, tambahkan aktivitas dengan mengklik tombol %s atau gunakan preset default dengan mengklik tombol %s</string>
@@ -309,7 +319,7 @@ Ini memungkinkan Anda melihat berapa banyak waktu yang dihabiskan untuk aktivita
     <string name="settings_display_title">Pengaturan tampilan</string>
     <string name="settings_additional_title">Pengaturan tambahan</string>
     <string name="settings_notification_title">Pengaturan pemberitahuan</string>
-    <string name="settings_backup_title">Pengaturan cadangan</string>
+    <string name="settings_backup_title">Cadangan</string>
     <string name="settings_export_title">Ekspor dan impor</string>
     <string name="settings_sort_order">Urutkan kegiatan</string>
     <string name="settings_sort_order_category">Urutkan kategori</string>
@@ -327,6 +337,7 @@ Ini memungkinkan Anda melihat berapa banyak waktu yang dihabiskan untuk aktivita
     <string name="settings_show_untracked_time_statistics">Tampilkan waktu tak terlacak dalam statistik</string>
     <string name="settings_ignore_short_untracked">Abaikan waktu singkat yang tidak terlacak</string>
     <string name="settings_ignore_short_untracked_hint">Jangan tampilkan waktu yang tidak terlacak yang lebih pendek dari waktu yang ditentukan.</string>
+    <string name="settings_untracked_days_hint">Hitung waktu tanpa pelacakan hanya pada hari yang dipilih.</string>
     <string name="settings_untracked_range">Rentang yang tidak terlacak</string>
     <string name="settings_untracked_range_hint">Tampilkan waktu yang tidak terlacak hanya dalam rentang yang dipilih.</string>
     <string name="settings_show_records_calendar">Tampilkan rekor dalam tampilan kalender</string>
@@ -360,11 +371,14 @@ Ini memungkinkan Anda melihat berapa banyak waktu yang dihabiskan untuk aktivita
     <string name="settings_inactivity_reminder">Tampilkan pengingat tidak berkegiatan</string>
     <string name="settings_inactivity_reminder_hint">Tampilkan notifikasi setelah waktu yang ditentukan jika tidak ada pewaktu yang berjalan.</string>
     <string name="settings_inactivity_reminder_recurrent">Berulang</string>
+    <string name="settings_reminder_active_days">Hari aktif</string>
     <string name="settings_activity_reminder">Tampilkan pengingat aktivitas</string>
     <string name="settings_activity_reminder_hint">Tampilkan pemberitahuan setelah waktu yang ditentukan jika penghitung waktu sedang berjalan.</string>
     <string name="settings_do_not_disturb">Jangan jangan ganggu</string>
     <string name="settings_notifications_system_settings">Pengaturan sistem</string>
     <string name="settings_notifications_system_settings_hint">Suara, getaran, flash dan lainnya</string>
+    <string name="settings_reminders_title">Pengingat</string>
+    <string name="settings_reminders_hint">Kelola pengingat terjadwal</string>
     <string name="settings_ignore_short_records">Abaikan rekor pendek</string>
     <string name="settings_ignore_short_records_hint">Jangan melacak aktivitas yang lebih pendek dari waktu yang ditentukan.</string>
     <string name="settings_inactivity_reminder_disabled">Dinonaktifkan</string>
@@ -527,6 +541,7 @@ Contoh:<br/>
     <string name="statistics_detail_record_time">Waktu rekor</string>
     <string name="statistics_detail_first_record">Pertama</string>
     <string name="statistics_detail_last_record">Terakhir</string>
+    <string name="statistics_detail_record_span">Rentang</string>
     <string name="statistics_detail_time_since">Waktu sejak</string>
     <string name="statistics_detail_streaks">Seri</string>
     <string name="statistics_detail_streaks_longest">Terlama</string>
@@ -549,6 +564,8 @@ Contoh:<br/>
     <string name="statistics_detail_goals_deficit">Defisit</string>
     <string name="statistics_detail_tag_values_hint">Nilai tag</string>
     <string name="statistics_detail_tag_values_multiply_duration">Kalikan dengan durasi</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Isi periode kosong dengan data sebelumnya</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Perbesar sumbu Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">Rekor</item>-->
@@ -673,6 +690,33 @@ Contoh:<br/>
     <string name="shortcut_navigation_records">Rekor</string>
     <string name="shortcut_navigation_statistics">Statistik</string>
     <string name="shortcut_navigation_settings">Pengaturan</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Harian</string>
+    <string name="reminders_schedule_weekly">Mingguan</string>
+    <string name="reminders_schedule_one_time">Sekali</string>
+    <string name="reminders_schedule_monthly">Bulanan</string>
+    <string name="reminders_schedule_hourly">Setiap jam</string>
+    <string name="reminders_condition_activity_not_tracked">Saat aktivitas belum dilacak hari ini</string>
+    <string name="activity_reminders_hint">Menggantikan pengaturan pengingat aktivitas global</string>
+    <string name="activity_reminder_mode">Mode pengingat</string>
+    <string name="activity_reminder_mode_disabled">Dinonaktifkan</string>
+    <string name="activity_reminder_mode_custom">Kustom</string>
+    <string name="activity_reminder_disabled_summary">Pengingat dinonaktifkan untuk aktivitas ini</string>
+    <string name="activity_reminder_positive_duration_required">Atur durasi pengingat lebih dari nol</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Pesan</string>
+    <string name="change_reminder_schedule">Jadwal</string>
+    <string name="change_reminder_day_of_month">Tanggal dalam bulan</string>
+    <string name="change_reminder_interval">Interval</string>
+    <string name="change_reminder_condition">Kondisi tampilan</string>
+    <string name="change_reminder_condition_always">Selalu</string>
+    <string name="change_reminder_message_prefill">Jangan lupa melakukan %s.</string>
+    <string name="change_reminder_message_required">Masukkan pesan pengingat</string>
+    <string name="change_reminder_future_required">Pilih waktu di masa mendatang</string>
+    <string name="change_reminder_interval_required">Atur interval lebih besar dari nol</string>
+    <string name="change_reminder_removed">Pengingat dihapus</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Periksa koneksi Anda dan coba lagi</string>

@@ -33,6 +33,7 @@ class ChangeRecordDelegateBridge(
         data class OnRecordChangeButtonClick(
             val onProceed: suspend () -> Unit,
             val checkTypeSelected: Boolean = true,
+            val checkSplitTypeSelected: Boolean = false,
             val delayBlock: Boolean = false,
         ) : Action
     }
@@ -60,12 +61,16 @@ class ChangeRecordDelegateBridge(
 
         data class SplitParams(
             val newTimeSplit: Long,
+            val newBeforeTypeId: Long,
             val splitPreviewTimeEnded: Long,
             val showTimeEndedOnSplitPreview: Boolean,
+            val originalTypeId: Long,
+            val originalTags: List<RecordBase.Tag>,
         )
 
         data class DuplicateParams(
             val isAvailable: Boolean,
+            val newTimeEnded: Long,
         )
 
         data class MoveParams(

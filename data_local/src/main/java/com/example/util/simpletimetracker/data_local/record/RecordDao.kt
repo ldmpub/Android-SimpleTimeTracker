@@ -19,23 +19,54 @@ interface RecordDao {
 
     @Transaction
     @Query("SELECT * FROM records WHERE type_id IN (:typesIds)")
-    suspend fun getByType(typesIds: List<Long>): List<RecordWithRecordTagsDBO>
+    suspend fun getByType(typesIds: Set<Long>): List<RecordWithRecordTagsDBO>
 
     @Transaction
     @Query("SELECT * FROM records WHERE type_id IN (:typesIds) AND comment != \"\"")
-    suspend fun getByTypeWithAnyComment(typesIds: List<Long>): List<RecordWithRecordTagsDBO>
+    suspend fun getByTypeWithAnyComment(typesIds: Set<Long>): List<RecordWithRecordTagsDBO>
 
     @Transaction
     @Query("SELECT * FROM records WHERE instr(lower(comment), lower(:text)) > 0")
     suspend fun searchComment(text: String): List<RecordWithRecordTagsDBO>
 
+    @Query(
+        "SELECT comment FROM records " +
+            "WHERE instr(lower(comment), lower(:text)) > 0 AND comment != :text " +
+            "GROUP BY comment " +
+            "ORDER BY MAX(time_started) DESC " +
+            "LIMIT :limit",
+    )
+    suspend fun searchSimilarComments(text: String, limit: Int): List<String>
+
+    @Query(
+        "SELECT comment FROM (" +
+            "SELECT comment, time_started FROM records " +
+            "WHERE type_id = :typeId AND comment != \"\" " +
+            "UNION ALL " +
+            "SELECT comment, time_started FROM runningRecords " +
+            "WHERE id = :typeId AND comment != \"\"" +
+            ") " +
+            "GROUP BY comment " +
+            "ORDER BY MAX(time_started) DESC " +
+            "LIMIT :limit",
+    )
+    suspend fun getRecentComments(typeId: Long, limit: Int): List<String>
+
     @Transaction
     @Query("SELECT * FROM records WHERE type_id IN (:typesIds) AND instr(lower(comment), lower(:text)) > 0")
-    suspend fun searchByTypeWithComment(typesIds: List<Long>, text: String): List<RecordWithRecordTagsDBO>
+    suspend fun searchByTypeWithComment(typesIds: Set<Long>, text: String): List<RecordWithRecordTagsDBO>
 
     @Transaction
     @Query("SELECT * FROM records WHERE comment != \"\"")
     suspend fun searchAnyComments(): List<RecordWithRecordTagsDBO>
+
+    @Transaction
+    @Query("SELECT * FROM records WHERE EXISTS(SELECT 1 FROM recordToRecordTag WHERE record_id = records.id AND record_tag_id IN (:tagIds))")
+    suspend fun getTagged(tagIds: Set<Long>): List<RecordWithRecordTagsDBO>
+
+    @Transaction
+    @Query("SELECT * FROM records WHERE NOT EXISTS(SELECT 1 FROM recordToRecordTag WHERE record_id = records.id)")
+    suspend fun getUntagged(): List<RecordWithRecordTagsDBO>
 
     @Transaction
     @Query("SELECT * FROM records WHERE id = :id LIMIT 1")
@@ -47,7 +78,7 @@ interface RecordDao {
 
     @Transaction
     @Query("SELECT * FROM records WHERE type_id IN (:typesIds) AND time_started < :end AND time_ended > :start")
-    suspend fun getFromRangeByType(typesIds: List<Long>, start: Long, end: Long): List<RecordWithRecordTagsDBO>
+    suspend fun getFromRangeByType(typesIds: Set<Long>, start: Long, end: Long): List<RecordWithRecordTagsDBO>
 
     @Transaction
     @Query(

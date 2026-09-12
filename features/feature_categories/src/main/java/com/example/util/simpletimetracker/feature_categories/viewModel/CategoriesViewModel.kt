@@ -9,12 +9,14 @@ import com.example.util.simpletimetracker.core.extension.set
 import com.example.util.simpletimetracker.core.extension.toParams
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
+import com.example.util.simpletimetracker.domain.recordTag.interactor.RecordTagInteractor
+import com.example.util.simpletimetracker.domain.recordTag.interactor.RecordToRecordTagInteractor
+import com.example.util.simpletimetracker.domain.recordTag.model.RecordTag
 import com.example.util.simpletimetracker.domain.recordType.interactor.RecordTypeInteractor
 import com.example.util.simpletimetracker.domain.recordType.model.RecordType
 import com.example.util.simpletimetracker.domain.statistics.model.ChartFilterType
 import com.example.util.simpletimetracker.feature_base_adapter.category.CategoryAddViewData
 import com.example.util.simpletimetracker.feature_base_adapter.category.CategoryViewData
-import com.example.util.simpletimetracker.feature_base_adapter.category.TagType
 import com.example.util.simpletimetracker.feature_base_adapter.loader.LoaderViewData
 import com.example.util.simpletimetracker.feature_categories.R
 import com.example.util.simpletimetracker.feature_categories.interactor.CategoriesViewDataInteractor
@@ -32,8 +34,11 @@ import com.example.util.simpletimetracker.navigation.params.screen.OptionsListPa
 import com.example.util.simpletimetracker.navigation.params.screen.TypesSelectionDialogParams
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 
 @HiltViewModel
@@ -43,24 +48,28 @@ class CategoriesViewModel @Inject constructor(
     private val prefsInteractor: PrefsInteractor,
     private val customTagHandler: CustomTagHandler,
     private val recordTypeInteractor: RecordTypeInteractor,
+    private val recordTagInteractor: RecordTagInteractor,
+    private val recordToRecordTagInteractor: RecordToRecordTagInteractor,
     private val categoriesViewDataInteractor: CategoriesViewDataInteractor,
     private val categoriesOptionsListMapper: CategoriesOptionsListMapper,
 ) : BaseViewModel() {
 
     val categories: LiveData<CategoriesViewData> by lazySuspend {
         updateCategories()
-        CategoriesViewData(listOf(LoaderViewData()))
+        loadRecordsCount()
+        CategoriesViewData(items = listOf(LoaderViewData()), centerContent = true)
     }
     val searchState: LiveData<CategoriesSearchState> by lazySuspend {
         loadSearchState()
     }
     val showHint: LiveData<Boolean> by lazySuspend {
-        categoriesViewDataInteractor.getHintViewData()
+        categoriesViewDataInteractor.hasData()
     }
 
     private var navBarHeightDp: Int = 0
     private var selectedTypeIds: List<Long> = emptyList()
     private var searchText: String = ""
+    private val tagIdToRecordCount: ConcurrentHashMap<Long, Int> = ConcurrentHashMap()
     private var searchJob: Job? = null
     private var loadJob: Job? = null
 
@@ -89,8 +98,9 @@ class CategoriesViewModel @Inject constructor(
 
     fun onAddCategoryClick(viewData: CategoryAddViewData) {
         val params = when (viewData.type) {
-            TagType.RECORD_TYPE -> ::ChangeCategoryFromTagsParams
-            TagType.RECORD -> ::ChangeRecordTagFromTagsParams
+            is CategoryAddViewData.Type.AddCategory -> ::ChangeCategoryFromTagsParams
+            is CategoryAddViewData.Type.AddTag -> ::ChangeRecordTagFromTagsParams
+            else -> return
         }
 
         router.navigate(
@@ -99,6 +109,7 @@ class CategoriesViewModel @Inject constructor(
     }
 
     fun onVisible() {
+        // Update and recalculate on data change.
         updateCategories()
     }
 
@@ -116,6 +127,7 @@ class CategoriesViewModel @Inject constructor(
         when (id) {
             is CategoriesOptionsListItem.Filter -> onFilterClick()
             is CategoriesOptionsListItem.EnabledSearch -> onSearchToggled()
+            is CategoriesOptionsListItem.ShowRelations -> onRelationsToggled()
             is CategoriesOptionsListItem.Help -> onHelpClick()
         }
     }
@@ -137,7 +149,7 @@ class CategoriesViewModel @Inject constructor(
         selectedTypeIds = allTypeIds.filter { it !in dataIds }
     }
 
-    fun onDataSelected(dataIds: List<Long>, tag: String?) {
+    fun onDataSelected(dataIds: List<Long>, tag: String) {
         if (tag != CATEGORIES_TYPE_SELECTION_TAG) return
         selectedTypeIds = dataIds
         updateCategories()
@@ -171,6 +183,7 @@ class CategoriesViewModel @Inject constructor(
             type = TypesSelectionDialogParams.Type.Activity,
             selectedTypeIds = selectedTypeIds,
             selectedTagValues = emptyList(),
+            selectedTagValueOnStart = emptyList(),
             isMultiSelectAvailable = true,
             idsShouldBeVisible = archivedTypeIds,
             showHints = true,
@@ -182,6 +195,12 @@ class CategoriesViewModel @Inject constructor(
         val current = prefsInteractor.getIsCategoriesSearchEnabled()
         prefsInteractor.setIsCategoriesSearchEnabled(!current)
         updateSearchState()
+        updateCategories()
+    }
+
+    private suspend fun onRelationsToggled() {
+        val current = prefsInteractor.getIsCategoriesRelationsEnabled()
+        prefsInteractor.setIsCategoriesRelationsEnabled(!current)
         updateCategories()
     }
 
@@ -215,12 +234,29 @@ class CategoriesViewModel @Inject constructor(
         }
     }
 
+    private fun loadRecordsCount() = viewModelScope.launch {
+        tagIdToRecordCount.clear()
+        recordTagInteractor.getAll()
+            .filterNot(RecordTag::archived)
+            .map { tag ->
+                async {
+                    val count = recordToRecordTagInteractor.getRecordIdsByTagId(tag.id).size
+                    tagIdToRecordCount[tag.id] = count
+                    if (prefsInteractor.getIsCategoriesRelationsEnabled()) {
+                        updateCategories()
+                    }
+                }
+            }.awaitAll()
+    }
+
     private suspend fun loadCategoriesViewData(): CategoriesViewData {
         return categoriesViewDataInteractor.getViewData(
             selectedTypeIds = selectedTypeIds,
             searchEnabled = prefsInteractor.getIsCategoriesSearchEnabled(),
             searchText = searchText,
             navBarHeightDp = navBarHeightDp,
+            showRelations = prefsInteractor.getIsCategoriesRelationsEnabled(),
+            tagIdToRecordCount = tagIdToRecordCount,
         )
     }
 

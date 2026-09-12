@@ -126,6 +126,7 @@ class NotificationControlsManager @Inject constructor(
                     .coerceAtLeast(0),
                 recordTagsShift = params.tagsShift,
                 isMultipleTagAvailable = params.isMultipleTagAvailable,
+                requiredValueSelectionTagIds = params.requiredValueSelectionTagIds,
             ),
         )
 
@@ -134,19 +135,27 @@ class NotificationControlsManager @Inject constructor(
 
         fun addPresentType(data: NotificationControlsParams.Type.Present) {
             val recordTypeId = (from as? From.ActivityNotification)?.recordTypeId
-            val action = when (from) {
-                is From.ActivityNotification -> {
-                    if (data.id == recordTypeId) {
-                        ACTION_NOTIFICATION_CONTROLS_STOP
-                    } else {
-                        ACTION_NOTIFICATION_CONTROLS_TYPE_CLICK
+            val action = when (data.action) {
+                is NotificationControlsParams.Type.Action.Repeat -> {
+                    ACTION_NOTIFICATION_CONTROLS_REPEAT
+                }
+                is NotificationControlsParams.Type.Action.Select -> {
+                    when (from) {
+                        is From.ActivityNotification -> {
+                            if (data.action.typeId == recordTypeId) {
+                                ACTION_NOTIFICATION_CONTROLS_STOP
+                            } else {
+                                ACTION_NOTIFICATION_CONTROLS_TYPE_CLICK
+                            }
+                        }
+                        is From.ActivitySwitch -> {
+                            ACTION_NOTIFICATION_CONTROLS_TYPE_CLICK
+                        }
                     }
                 }
-                is From.ActivitySwitch -> {
-                    ACTION_NOTIFICATION_CONTROLS_TYPE_CLICK
-                }
             }
-            val color = if (recordTypeId == data.id) {
+            val selectedTypeId = (data.action as? NotificationControlsParams.Type.Action.Select)?.typeId
+            val color = if (recordTypeId == selectedTypeId) {
                 viewState.filteredTypeColor
             } else {
                 data.color
@@ -161,7 +170,14 @@ class NotificationControlsManager @Inject constructor(
                     action = action,
                     requestCode = getRequestCode(
                         from = from,
-                        additionalInfo = RequestCode.AdditionalInfo.TypeId(data.id),
+                        additionalInfo = when (data.action) {
+                            is NotificationControlsParams.Type.Action.Repeat -> {
+                                RequestCode.AdditionalInfo.Repeat
+                            }
+                            is NotificationControlsParams.Type.Action.Select -> {
+                                RequestCode.AdditionalInfo.TypeId(data.action.typeId)
+                            }
+                        },
                     ),
                     from = from,
                     selectedTags = params.selectedTags,
@@ -169,8 +185,9 @@ class NotificationControlsManager @Inject constructor(
                     editingTagValueInput = params.editingTagValueInput,
                     recordTypesShift = params.typesShift,
                     recordTagsShift = params.tagsShift,
-                    selectedTypeId = data.id,
+                    selectedTypeId = selectedTypeId,
                     isMultipleTagAvailable = params.isMultipleTagAvailable,
+                    requiredValueSelectionTagIds = params.requiredValueSelectionTagIds,
                 ),
             ).let {
                 addView(R.id.containerNotificationTypes, it)
@@ -217,6 +234,7 @@ class NotificationControlsManager @Inject constructor(
                     .orZero(),
                 recordTagsShift = params.tagsShift,
                 isMultipleTagAvailable = params.isMultipleTagAvailable,
+                requiredValueSelectionTagIds = params.requiredValueSelectionTagIds,
             ),
         )
     }
@@ -248,6 +266,7 @@ class NotificationControlsManager @Inject constructor(
                     .ifNull { viewState.tags.size - TAGS_LIST_SIZE }
                     .coerceAtLeast(0),
                 isMultipleTagAvailable = params.isMultipleTagAvailable,
+                requiredValueSelectionTagIds = params.requiredValueSelectionTagIds,
             ),
         )
 
@@ -255,15 +274,30 @@ class NotificationControlsManager @Inject constructor(
         val currentTags = viewState.tags.drop(params.tagsShift).take(TAGS_LIST_SIZE)
 
         fun addPresentType(data: NotificationControlsParams.Tag.Present) {
+            val action = when (data.action) {
+                is NotificationControlsParams.Tag.Action.Select -> ACTION_NOTIFICATION_CONTROLS_TAG_CLICK
+                is NotificationControlsParams.Tag.Action.Apply -> ACTION_NOTIFICATION_CONTROLS_APPLY_TAGS
+                is NotificationControlsParams.Tag.Action.Clear -> ACTION_NOTIFICATION_CONTROLS_CLEAR_TAGS
+            }
             getTagControlView(
                 text = data.text,
                 color = data.color,
                 intent = getPendingSelfIntent(
                     context = context,
-                    action = ACTION_NOTIFICATION_CONTROLS_TAG_CLICK,
+                    action = action,
                     requestCode = getRequestCode(
                         from = from,
-                        additionalInfo = RequestCode.AdditionalInfo.TypeId(data.id),
+                        additionalInfo = when (data.action) {
+                            is NotificationControlsParams.Tag.Action.Select -> {
+                                RequestCode.AdditionalInfo.TagId(data.action.tagId)
+                            }
+                            is NotificationControlsParams.Tag.Action.Apply -> {
+                                RequestCode.AdditionalInfo.ApplyTags
+                            }
+                            is NotificationControlsParams.Tag.Action.Clear -> {
+                                RequestCode.AdditionalInfo.ClearTags
+                            }
+                        },
                     ),
                     from = from,
                     selectedTypeId = params.selectedTypeId,
@@ -272,8 +306,9 @@ class NotificationControlsManager @Inject constructor(
                     editingTagValueInput = params.editingTagValueInput,
                     recordTypesShift = params.typesShift,
                     recordTagsShift = params.tagsShift,
-                    tagId = data.id,
+                    tagId = (data.action as? NotificationControlsParams.Tag.Action.Select)?.tagId,
                     isMultipleTagAvailable = params.isMultipleTagAvailable,
+                    requiredValueSelectionTagIds = params.requiredValueSelectionTagIds,
                 ),
                 isSelected = data.isSelected,
             ).let {
@@ -320,6 +355,7 @@ class NotificationControlsManager @Inject constructor(
                     .takeUnless { it >= viewState.tags.size }
                     .orZero(),
                 isMultipleTagAvailable = params.isMultipleTagAvailable,
+                requiredValueSelectionTagIds = params.requiredValueSelectionTagIds,
             ),
         )
     }
@@ -346,6 +382,7 @@ class NotificationControlsManager @Inject constructor(
                 recordTypesShift = params.typesShift,
                 recordTagsShift = params.tagsShift,
                 isMultipleTagAvailable = params.isMultipleTagAvailable,
+                requiredValueSelectionTagIds = params.requiredValueSelectionTagIds,
             ),
         )
 
@@ -389,6 +426,7 @@ class NotificationControlsManager @Inject constructor(
                     recordTypesShift = params.typesShift,
                     recordTagsShift = params.tagsShift,
                     isMultipleTagAvailable = params.isMultipleTagAvailable,
+                    requiredValueSelectionTagIds = params.requiredValueSelectionTagIds,
                 ),
             ).let {
                 addView(containerId, it)
@@ -453,6 +491,7 @@ class NotificationControlsManager @Inject constructor(
                 recordTypesShift = params.typesShift,
                 recordTagsShift = params.tagsShift,
                 isMultipleTagAvailable = params.isMultipleTagAvailable,
+                requiredValueSelectionTagIds = params.requiredValueSelectionTagIds,
             ),
         )
 
@@ -476,6 +515,7 @@ class NotificationControlsManager @Inject constructor(
                 recordTypesShift = params.typesShift,
                 recordTagsShift = params.tagsShift,
                 isMultipleTagAvailable = params.isMultipleTagAvailable,
+                requiredValueSelectionTagIds = params.requiredValueSelectionTagIds,
             ),
         )
     }
@@ -555,6 +595,7 @@ class NotificationControlsManager @Inject constructor(
         recordTagsShift: Int? = null,
         tagId: Long? = null,
         isMultipleTagAvailable: Boolean,
+        requiredValueSelectionTagIds: List<Long> = emptyList(),
     ): PendingIntent {
         val intent = Intent(context, NotificationReceiver::class.java)
         intent.action = action
@@ -567,6 +608,7 @@ class NotificationControlsManager @Inject constructor(
         tagId?.let { intent.putExtra(ARGS_CLICKED_TAG_ID, it) }
         recordTypesShift.let { intent.putExtra(ARGS_TYPES_SHIFT, it) }
         recordTagsShift?.let { intent.putExtra(ARGS_TAGS_SHIFT, it) }
+        intent.putExtra(ARGS_REQUIRED_VALUE_SELECTION_TAGS, requiredValueSelectionTagIds.toLongArray())
         intent.putExtra(ARGS_MULTIPLE_TAG_AVAILABLE, isMultipleTagAvailable)
         return PendingIntent.getBroadcast(
             context,
@@ -581,15 +623,6 @@ class NotificationControlsManager @Inject constructor(
         return tags.joinToString(separator = ";") { tag ->
             val valueText = tag.numericValue?.let(Double::toString).orEmpty()
             "${tag.tagId}=$valueText"
-        }
-    }
-
-    private fun formatNumericValue(value: Double): String {
-        val longValue = value.toLong()
-        return if (longValue.toDouble() == value) {
-            longValue.toString()
-        } else {
-            value.toString()
         }
     }
 
@@ -631,7 +664,11 @@ class NotificationControlsManager @Inject constructor(
 
         sealed interface AdditionalInfo {
             data class TypeId(val id: Long) : AdditionalInfo
+            data class TagId(val id: Long) : AdditionalInfo
             data class TagValueControls(val id: Long) : AdditionalInfo
+            data object Repeat : AdditionalInfo
+            data object ApplyTags : AdditionalInfo
+            data object ClearTags : AdditionalInfo
             data object Nothing : AdditionalInfo
         }
     }
@@ -641,8 +678,14 @@ class NotificationControlsManager @Inject constructor(
             "com.example.util.simpletimetracker.feature_notification.activitySwitch.onStop"
         const val ACTION_NOTIFICATION_CONTROLS_TYPE_CLICK =
             "com.example.util.simpletimetracker.feature_notification.activitySwitch.onTypeClick"
+        const val ACTION_NOTIFICATION_CONTROLS_REPEAT =
+            "com.example.util.simpletimetracker.feature_notification.activitySwitch.onRepeat"
         const val ACTION_NOTIFICATION_CONTROLS_TAG_CLICK =
             "com.example.util.simpletimetracker.feature_notification.activitySwitch.onTagClick"
+        const val ACTION_NOTIFICATION_CONTROLS_APPLY_TAGS =
+            "com.example.util.simpletimetracker.feature_notification.activitySwitch.onApplyTags"
+        const val ACTION_NOTIFICATION_CONTROLS_CLEAR_TAGS =
+            "com.example.util.simpletimetracker.feature_notification.activitySwitch.onClearTags"
 
         const val ACTION_NOTIFICATION_CONTROLS_TYPES_PREV =
             "com.example.util.simpletimetracker.feature_notification.activitySwitch.onTypesPrevClick"
@@ -667,6 +710,7 @@ class NotificationControlsManager @Inject constructor(
         const val ARGS_SELECTED_TAGS = "selectedTags"
         const val ARGS_EDITING_TAG_ID = "editingTagId"
         const val ARGS_EDITING_TAG_VALUE_INPUT = "editingTagValueInput"
+        const val ARGS_REQUIRED_VALUE_SELECTION_TAGS = "requiredTagSelectionTags"
         const val ARGS_CLICKED_TAG_ID = "clickedTagId"
         const val ARGS_TYPES_SHIFT = "typesShift"
         const val ARGS_TAGS_SHIFT = "tagsShift"
@@ -674,7 +718,5 @@ class NotificationControlsManager @Inject constructor(
 
         const val TYPES_LIST_SIZE = 6
         const val TAGS_LIST_SIZE = 4
-        const val UNTAGGED_TAG_ID = -1L
-        const val APPLY_TAGS_ID = -2L
     }
 }

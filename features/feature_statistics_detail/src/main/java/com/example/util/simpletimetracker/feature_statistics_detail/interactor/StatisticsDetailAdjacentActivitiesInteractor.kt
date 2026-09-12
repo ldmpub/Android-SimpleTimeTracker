@@ -8,6 +8,7 @@ import com.example.util.simpletimetracker.domain.record.extension.getTypeIds
 import com.example.util.simpletimetracker.domain.record.interactor.CalculateAdjacentActivitiesInteractor
 import com.example.util.simpletimetracker.domain.record.interactor.CalculateAdjacentActivitiesInteractor.CalculationResult
 import com.example.util.simpletimetracker.domain.record.interactor.RecordInteractor
+import com.example.util.simpletimetracker.domain.record.interactor.RecordInteractor.GetParam
 import com.example.util.simpletimetracker.domain.record.model.Record
 import com.example.util.simpletimetracker.domain.record.model.RecordsFilter
 import com.example.util.simpletimetracker.domain.recordType.interactor.RecordTypeInteractor
@@ -37,7 +38,7 @@ class StatisticsDetailAdjacentActivitiesInteractor @Inject constructor(
         rangePosition: Int,
     ): List<ViewHolderType> = withContext(Dispatchers.Default) {
         // Show only if one activity is selected.
-        val typeId = getActivityId(filter) ?: return@withContext getEmptyViewData()
+        val typeId = getActivityId(filter) ?: return@withContext emptyList()
         val isDarkTheme = prefsInteractor.getDarkMode()
         val recordTypes = recordTypeInteractor.getAll().associateBy(RecordType::id)
         val actualRecords = getRecords(rangeLength, rangePosition)
@@ -113,10 +114,10 @@ class StatisticsDetailAdjacentActivitiesInteractor @Inject constructor(
             firstDayOfWeek = firstDayOfWeek,
             startOfDayShift = startOfDayShift,
         )
-        return if (range.timeStarted == 0L && range.timeEnded == 0L) {
+        return if (range.isUndefined) {
             recordInteractor.getAll()
         } else {
-            recordInteractor.getFromRange(range)
+            recordInteractor.getWithParams(GetParam.FromRange(range))
         }
     }
 
@@ -126,10 +127,6 @@ class StatisticsDetailAdjacentActivitiesInteractor @Inject constructor(
         return filter.getTypeIds()
             .takeIf { it.size == 1 }
             ?.firstOrNull()
-    }
-
-    private fun getEmptyViewData(): List<ViewHolderType> {
-        return emptyList()
     }
 
     companion object {

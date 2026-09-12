@@ -28,7 +28,7 @@ import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartG
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartLength
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartMode
 import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartSplitSortMode
-import com.example.util.simpletimetracker.feature_statistics_detail.model.ChartValueMode
+import com.example.util.simpletimetracker.domain.statistics.model.ChartValueMode
 import com.example.util.simpletimetracker.feature_statistics_detail.viewData.StatisticsDetailChartCompositeViewData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -49,7 +49,7 @@ class StatisticsDetailChartInteractor @Inject constructor(
     private val recordTypeInteractor: RecordTypeInteractor,
 ) {
 
-    // Shouldn't be suspend to avoid blocks jumping on screen open.
+    // Shouldn't be suspended to avoid blocks jumping on screen open.
     fun getEmptyChartViewData(
         currentChartGrouping: ChartGrouping,
         currentChartLength: ChartLength,

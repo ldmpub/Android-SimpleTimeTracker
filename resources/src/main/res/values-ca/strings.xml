@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Etiquetes d\'enregistraments</string>
     <string name="record_tag_hint_short">Etiquetes</string>
     <string name="nothing_selected">Res seleccionat</string>
-    <string name="something_selected">Seleccionat:</string>
+    <string name="something_selected">Seleccionat</string>
+    <string name="something_available">Disponible</string>
+    <string name="something_preselected">Preseleccionat</string>
     <string name="select_all">Seleccionar tot</string>
     <string name="select_nothing">No seleccioneu res</string>
     <string name="no_data">No hi ha dades</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Els objectius es mostraran aquí</string>
+    <string name="all_goals_finished">Tots els objectius estan completats</string>
+    <string name="hide_finished_goals">Amaga els objectius completats</string>
     <string name="goal_add_hint">Edita l\'activitat o la categoria per assignar-hi un objectiu</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Assigneu diferents etiquetes als enregistraments per diferenciar-los</string>
     <string name="categories_add_category">Afegeix categoria</string>
     <string name="categories_add_record_tag">Afegeix etiqueta d\'enregistrament</string>
+    <string name="categories_show_relations">Mostra les relacions</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>Categories</b> t\'ajuden a agrupar activitats relacionades. Per exemple:<br><br>
 • La categoria <custom-color-3>Productiva</custom-color-3> podria incloure <custom-color-3>Llegir</custom-color-3> i <custom-color-3>Gimnàs</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@ Això et permet veure quant de temps dediques a activitats productives versus no
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Etiqueta arxivada</string>
     <string name="change_record_tag_default_hint">Assignat per defecte</string>
+    <string name="change_record_tag_type_general">Comú</string>
     <string name="change_record_tag_type_general_hint">Pot ser assignat a enregistraments de qualsevol activitat</string>
     <string name="change_record_tag_type_typed_hint">Només pot ser assignat a enregistraments d\'una activitat específica</string>
     <string name="change_record_tag_select_activity_hint">Preneu color i icona de l\'activitat</string>
@@ -142,6 +148,7 @@ Això et permet veure quant de temps dediques a activitats productives versus no
     <string name="change_record_last_comments_hint">Últims comentaris</string>
     <string name="change_record_favourite_comments_hint">Favorit</string>
     <string name="change_record_favourite_comments_hint_long">Comentaris preferits</string>
+    <string name="change_record_favourite_activity_selection">Preferit només per a activitats seleccionades</string>
     <string name="change_record_similar_comments_hint">Comentaris semblants</string>
     <string name="change_record_categories_empty">No s\'han afegit etiquetes</string>
     <string name="change_record_save">Desa</string>
@@ -230,6 +237,8 @@ Això et permet veure quant de temps dediques a activitats productives versus no
     <string name="change_complex_rule_removed">Regla eliminada</string>
     <string name="change_complex_rule_choose_action">Trieu l\'acció</string>
     <string name="change_complex_rule_choose_condition">Trieu condicions</string>
+    <string name="change_complex_tag_value_dialog_message">Tria quan establir el valor</string>
+    <string name="change_complex_tag_value_set_later">A l\'inici</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Mostra suggeriments per a la següent activitat basats en l\'activitat actual o darrera</string>
@@ -289,6 +298,7 @@ Això et permet veure quant de temps dediques a activitats productives versus no
     <string name="records_all_sort_order">Endreça els enregistraments</string>
     <string name="records_all_sort_time_started">Temps d\'inici</string>
     <string name="records_all_sort_duration">Durada</string>
+    <string name="records_all_days_without_records">Dies sense registres - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">Per començar el seguiment, afegiu activitats fent clic al botó %s o utilitzeu els valors predeterminats fent clic al botó %s</string>
@@ -309,7 +319,7 @@ Això et permet veure quant de temps dediques a activitats productives versus no
     <string name="settings_display_title">Configuració de visualització</string>
     <string name="settings_additional_title">Configuració addicional</string>
     <string name="settings_notification_title">Configuració de notificacions</string>
-    <string name="settings_backup_title">Configuració de còpia de seguretat</string>
+    <string name="settings_backup_title">Còpia de seguretat</string>
     <string name="settings_export_title">Exportació i importació</string>
     <string name="settings_sort_order">Endreçar activitats</string>
     <string name="settings_sort_order_category">Endreçar categories</string>
@@ -327,6 +337,7 @@ Això et permet veure quant de temps dediques a activitats productives versus no
     <string name="settings_show_untracked_time_statistics">Mostra el temps no enregistrat a les estadístiques</string>
     <string name="settings_ignore_short_untracked">Ignora el temps curt sense seguiment</string>
     <string name="settings_ignore_short_untracked_hint">No mostris temps sense seguiment que sigui més curt que el temps especificat.</string>
+    <string name="settings_untracked_days_hint">Compta el temps sense seguiment només els dies seleccionats.</string>
     <string name="settings_untracked_range">Interval sense seguiment</string>
     <string name="settings_untracked_range_hint">Mostra el temps no registrat només dins de l\'interval seleccionat.</string>
     <string name="settings_show_records_calendar">Mostra els enregistraments en vista de calendari</string>
@@ -360,11 +371,14 @@ Això et permet veure quant de temps dediques a activitats productives versus no
     <string name="settings_inactivity_reminder">Mostra recordatori d\'inactivitat</string>
     <string name="settings_inactivity_reminder_hint">Mostra una notificació després d\'un cert temps sense cap activitat.</string>
     <string name="settings_inactivity_reminder_recurrent">Recurrent</string>
+    <string name="settings_reminder_active_days">Dies actius</string>
     <string name="settings_activity_reminder">Mostra el recordatori d\'activitat</string>
     <string name="settings_activity_reminder_hint">Mostra la notificació després de l\'hora especificada si els temporitzadors s\'estan executant.</string>
     <string name="settings_do_not_disturb">No molesteu</string>
     <string name="settings_notifications_system_settings">Ajustos del sistema</string>
     <string name="settings_notifications_system_settings_hint">So, vibració, flaix i altres</string>
+    <string name="settings_reminders_title">Recordatoris</string>
+    <string name="settings_reminders_hint">Gestiona els recordatoris programats</string>
     <string name="settings_ignore_short_records">Ignora els enregistraments curts</string>
     <string name="settings_ignore_short_records_hint">No enregistra les activitats més curtes que el temps especificat.</string>
     <string name="settings_inactivity_reminder_disabled">Desactivat</string>
@@ -527,6 +541,7 @@ Exemple:<br/>
     <string name="statistics_detail_record_time">Hora d\'enregistrament</string>
     <string name="statistics_detail_first_record">Primer</string>
     <string name="statistics_detail_last_record">Últim</string>
+    <string name="statistics_detail_record_span">Període</string>
     <string name="statistics_detail_time_since">Temps transcorregut</string>
     <string name="statistics_detail_streaks">Sèrie</string>
     <string name="statistics_detail_streaks_longest">Més llarga</string>
@@ -549,6 +564,8 @@ Exemple:<br/>
     <string name="statistics_detail_goals_deficit">Dèficit</string>
     <string name="statistics_detail_tag_values_hint">Valors de l\'etiqueta</string>
     <string name="statistics_detail_tag_values_multiply_duration">Multiplica per la durada</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Omple els períodes buits amb les dades anteriors</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Amplia l\'eix Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">Enregistraments</item>-->
@@ -673,6 +690,33 @@ Exemple:<br/>
     <string name="shortcut_navigation_records">Enregistraments</string>
     <string name="shortcut_navigation_statistics">Estadístiques</string>
     <string name="shortcut_navigation_settings">Configuració</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Diàriament</string>
+    <string name="reminders_schedule_weekly">Setmanalment</string>
+    <string name="reminders_schedule_one_time">Una vegada</string>
+    <string name="reminders_schedule_monthly">Mensualment</string>
+    <string name="reminders_schedule_hourly">Cada hora</string>
+    <string name="reminders_condition_activity_not_tracked">Quan l\'activitat no s\'ha registrat avui</string>
+    <string name="activity_reminders_hint">Substitueix la configuració global del recordatori d\'activitat</string>
+    <string name="activity_reminder_mode">Mode de recordatori</string>
+    <string name="activity_reminder_mode_disabled">Desactivat</string>
+    <string name="activity_reminder_mode_custom">Personalitzat</string>
+    <string name="activity_reminder_disabled_summary">Els recordatoris estan desactivats per a aquesta activitat</string>
+    <string name="activity_reminder_positive_duration_required">Defineix una durada del recordatori superior a zero</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Missatge</string>
+    <string name="change_reminder_schedule">Programació</string>
+    <string name="change_reminder_day_of_month">Dia del mes</string>
+    <string name="change_reminder_interval">Interval</string>
+    <string name="change_reminder_condition">Condició de visualització</string>
+    <string name="change_reminder_condition_always">Sempre</string>
+    <string name="change_reminder_message_prefill">No t\'oblidis de fer %s.</string>
+    <string name="change_reminder_message_required">Introdueix un missatge de recordatori</string>
+    <string name="change_reminder_future_required">Selecciona una hora futura</string>
+    <string name="change_reminder_interval_required">Estableix un interval superior a zero</string>
+    <string name="change_reminder_removed">Recordatori eliminat</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Comprova la teva connexió i torna-ho a provar</string>

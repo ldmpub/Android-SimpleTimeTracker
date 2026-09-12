@@ -4,6 +4,8 @@ import com.example.util.simpletimetracker.core.mapper.ColorMapper
 import com.example.util.simpletimetracker.core.mapper.IconImageMapper
 import com.example.util.simpletimetracker.domain.extension.orZero
 import com.example.util.simpletimetracker.domain.activityFilter.interactor.ActivityFilterInteractor
+import com.example.util.simpletimetracker.domain.activityReminder.interactor.ActivityReminderOverrideInteractor
+import com.example.util.simpletimetracker.domain.activityReminder.model.ActivityReminderOverride
 import com.example.util.simpletimetracker.domain.category.interactor.CategoryInteractor
 import com.example.util.simpletimetracker.domain.backup.interactor.ClearDataInteractor
 import com.example.util.simpletimetracker.domain.complexRule.interactor.ComplexRuleInteractor
@@ -38,6 +40,8 @@ import com.example.util.simpletimetracker.domain.recordType.model.RecordTypeGoal
 import com.example.util.simpletimetracker.domain.record.model.RunningRecord
 import com.example.util.simpletimetracker.domain.recordShortcut.interactor.RecordShortcutInteractor
 import com.example.util.simpletimetracker.domain.recordShortcut.model.RecordShortcut
+import com.example.util.simpletimetracker.domain.scheduledReminder.interactor.ScheduledReminderInteractor
+import com.example.util.simpletimetracker.domain.scheduledReminder.model.ScheduledReminder
 import com.example.util.simpletimetracker.domain.recordTag.model.RecordTagValueType
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.TimeUnit
@@ -47,12 +51,13 @@ class TestUtils @Inject constructor(
     val recordTypeInteractor: RecordTypeInteractor,
     val recordInteractor: RecordInteractor,
     private val runningRecordInteractor: RunningRecordInteractor,
-    private val categoryInteractor: CategoryInteractor,
+    val categoryInteractor: CategoryInteractor,
     private val recordTypeCategoryInteractor: RecordTypeCategoryInteractor,
-    private val recordTagInteractor: RecordTagInteractor,
+    val recordTagInteractor: RecordTagInteractor,
     private val recordTypeToTagInteractor: RecordTypeToTagInteractor,
     private val recordTypeToDefaultTagInteractor: RecordTypeToDefaultTagInteractor,
     private val activityFilterInteractor: ActivityFilterInteractor,
+    val activityReminderOverrideInteractor: ActivityReminderOverrideInteractor,
     private val recordTypeGoalInteractor: RecordTypeGoalInteractor,
     private val favouriteCommentInteractor: FavouriteCommentInteractor,
     private val favouriteIconInteractor: FavouriteIconInteractor,
@@ -60,6 +65,7 @@ class TestUtils @Inject constructor(
     private val complexRuleInteractor: ComplexRuleInteractor,
     val activitySuggestionInteractor: ActivitySuggestionInteractor,
     private val recordShortcutInteractor: RecordShortcutInteractor,
+    private val scheduledReminderInteractor: ScheduledReminderInteractor,
     private val prefsInteractor: PrefsInteractor,
     private val iconImageMapper: IconImageMapper,
     private val clearDataInteractor: ClearDataInteractor,
@@ -325,21 +331,25 @@ class TestUtils @Inject constructor(
         action: ComplexRule.Action,
         actionDisallowOnlyPrevious: Boolean = false,
         assignTagNames: List<String> = emptyList(),
+        assignTagValues: Map<String, Double?> = emptyMap(),
         startingTypeNames: List<String> = emptyList(),
         currentTypeNames: List<String> = emptyList(),
         daysOfWeek: List<DayOfWeek> = emptyList(),
     ) = runBlocking {
         val availableTypes = recordTypeInteractor.getAll()
-        val assignTagIds = recordTagInteractor.getAll()
-            .filter { it.name in assignTagNames }
-            .map { it.id }
-            .toSet()
+        val tagsByName = recordTagInteractor.getAll().associateBy { it.name }
 
         val data = ComplexRule(
             disabled = false,
             action = action,
             actionDisallowOnlyPrevious = actionDisallowOnlyPrevious,
-            actionAssignTagIds = assignTagIds,
+            actionAssignTagValues = assignTagNames.mapNotNull { name ->
+                RecordBase.Tag(
+                    tagId = tagsByName[name]?.id ?: return@mapNotNull null,
+                    numericValue = assignTagValues[name],
+                )
+            },
+            actionAssignTagValueOnStartIds = emptySet(),
             conditionStartingTypeIds = getTypeIds(availableTypes, startingTypeNames),
             conditionCurrentTypeIds = getTypeIds(availableTypes, currentTypeNames),
             conditionDaysOfWeek = daysOfWeek.toSet(),
@@ -379,17 +389,41 @@ class TestUtils @Inject constructor(
             .map { it.id }
 
         val data = RecordShortcut(
-            typeId = type.id,
-            comment = comment,
-            tags = tagIds.map {
-                RecordBase.Tag(
-                    tagId = it,
-                    numericValue = null,
-                )
-            },
+            target = RecordShortcut.Target.Record(
+                typeId = type.id,
+                comment = comment,
+                tags = tagIds.map {
+                    RecordBase.Tag(
+                        tagId = it,
+                        numericValue = null,
+                    )
+                },
+            ),
         )
 
         recordShortcutInteractor.add(data)
+    }
+
+    fun addSettingShortcut(
+        action: RecordShortcut.SettingAction,
+    ) = runBlocking {
+        val data = RecordShortcut(
+            target = RecordShortcut.Target.Setting(action = action),
+        )
+
+        recordShortcutInteractor.add(data)
+    }
+
+    fun addScheduledReminder(reminder: ScheduledReminder): Long = runBlocking {
+        scheduledReminderInteractor.save(reminder)
+    }
+
+    fun addActivityReminderOverride(reminder: ActivityReminderOverride) = runBlocking {
+        activityReminderOverrideInteractor.save(reminder)
+    }
+
+    fun getScheduledReminder(id: Long): ScheduledReminder? = runBlocking {
+        scheduledReminderInteractor.get(id)
     }
 
     suspend fun getRunningRecords(): List<RunningRecord> {

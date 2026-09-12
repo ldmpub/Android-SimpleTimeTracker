@@ -25,10 +25,16 @@ import com.example.util.simpletimetracker.core.utils.EXTRA_RECORD_TAG_NAME
 import com.example.util.simpletimetracker.core.utils.EXTRA_RECORD_TIME_ENDED
 import com.example.util.simpletimetracker.core.utils.EXTRA_RECORD_TIME_STARTED
 import com.example.util.simpletimetracker.core.utils.EXTRA_RECORD_TYPE_ICON
+import com.example.util.simpletimetracker.domain.record.interactor.RecordsContainerUpdateInteractor
+import com.example.util.simpletimetracker.domain.record.interactor.RecordsUpdateInteractor
+import com.example.util.simpletimetracker.domain.record.interactor.StatisticsUpdateInteractor
 import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.recordType.model.RecordTypeGoal
 import com.example.util.simpletimetracker.feature_notification.activity.controller.NotificationActivityBroadcastController
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationActivitySwitchManager.Companion.ACTION_NOTIFICATION_SWITCH_CANCEL
+import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ACTION_NOTIFICATION_CONTROLS_APPLY_TAGS
+import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ACTION_NOTIFICATION_CONTROLS_CLEAR_TAGS
+import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ACTION_NOTIFICATION_CONTROLS_REPEAT
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ACTION_NOTIFICATION_CONTROLS_STOP
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ACTION_NOTIFICATION_CONTROLS_TAGS_NEXT
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ACTION_NOTIFICATION_CONTROLS_TAGS_PREV
@@ -50,6 +56,7 @@ import com.example.util.simpletimetracker.feature_notification.recordType.contro
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ARGS_EDITING_TAG_ID
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ARGS_EDITING_TAG_VALUE_INPUT
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ARGS_MULTIPLE_TAG_AVAILABLE
+import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ARGS_REQUIRED_VALUE_SELECTION_TAGS
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ARGS_SELECTED_TAGS
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ARGS_SELECTED_TYPE_ID
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.ARGS_TAGS_SHIFT
@@ -59,7 +66,10 @@ import com.example.util.simpletimetracker.feature_notification.activitySwitch.ma
 import com.example.util.simpletimetracker.feature_notification.external.NotificationExternalBroadcastController
 import com.example.util.simpletimetracker.feature_notification.recordType.manager.NotificationTypeManager.Companion.ACTION_NOTIFICATION_TYPE_CANCEL
 import com.example.util.simpletimetracker.feature_notification.recordType.manager.NotificationTypeManager.Companion.ACTION_NOTIFICATION_TYPE_STOP
+import com.example.util.simpletimetracker.feature_notification.scheduledReminder.controller.ScheduledReminderController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -89,16 +99,47 @@ class NotificationReceiver : BroadcastReceiver() {
     @Inject
     lateinit var externalController: NotificationExternalBroadcastController
 
+    @Inject
+    lateinit var scheduledReminderController: ScheduledReminderController
+
+    @Inject
+    lateinit var recordsUpdateInteractor: RecordsUpdateInteractor
+
+    @Inject
+    lateinit var recordsContainerUpdateInteractor: RecordsContainerUpdateInteractor
+
+    @Inject
+    lateinit var statisticsUpdateInteractor: StatisticsUpdateInteractor
+
     override fun onReceive(context: Context?, intent: Intent?) {
         val action = intent?.action
         if (context == null || intent == null || action == null) return
 
+        goAsync { handleIntent(intent, action) }
+    }
+
+    private suspend fun handleIntent(intent: Intent, action: String) {
         when (action) {
+            ACTION_SCHEDULED_REMINDER -> {
+                val reminderId = intent.getLongExtra(EXTRA_SCHEDULED_REMINDER_ID, 0L)
+                val expectedTimestamp = intent.getLongExtra(EXTRA_SCHEDULED_REMINDER_EXPECTED_TIMESTAMP, 0)
+                scheduledReminderController.onReminderFired(
+                    reminderId = reminderId,
+                    expectedOccurrenceTimestamp = expectedTimestamp,
+                )
+            }
             ACTION_INACTIVITY_REMINDER -> {
                 inactivityController.onInactivityReminder()
             }
             ACTION_ACTIVITY_REMINDER -> {
-                activityController.onActivityReminder()
+                val activityId = intent.getLongExtra(EXTRA_ACTIVITY_REMINDER_ACTIVITY_ID, 0L)
+                val expectedTimerStart = intent.getLongExtra(EXTRA_ACTIVITY_REMINDER_START, 0L)
+                val expectedTriggerTimestamp = intent.getLongExtra(EXTRA_ACTIVITY_REMINDER_TRIGGER, 0L)
+                activityController.onActivityReminder(
+                    activityId = activityId,
+                    expectedTimerStart = expectedTimerStart,
+                    expectedTriggerTimestamp = expectedTriggerTimestamp,
+                )
             }
             ACTION_POMODORO_REMINDER -> {
                 val cycleType = intent.getLongExtra(EXTRA_POMODORO_CYCLE_TYPE, 0)
@@ -154,16 +195,22 @@ class NotificationReceiver : BroadcastReceiver() {
             }
             ACTION_AUTOMATIC_BACKUP,
             ACTION_EXTERNAL_AUTOMATIC_BACKUP,
-            -> goAsync(
-                finally = { automaticBackupController.onFinished() },
-                block = { automaticBackupController.onReminder() },
-            )
+            -> {
+                try {
+                    automaticBackupController.onReminder()
+                } finally {
+                    automaticBackupController.onFinished()
+                }
+            }
             ACTION_AUTOMATIC_EXPORT,
             ACTION_EXTERNAL_AUTOMATIC_EXPORT,
-            -> goAsync(
-                finally = { automaticExportController.onFinished() },
-                block = { automaticExportController.onReminder() },
-            )
+            -> {
+                try {
+                    automaticExportController.onReminder()
+                } finally {
+                    automaticExportController.onFinished()
+                }
+            }
             ACTION_EXTERNAL_START_ACTIVITY -> {
                 val name = intent.getStringExtra(EXTRA_ACTIVITY_NAME)
                 val comment = intent.getStringExtra(EXTRA_RECORD_COMMENT)
@@ -258,6 +305,41 @@ class NotificationReceiver : BroadcastReceiver() {
                     typesShift = typesShift,
                 )
             }
+            ACTION_NOTIFICATION_CONTROLS_REPEAT -> {
+                typeController.onActionRepeat()
+            }
+            ACTION_NOTIFICATION_CONTROLS_APPLY_TAGS -> {
+                val from = intent.getIntExtra(ARGS_CONTROLS_FROM, 0)
+                val typeId = intent.getLongExtra(ARGS_TYPE_ID, 0)
+                val selectedTypeId = intent.getLongExtra(ARGS_SELECTED_TYPE_ID, 0)
+                val selectedTags = intent.getSelectedTags()
+                val typesShift = intent.getIntExtra(ARGS_TYPES_SHIFT, 0)
+                typeController.onActionApplyTags(
+                    from = from,
+                    typeId = typeId,
+                    selectedTypeId = selectedTypeId,
+                    selectedTags = selectedTags,
+                    typesShift = typesShift,
+                )
+            }
+            ACTION_NOTIFICATION_CONTROLS_CLEAR_TAGS -> {
+                val from = intent.getIntExtra(ARGS_CONTROLS_FROM, 0)
+                val typeId = intent.getLongExtra(ARGS_TYPE_ID, 0)
+                val selectedTypeId = intent.getLongExtra(ARGS_SELECTED_TYPE_ID, 0)
+                val typesShift = intent.getIntExtra(ARGS_TYPES_SHIFT, 0)
+                val tagsShift = intent.getIntExtra(ARGS_TAGS_SHIFT, 0)
+                val isMultipleTagAvailable = intent.getBooleanExtra(ARGS_MULTIPLE_TAG_AVAILABLE, false)
+                val requiredValueSelectionTagIds = intent.getRequiredValueSelectionTagIds()
+                typeController.onActionClearTags(
+                    from = from,
+                    typeId = typeId,
+                    selectedTypeId = selectedTypeId,
+                    typesShift = typesShift,
+                    tagsShift = tagsShift,
+                    isMultipleTagAvailable = isMultipleTagAvailable,
+                    requiredValueSelectionTagIds = requiredValueSelectionTagIds,
+                )
+            }
             ACTION_NOTIFICATION_CONTROLS_TYPES_PREV,
             ACTION_NOTIFICATION_CONTROLS_TYPES_NEXT,
             ACTION_NOTIFICATION_CONTROLS_TAGS_PREV,
@@ -275,6 +357,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 val editingTagId = intent.getEditingTagId()
                 val editingTagValueInput = intent.getEditingTagValueInput()
                 val isMultipleTagAvailable = intent.getBooleanExtra(ARGS_MULTIPLE_TAG_AVAILABLE, false)
+                val requiredValueSelectionTagIds = intent.getRequiredValueSelectionTagIds()
                 typeController.onRequestUpdate(
                     from = from,
                     typeId = typeId,
@@ -285,6 +368,7 @@ class NotificationReceiver : BroadcastReceiver() {
                     typesShift = typesShift,
                     tagsShift = tagsShift,
                     isMultipleTagAvailable = isMultipleTagAvailable,
+                    requiredValueSelectionTagIds = requiredValueSelectionTagIds,
                 )
             }
             ACTION_NOTIFICATION_CONTROLS_TAG_CLICK -> {
@@ -295,9 +379,8 @@ class NotificationReceiver : BroadcastReceiver() {
                 val tagsShift = intent.getIntExtra(ARGS_TAGS_SHIFT, 0)
                 val tagId = intent.getLongExtra(ARGS_CLICKED_TAG_ID, 0)
                 val selectedTags = intent.getSelectedTags()
-                val editingTagId = intent.getEditingTagId()
-                val editingTagValueInput = intent.getEditingTagValueInput()
                 val isMultipleTagAvailable = intent.getBooleanExtra(ARGS_MULTIPLE_TAG_AVAILABLE, false)
+                val requiredValueSelectionTagIds = intent.getRequiredValueSelectionTagIds()
                 typeController.onActionTagClick(
                     from = from,
                     typeId = typeId,
@@ -306,9 +389,8 @@ class NotificationReceiver : BroadcastReceiver() {
                     typesShift = typesShift,
                     tagsShift = tagsShift,
                     selectedTags = selectedTags,
-                    editingTagId = editingTagId,
-                    editingTagValueInput = editingTagValueInput,
                     isMultipleTagAvailable = isMultipleTagAvailable,
+                    requiredValueSelectionTagIds = requiredValueSelectionTagIds,
                 )
             }
             ACTION_NOTIFICATION_CONTROLS_TAG_VALUE_SAVE -> {
@@ -321,6 +403,7 @@ class NotificationReceiver : BroadcastReceiver() {
                 val editingTagId = intent.getEditingTagId() ?: return
                 val editingTagValueInput = intent.getEditingTagValueInput()
                 val isMultipleTagAvailable = intent.getBooleanExtra(ARGS_MULTIPLE_TAG_AVAILABLE, false)
+                val requiredValueSelectionTagIds = intent.getRequiredValueSelectionTagIds()
                 typeController.onActionTagValueSave(
                     from = from,
                     typeId = typeId,
@@ -331,6 +414,7 @@ class NotificationReceiver : BroadcastReceiver() {
                     tagsShift = tagsShift,
                     selectedTags = selectedTags,
                     isMultipleTagAvailable = isMultipleTagAvailable,
+                    requiredValueSelectionTagIds = requiredValueSelectionTagIds,
                 )
             }
             ACTION_NOTIFICATION_TYPE_CANCEL -> {
@@ -340,24 +424,41 @@ class NotificationReceiver : BroadcastReceiver() {
             ACTION_NOTIFICATION_SWITCH_CANCEL -> {
                 typeController.onActivitySwitchCancel()
             }
-            Intent.ACTION_BOOT_COMPLETED -> {
-                onBootCompleted()
+            Intent.ACTION_BOOT_COMPLETED,
+            ACTION_QUICK_BOOT_POWER_ON,
+            ACTION_HTC_QUICK_BOOT_POWER_ON,
+            -> supervisorScope {
+                // TODO remove controllers?
+                launch { inactivityController.onBootCompleted() }
+                launch { activityController.onBootCompleted() }
+                launch { goalTimeController.onBootCompleted() }
+                launch { typeController.onBootCompleted() }
+                launch { automaticBackupController.onBootCompleted() }
+                launch { automaticExportController.onBootCompleted() }
+                launch { pomodoroController.onBootCompleted() }
+                launch { scheduledReminderController.onBootCompleted() }
             }
-            AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED -> {
-                goalTimeController.onExactAlarmPermissionStateChanged()
-                pomodoroController.onExactAlarmPermissionStateChanged()
+            AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED -> supervisorScope {
+                launch { activityController.onExactAlarmPermissionStateChanged() }
+                launch { goalTimeController.onExactAlarmPermissionStateChanged() }
+                launch { pomodoroController.onExactAlarmPermissionStateChanged() }
+                launch { scheduledReminderController.onExactAlarmPermissionStateChanged() }
+            }
+            Intent.ACTION_MY_PACKAGE_REPLACED -> supervisorScope {
+                launch { activityController.onPackageReplaced() }
+                launch { scheduledReminderController.onPackageReplaced() }
+            }
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_DATE_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED,
+            -> supervisorScope {
+                launch { activityController.onDateTimeChanged() }
+                launch { scheduledReminderController.onDateTimeChanged() }
+                launch { recordsUpdateInteractor.send() }
+                launch { recordsContainerUpdateInteractor.sendDateSelectorUpdate() }
+                launch { statisticsUpdateInteractor.sendDateTimeChanged() }
             }
         }
-    }
-
-    private fun onBootCompleted() {
-        inactivityController.onBootCompleted()
-        activityController.onBootCompleted()
-        goalTimeController.onBootCompleted()
-        typeController.onBootCompleted()
-        automaticBackupController.onBootCompleted()
-        automaticExportController.onBootCompleted()
-        pomodoroController.onBootCompleted()
     }
 
     private fun Intent.getSelectedTags(): List<RecordBase.Tag> {
@@ -386,6 +487,10 @@ class NotificationReceiver : BroadcastReceiver() {
     private fun Intent.getEditingTagValueInput(): String? {
         if (!hasExtra(ARGS_EDITING_TAG_VALUE_INPUT)) return null
         return getStringExtra(ARGS_EDITING_TAG_VALUE_INPUT)
+    }
+
+    private fun Intent.getRequiredValueSelectionTagIds(): List<Long> {
+        return getLongArrayExtra(ARGS_REQUIRED_VALUE_SELECTION_TAGS)?.toList().orEmpty()
     }
 
     private fun String.splitTagNames(): List<String> {
@@ -433,6 +538,11 @@ class NotificationReceiver : BroadcastReceiver() {
             "com.razeeman.util.simpletimetracker.ACTION_AUTOMATIC_BACKUP"
         const val ACTION_AUTOMATIC_EXPORT =
             "com.razeeman.util.simpletimetracker.ACTION_AUTOMATIC_EXPORT"
+        const val ACTION_SCHEDULED_REMINDER =
+            "com.razeeman.util.simpletimetracker.ACTION_SCHEDULED_REMINDER"
+
+        const val ACTION_QUICK_BOOT_POWER_ON = "android.intent.action.QUICKBOOT_POWERON"
+        const val ACTION_HTC_QUICK_BOOT_POWER_ON = "com.htc.intent.action.QUICKBOOT_POWERON"
 
         const val EXTRA_GOAL_TIME_TYPE_ID =
             "extra_goal_time_type_id"
@@ -442,5 +552,15 @@ class NotificationReceiver : BroadcastReceiver() {
             "extra_goal_time_tag_id"
         const val EXTRA_POMODORO_CYCLE_TYPE =
             "extra_pomodoro_cycle_type"
+        const val EXTRA_SCHEDULED_REMINDER_ID =
+            "extra_scheduled_reminder_id"
+        const val EXTRA_SCHEDULED_REMINDER_EXPECTED_TIMESTAMP =
+            "extra_scheduled_reminder_expected_timestamp"
+        const val EXTRA_ACTIVITY_REMINDER_ACTIVITY_ID =
+            "extra_activity_reminder_activity_id"
+        const val EXTRA_ACTIVITY_REMINDER_START =
+            "extra_activity_reminder_start"
+        const val EXTRA_ACTIVITY_REMINDER_TRIGGER =
+            "extra_activity_reminder_trigger"
     }
 }

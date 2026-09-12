@@ -6,14 +6,14 @@ import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseFragment
-import com.example.util.simpletimetracker.core.delegates.dateSelector.viewDelegate.DateSelectorViewDelegate
 import com.example.util.simpletimetracker.core.di.BaseViewModelFactory
-import com.example.util.simpletimetracker.core.dialog.DateTimeDialogListener
-import com.example.util.simpletimetracker.core.dialog.OptionsListDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DateTimeDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OptionsListDialogListener
 import com.example.util.simpletimetracker.core.sharedViewModel.MainTabsViewModel
 import com.example.util.simpletimetracker.core.sharedViewModel.RemoveRecordViewModel
 import com.example.util.simpletimetracker.core.utils.InsetConfiguration
 import com.example.util.simpletimetracker.core.view.SafeFragmentStateAdapter
+import com.example.util.simpletimetracker.feature_date_selection.api.viewDelegate.DateSelectorViewDelegateProvider
 import com.example.util.simpletimetracker.feature_records.adapter.RecordsContainerAdapter
 import com.example.util.simpletimetracker.feature_records.model.RecordsContainerPosition
 import com.example.util.simpletimetracker.feature_records.viewModel.RecordsContainerViewModel
@@ -45,6 +45,9 @@ class RecordsContainerFragment :
     @Inject
     lateinit var router: Router
 
+    @Inject
+    lateinit var dateSelectorViewDelegateProvider: DateSelectorViewDelegateProvider
+
     private val viewModel: RecordsContainerViewModel by viewModels()
     private val removeRecordViewModel: RemoveRecordViewModel by activityViewModels(
         factoryProducer = { removeRecordViewModelFactory },
@@ -52,9 +55,11 @@ class RecordsContainerFragment :
     private val mainTabsViewModel: MainTabsViewModel by activityViewModels(
         factoryProducer = { mainTabsViewModelFactory },
     )
-    private val dateSelectorViewHolder by lazy {
-        DateSelectorViewDelegate.getViewHolder(
+    private val dateSelectorViewDelegate by lazy {
+        dateSelectorViewDelegateProvider.provide(
             viewModel = viewModel.dateSelectorViewModelDelegate,
+            binding = binding.containerDatesSelector,
+            fragment = this,
         )
     }
 
@@ -65,20 +70,13 @@ class RecordsContainerFragment :
             )
             offscreenPageLimit = 1
             isUserInputEnabled = false
+            setCurrentItem(RecordsContainerAdapter.FIRST, false)
         }
-        DateSelectorViewDelegate.initUi(
-            fragment = this@RecordsContainerFragment,
-            viewHolder = dateSelectorViewHolder,
-            viewModel = viewModel.dateSelectorViewModelDelegate,
-            binding = containerDatesSelector,
-        )
-        viewModel.initialize()
+        dateSelectorViewDelegate.initUi()
     }
 
     override fun initUx() {
-        DateSelectorViewDelegate.initUx(
-            fragment = this,
-            binding = binding.containerDatesSelector,
+        dateSelectorViewDelegate.initUx(
             onRecordAddClick = viewModel::onRecordAddClick,
             onOptionsClick = viewModel::onOptionsClick,
             onOptionsLongClick = viewModel::onOptionsLongClick,
@@ -95,12 +93,13 @@ class RecordsContainerFragment :
         with(mainTabsViewModel) {
             isNavBatAtTheBottom.observe(::updateInsetConfiguration)
         }
-        DateSelectorViewDelegate.initViewModel(
-            fragment = this,
-            viewHolder = dateSelectorViewHolder,
-            viewModel = viewModel.dateSelectorViewModelDelegate,
-            binding = binding.containerDatesSelector,
-        )
+        dateSelectorViewDelegate.initViewModel()
+        viewModel.initialize()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.onVisible()
     }
 
     override fun onDateTimeSet(timestamp: Long, tag: String?) {

@@ -83,6 +83,10 @@ class PrefsRepoImpl @Inject constructor(
         KEY_TAG_ORDER_MANUAL, emptySet(),
     )
 
+    override var statisticsDetailTagValueSettings: Set<String> by prefs.delegate(
+        KEY_STATISTICS_DETAIL_TAG_VALUE_SETTINGS, emptySet(),
+    )
+
     override var statisticsRange: Int by prefs.delegate(
         KEY_STATISTICS_RANGE, 0,
     )
@@ -247,6 +251,10 @@ class PrefsRepoImpl @Inject constructor(
         KEY_SHOW_GOALS_SEPARATELY, false,
     )
 
+    override var hideFinishedGoals: Boolean by prefs.delegate(
+        KEY_HIDE_FINISHED_GOALS, false,
+    )
+
     override var allowMultitasking: Boolean by prefs.delegate(
         KEY_ALLOW_MULTITASKING, true,
     )
@@ -271,6 +279,10 @@ class PrefsRepoImpl @Inject constructor(
         KEY_INACTIVITY_REMINDER_RECURRENT, false,
     )
 
+    override var inactivityReminderDaysOfWeek: String by prefs.delegate(
+        KEY_INACTIVITY_REMINDER_DAYS_OF_WEEK, "",
+    )
+
     override var inactivityReminderDoNotDisturbStart: Long by prefs.delegate(
         KEY_INACTIVITY_REMINDER_DND_START, DO_NOT_DISTURB_PERIOD_START,
     )
@@ -287,6 +299,10 @@ class PrefsRepoImpl @Inject constructor(
         KEY_ACTIVITY_REMINDER_RECURRENT, false,
     )
 
+    override var activityReminderDaysOfWeek: String by prefs.delegate(
+        KEY_ACTIVITY_REMINDER_DAYS_OF_WEEK, "",
+    )
+
     override var activityReminderDoNotDisturbStart: Long by prefs.delegate(
         KEY_ACTIVITY_REMINDER_DND_START, DO_NOT_DISTURB_PERIOD_START,
     )
@@ -301,6 +317,10 @@ class PrefsRepoImpl @Inject constructor(
 
     override var ignoreShortUntrackedDuration: Long by prefs.delegate(
         KEY_IGNORE_SHORT_UNTRACKED_DURATION, 60, // 0 is for disabled
+    )
+
+    override var untrackedDaysOfWeek: String by prefs.delegate(
+        KEY_UNTRACKED_DAYS_OF_WEEK, "",
     )
 
     override var untrackedRangeEnabled: Boolean by prefs.delegate(
@@ -431,8 +451,20 @@ class PrefsRepoImpl @Inject constructor(
         KEY_IS_CATEGORIES_SEARCH_ENABLED, false,
     )
 
+    override var isCategoriesRelationsEnabled: Boolean by prefs.delegate(
+        KEY_IS_CATEGORIES_RELATIONS_ENABLED, false,
+    )
+
     override var isArchiveSearchEnabled: Boolean by prefs.delegate(
         KEY_IS_ARCHIVE_SEARCH_ENABLED, false,
+    )
+
+    override var isTagSearchEnabled: Boolean by prefs.delegate(
+        KEY_IS_TAG_SEARCH_ENABLED, false,
+    )
+
+    override var isShowAllTagsEnabled: Boolean by prefs.delegate(
+        KEY_IS_SHOW_ALL_TAG_ENABLED, false,
     )
 
     override var hiddenCommentFilters: Set<String> by prefs.delegate(
@@ -723,6 +755,7 @@ class PrefsRepoImpl @Inject constructor(
         const val KEY_STATISTICS_DETAIL_RANGE_CUSTOM_START = "statisticsDetailRangeCustomStart"
         const val KEY_STATISTICS_DETAIL_RANGE_CUSTOM_END = "statisticsDetailRangeCustomEnd"
         const val KEY_STATISTICS_DETAIL_RANGE_LAST_DAYS = "statisticsDetailRangeLastDays"
+        const val KEY_STATISTICS_DETAIL_TAG_VALUE_SETTINGS = "statisticsDetailTagValueSettings"
         const val KEY_FILE_EXPORT_RANGE = "fileExportRange"
         const val KEY_FILE_EXPORT_RANGE_CUSTOM_START = "fileExportRangeCustomStart"
         const val KEY_FILE_EXPORT_RANGE_CUSTOM_END = "fileExportRangeCustomEnd"
@@ -754,20 +787,24 @@ class PrefsRepoImpl @Inject constructor(
         const val KEY_SHOW_CATEGORIES_AS_PREDEFINED_FILTERS = "showCategoriesAsPredefinedFilters"
         const val KEY_SELECTED_PREDEFINED_FILTERS = "selectedPredefinedFilters"
         const val KEY_SHOW_GOALS_SEPARATELY = "showGoalsSeparately"
+        const val KEY_HIDE_FINISHED_GOALS = "hideFinishedGoals"
         const val KEY_ALLOW_MULTITASKING = "allowMultitasking"
         const val KEY_SHOW_NOTIFICATIONS = "showNotifications"
         const val KEY_SHOW_NOTIFICATIONS_CONTROLS = "showNotificationsControls"
         const val KEY_SHOW_NOTIFICATION_EVEN_WITH_NO_TIMERS = "showNotificationEvenWithNoTimers"
         const val KEY_INACTIVITY_REMINDER_DURATION = "inactivityReminderDuration"
         const val KEY_INACTIVITY_REMINDER_RECURRENT = "inactivityReminderRecurrent"
+        const val KEY_INACTIVITY_REMINDER_DAYS_OF_WEEK = "inactivityReminderDaysOfWeek"
         const val KEY_INACTIVITY_REMINDER_DND_START = "inactivityReminderDndStart"
         const val KEY_INACTIVITY_REMINDER_DND_END = "inactivityReminderDndEnd"
         const val KEY_ACTIVITY_REMINDER_DURATION = "activityReminderDuration"
         const val KEY_ACTIVITY_REMINDER_RECURRENT = "activityReminderRecurrent"
+        const val KEY_ACTIVITY_REMINDER_DAYS_OF_WEEK = "activityReminderDaysOfWeek"
         const val KEY_ACTIVITY_REMINDER_DND_START = "activityReminderDndStart"
         const val KEY_ACTIVITY_REMINDER_DND_END = "activityReminderDndEnd"
         const val KEY_IGNORE_SHORT_RECORDS_DURATION = "ignoreShortRecordsDuration"
         const val KEY_IGNORE_SHORT_UNTRACKED_DURATION = "ignoreShortUntrackedDuration"
+        const val KEY_UNTRACKED_DAYS_OF_WEEK = "untrackedDaysOfWeek"
         const val KEY_UNTRACKED_RANGE_ENABLED = "untrackedRangeEnabled"
         const val KEY_UNTRACKED_RANGE_START = "untrackedRangeStart"
         const val KEY_UNTRACKED_RANGE_END = "untrackedRangeEnd"
@@ -792,7 +829,10 @@ class PrefsRepoImpl @Inject constructor(
         const val KEY_DEFAULT_TYPES_HIDDEN = "defaultTypesHidden"
         const val KEY_IS_NAV_BAR_AT_THE_BOTTOM = "isNavBarAtTheBottom"
         const val KEY_IS_CATEGORIES_SEARCH_ENABLED = "isCategoriesSearchEnabled"
+        const val KEY_IS_CATEGORIES_RELATIONS_ENABLED = "isCategoriesRelationsEnabled"
         const val KEY_IS_ARCHIVE_SEARCH_ENABLED = "isArchiveSearchEnabled"
+        const val KEY_IS_TAG_SEARCH_ENABLED = "isTagSearchEnabled"
+        const val KEY_IS_SHOW_ALL_TAG_ENABLED = "isShowAllTagsEnabled"
         const val KEY_HIDDEN_COMMENT_FILTERS = "hiddenCommentFilters"
         const val KEY_DURATION_SUGGESTIONS_WAS_PREPOPULATED = "durationSuggestionsWasPrepopulated"
         const val KEY_TYPE_ADDITIONAL_FIELDS_SHOWN = "typeAdditionalFieldsShown"

@@ -14,6 +14,7 @@ import com.example.util.simpletimetracker.domain.model.WearSettings
 import com.example.util.simpletimetracker.domain.model.WearStatistics
 import com.example.util.simpletimetracker.domain.model.WearTag
 import com.example.util.simpletimetracker.domain.model.WearRecordTag
+import com.example.util.simpletimetracker.domain.model.WearShouldShowTagSelectionResult
 import com.example.util.simpletimetracker.domain.statistics.model.ChartFilterType
 import com.example.util.simpletimetracker.notification.WearNotificationManager
 import com.example.util.simpletimetracker.wear_api.WearActivityDTO
@@ -114,7 +115,11 @@ class WearDataRepo @Inject constructor(
         }
     }
 
-    suspend fun startActivity(id: Long, tags: List<WearRecordTag>): Result<Unit> = mutex.withLock {
+    suspend fun startActivity(
+        id: Long,
+        tags: List<WearRecordTag>,
+        useSelectedTags: Boolean,
+    ): Result<Unit> = mutex.withLock {
         return runCatching {
             val request = WearStartActivityRequest(
                 id = id,
@@ -124,6 +129,7 @@ class WearDataRepo @Inject constructor(
                         numericValue = it.numericValue,
                     )
                 },
+                useSelectedTags = useSelectedTags,
             )
             wearRPCClient.startActivity(request)
         }
@@ -150,10 +156,13 @@ class WearDataRepo @Inject constructor(
         }
     }
 
-    suspend fun loadShouldShowTagSelection(activityId: Long): Result<Boolean> = mutex.withLock {
+    suspend fun loadShouldShowTagSelection(
+        activityId: Long,
+    ): Result<WearShouldShowTagSelectionResult> = mutex.withLock {
         return runCatching {
             val request = WearShouldShowTagSelectionRequest(activityId)
-            wearRPCClient.queryShouldShowTagSelection(request).shouldShow
+            val data = wearRPCClient.queryShouldShowTagSelection(request)
+            wearDataLocalMapper.map(data)
         }
     }
 

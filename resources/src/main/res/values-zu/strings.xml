@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Rekhoda amathegi</string>
     <string name="record_tag_hint_short">Amathegi</string>
     <string name="nothing_selected">Akukho okukhethiwe</string>
-    <string name="something_selected">Okukhethiwe:</string>
+    <string name="something_selected">Okukhethiwe</string>
+    <string name="something_available">Kuyatholakala</string>
+    <string name="something_preselected">Okukhethwe kusengaphambili</string>
     <string name="select_all">Khetha konke</string>
     <string name="select_nothing">Khetha lutho</string>
     <string name="no_data">Ayikho imininingo</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Izinhloso zizoboniswa lapha</string>
+    <string name="all_goals_finished">Yonke imigomo isiqediwe</string>
+    <string name="hide_finished_goals">Fihla imigomo eqediwe</string>
     <string name="goal_add_hint">Hlela umsebenzi noma isigaba ukuze unikeze inhloso</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Nikeza amathegi ahlukene kumarekhodi ukuze uhlukanise</string>
     <string name="categories_add_category">Engeza isigaba</string>
     <string name="categories_add_record_tag">Engeza ithegi yerekhodi</string>
+    <string name="categories_show_relations">Bonisa ubudlelwano</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>Izigaba</b> zikusiza ukuthi uhlele imisebenzi ehlobene. Isibonelo:<br><br>
 • Isigaba <custom-color-3>Esisebenzayo</custom-color-3> singabandakanya <custom-color-3>Ukufunda</custom-color-3> kanye ne <custom-color-3>Ijimu</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@ Lokhu kukuvumela ukuthi ubone isikhathi osichitha emisebenzini esebenzayo nezing
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Ithegi ifakwe kwifayela</string>
     <string name="change_record_tag_default_hint">Inikezwe ngokuzenzakalelayo</string>
+    <string name="change_record_tag_type_general">Okuvamile</string>
     <string name="change_record_tag_type_general_hint">Inganikwa kumarekhodi anoma yimuphi umsebenzi</string>
     <string name="change_record_tag_type_typed_hint">Inganikwa kumarekhodi womsebenzi othile kuphela</string>
     <string name="change_record_tag_select_activity_hint">Thatha umbala nesithonjana kumsebenzi</string>
@@ -142,6 +148,7 @@ Lokhu kukuvumela ukuthi ubone isikhathi osichitha emisebenzini esebenzayo nezing
     <string name="change_record_last_comments_hint">Amazwana okugcina</string>
     <string name="change_record_favourite_comments_hint">Okuthandwayo</string>
     <string name="change_record_favourite_comments_hint_long">Amazwana athandwayo</string>
+    <string name="change_record_favourite_activity_selection">Intandokazi kuphela yemisebenzi ekhethiwe</string>
     <string name="change_record_similar_comments_hint">Amazwana afanayo</string>
     <string name="change_record_categories_empty">Awakafakwa amathegi</string>
     <string name="change_record_save">Londoloza</string>
@@ -230,6 +237,8 @@ Lokhu kukuvumela ukuthi ubone isikhathi osichitha emisebenzini esebenzayo nezing
     <string name="change_complex_rule_removed">Umthetho ususiwe</string>
     <string name="change_complex_rule_choose_action">Khetha isenzo</string>
     <string name="change_complex_rule_choose_condition">Khetha izimo</string>
+    <string name="change_complex_tag_value_dialog_message">Khetha ukuthi usethe nini inani</string>
+    <string name="change_complex_tag_value_set_later">Ekuqaleni</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Khombisa iziphakamiso zomsebenzi olandelayo ngokuya ngomsebenzi wamanje noma owedlule</string>
@@ -289,6 +298,7 @@ Lokhu kukuvumela ukuthi ubone isikhathi osichitha emisebenzini esebenzayo nezing
     <string name="records_all_sort_order">Hlela amarekhodi</string>
     <string name="records_all_sort_time_started">Isikhathi sokuqala</string>
     <string name="records_all_sort_duration">Isikhathi esiphelele</string>
+    <string name="records_all_days_without_records">Izinsuku ezingenawo amarekhodi - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">Ukuze uqale ukulandelela, engeza imisebenzi ngokuchofoza inkinobho ethi %s noma usebenzise izilungiselelo ezenzakalayo ngokuchofoza inkinobho ethi %s</string>
@@ -309,7 +319,7 @@ Lokhu kukuvumela ukuthi ubone isikhathi osichitha emisebenzini esebenzayo nezing
     <string name="settings_display_title">Izilungiselelo zokubonisa</string>
     <string name="settings_additional_title">Izilungiselelo ezengeziwe</string>
     <string name="settings_notification_title">Izilungiselelo zesaziso</string>
-    <string name="settings_backup_title">Izilungiselelo zokugcina ikhophi</string>
+    <string name="settings_backup_title">Isipele</string>
     <string name="settings_export_title">Ukuthekelisa nokungenisa</string>
     <string name="settings_sort_order">Hlela imisebenzi</string>
     <string name="settings_sort_order_category">Hlela izigaba</string>
@@ -327,6 +337,7 @@ Lokhu kukuvumela ukuthi ubone isikhathi osichitha emisebenzini esebenzayo nezing
     <string name="settings_show_untracked_time_statistics">Bonisa isikhathi esingalandelwanga kuzibalo</string>
     <string name="settings_ignore_short_untracked">Yeka isikhathi esifushane esingalandelwanga</string>
     <string name="settings_ignore_short_untracked_hint">Ungabonisi isikhathi esingalandelwanga esifushane kune esibekiwe.</string>
+    <string name="settings_untracked_days_hint">Bala isikhathi esingalandelwanga kuphela ngezinsuku ezikhethiwe.</string>
     <string name="settings_untracked_range">Ibanga elingalandelwanga</string>
     <string name="settings_untracked_range_hint">Bonisa isikhathi esingalandelwanga kuphela phakathi kobubanzi obukhethiwe.</string>
     <string name="settings_show_records_calendar">Bonisa amarekhodi kubuka wekhalenda</string>
@@ -360,11 +371,14 @@ Lokhu kukuvumela ukuthi ubone isikhathi osichitha emisebenzini esebenzayo nezing
     <string name="settings_inactivity_reminder">Bonisa isikhumbuzi sokungasebenzi</string>
     <string name="settings_inactivity_reminder_hint">Bonisa isaziso uma amathayima engasebenzi isikhathi esithile.</string>
     <string name="settings_inactivity_reminder_recurrent">Phindaphinda</string>
+    <string name="settings_reminder_active_days">Izinsuku ezisebenzayo</string>
     <string name="settings_activity_reminder">Bonisa isikhumbuzi somsebenzi</string>
     <string name="settings_activity_reminder_hint">Bonisa isaziso uma amathayima eqhubeka isikhathi eside.</string>
     <string name="settings_do_not_disturb">Ungaphazamisi</string>
     <string name="settings_notifications_system_settings">Izilungiselelo zesistimu</string>
     <string name="settings_notifications_system_settings_hint">Umsindo, ukudlidliza, ukukhanya nokunye</string>
+    <string name="settings_reminders_title">Izikhumbuzi</string>
+    <string name="settings_reminders_hint">Phatha izikhumbuzi ezihleliwe</string>
     <string name="settings_ignore_short_records">Yeka amarekhodi amafushane</string>
     <string name="settings_ignore_short_records_hint">Ungalandeli imisebenzi emifushane kune isikhathi esibekiwe.</string>
     <string name="settings_inactivity_reminder_disabled">Khubaziwe</string>
@@ -527,6 +541,7 @@ Isibonelo:<br/>
     <string name="statistics_detail_record_time">Isikhathi serekhodi</string>
     <string name="statistics_detail_first_record">Okokuqala</string>
     <string name="statistics_detail_last_record">Okokugcina</string>
+    <string name="statistics_detail_record_span">Isikhathi</string>
     <string name="statistics_detail_time_since">Isikhathi esidlule</string>
     <string name="statistics_detail_streaks">Uchungechunge</string>
     <string name="statistics_detail_streaks_longest">Olude kakhulu</string>
@@ -549,6 +564,8 @@ Isibonelo:<br/>
     <string name="statistics_detail_goals_deficit">Ukusilela</string>
     <string name="statistics_detail_tag_values_hint">Amanani ethegi</string>
     <string name="statistics_detail_tag_values_multiply_duration">Phindaphinda isikhathi</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Gcwalisa izikhathi ezingenalutho ngedatha yangaphambilini</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Sondeza i-eksisi engu-Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">Amarekhodi</item>-->
@@ -673,6 +690,33 @@ Isibonelo:<br/>
     <string name="shortcut_navigation_records">Amarekhodi</string>
     <string name="shortcut_navigation_statistics">Izibalo</string>
     <string name="shortcut_navigation_settings">Izilungiselelo</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Nsuku zonke</string>
+    <string name="reminders_schedule_weekly">Masonto onke</string>
+    <string name="reminders_schedule_one_time">Kanye</string>
+    <string name="reminders_schedule_monthly">Nyanga zonke</string>
+    <string name="reminders_schedule_hourly">Njalo ngehora</string>
+    <string name="reminders_condition_activity_not_tracked">Uma umsebenzi ungakalandelelwa namuhla</string>
+    <string name="activity_reminders_hint">Sibhala ngaphezu kwesilungiselelo somhlaba wonke sesikhumbuzi somsebenzi</string>
+    <string name="activity_reminder_mode">Imodi yesikhumbuzi</string>
+    <string name="activity_reminder_mode_disabled">Kukhutshaziwe</string>
+    <string name="activity_reminder_mode_custom">Ngokwezifiso</string>
+    <string name="activity_reminder_disabled_summary">Izikhumbuzi zikhutshaziwe kulo msebenzi</string>
+    <string name="activity_reminder_positive_duration_required">Setha ubude besikhumbuzi obungaphezu kuka-zero</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Umlayezo</string>
+    <string name="change_reminder_schedule">Ishejuli</string>
+    <string name="change_reminder_day_of_month">Usuku lwenyanga</string>
+    <string name="change_reminder_interval">Isikhawu</string>
+    <string name="change_reminder_condition">Umbandela wokubonisa</string>
+    <string name="change_reminder_condition_always">Njalo</string>
+    <string name="change_reminder_message_prefill">Ungakhohlwa ukwenza %s.</string>
+    <string name="change_reminder_message_required">Faka umlayezo wesikhumbuzi</string>
+    <string name="change_reminder_future_required">Khetha isikhathi esizayo</string>
+    <string name="change_reminder_interval_required">Setha isikhawu esikhulu kunoziro</string>
+    <string name="change_reminder_removed">Isikhumbuzi sisusiwe</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Hlola ukuxhumeka kwakho bese uzama futhi</string>

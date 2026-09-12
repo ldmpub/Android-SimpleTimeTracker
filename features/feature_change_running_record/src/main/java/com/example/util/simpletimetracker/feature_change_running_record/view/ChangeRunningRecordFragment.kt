@@ -6,23 +6,26 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.util.simpletimetracker.core.base.BaseFragment
-import com.example.util.simpletimetracker.core.dialog.DateTimeDialogListener
-import com.example.util.simpletimetracker.core.dialog.DurationDialogListener
-import com.example.util.simpletimetracker.core.dialog.OnTagValueSelectedListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DateTimeDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.DurationDialogListener
+import com.example.util.simpletimetracker.feature_dialogs.api.OnTagValueSelectedListener
+import com.example.util.simpletimetracker.feature_dialogs.api.TypesSelectionDialogListener
 import com.example.util.simpletimetracker.core.extension.setSharedTransitions
 import com.example.util.simpletimetracker.core.extension.toViewData
 import com.example.util.simpletimetracker.core.utils.InsetConfiguration
 import com.example.util.simpletimetracker.core.utils.fragmentArgumentDelegate
+import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.feature_base_adapter.runningRecord.GoalTimeViewData.Subtype
 import com.example.util.simpletimetracker.feature_base_adapter.runningRecord.RunningRecordViewData
-import com.example.util.simpletimetracker.feature_change_record.view.ChangeRecordCore
+import com.example.util.simpletimetracker.feature_change_record.api.view.ChangeRecordViewDelegateProvider
 import com.example.util.simpletimetracker.feature_change_running_record.viewData.ChangeRunningRecordViewData
 import com.example.util.simpletimetracker.feature_change_running_record.viewModel.ChangeRunningRecordViewModel
+import com.example.util.simpletimetracker.feature_comment_selection.api.CommentSelectionViewDelegateProvider
 import com.example.util.simpletimetracker.feature_views.GoalCheckmarkView.CheckState
 import com.example.util.simpletimetracker.feature_views.extension.animateColor
-import com.example.util.simpletimetracker.feature_views.extension.setOnClick
 import com.example.util.simpletimetracker.navigation.Router
 import com.example.util.simpletimetracker.navigation.params.notification.SnackBarParams
+import com.example.util.simpletimetracker.navigation.params.screen.ARGS_PARAMS
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRunningRecordFromScreen
 import com.example.util.simpletimetracker.navigation.params.screen.ChangeRunningRecordParams
 import com.example.util.simpletimetracker.navigation.params.screen.RecordTagValueSelectionParams
@@ -35,6 +38,7 @@ class ChangeRunningRecordFragment :
     BaseFragment<Binding>(),
     DateTimeDialogListener,
     DurationDialogListener,
+    TypesSelectionDialogListener,
     OnTagValueSelectedListener {
 
     override val inflater: (LayoutInflater, ViewGroup?, Boolean) -> Binding =
@@ -46,10 +50,18 @@ class ChangeRunningRecordFragment :
     @Inject
     lateinit var router: Router
 
+    @Inject
+    lateinit var commentDelegateProvider: CommentSelectionViewDelegateProvider
+
+    @Inject
+    lateinit var changeRecordViewDelegateProvider: ChangeRecordViewDelegateProvider
+
     private val viewModel: ChangeRunningRecordViewModel by viewModels()
 
     private var typeColorAnimator: ValueAnimator? = null
-    private val core by lazy { ChangeRecordCore(viewModel = viewModel) }
+    private val core by lazy {
+        changeRecordViewDelegateProvider.provide(viewModel.editorDelegate, commentDelegateProvider)
+    }
 
     private val params: ChangeRunningRecordParams by fragmentArgumentDelegate(
         key = ARGS_PARAMS, default = ChangeRunningRecordParams.Empty,
@@ -71,15 +83,12 @@ class ChangeRunningRecordFragment :
         }
     }
 
-    override fun initUx() = with(binding) {
+    override fun initUx(): Unit = with(binding) {
         core.initUx(this@ChangeRunningRecordFragment, layoutChangeRunningRecordCore)
-        layoutChangeRunningRecordCore.btnChangeRecordStatistics.setOnClick(viewModel::onStatisticsClick)
-        layoutChangeRunningRecordCore.btnChangeRecordDelete.setOnClick(viewModel::onDeleteClick)
     }
 
     override fun initViewModel() = with(binding) {
         with(viewModel) {
-            extra = params
             record.observe(::updatePreview)
             core.initViewModel(this@ChangeRunningRecordFragment, layoutChangeRunningRecordCore)
 
@@ -104,15 +113,24 @@ class ChangeRunningRecordFragment :
     }
 
     override fun onDateTimeSet(timestamp: Long, tag: String?) {
-        viewModel.onDateTimeSet(timestamp, tag)
+        viewModel.editorDelegate.onDateTimeSet(timestamp, tag)
     }
 
     override fun onDurationSet(durationSeconds: Long, tag: String?) {
-        viewModel.onDurationSet(durationSeconds, tag)
+        viewModel.editorDelegate.onDurationSet(durationSeconds, tag)
     }
 
     override fun onTagValueSelected(params: RecordTagValueSelectionParams, data: Double) {
-        viewModel.onCategoryValueSelected(params, data)
+        viewModel.editorDelegate.onCategoryValueSelected(params, data)
+    }
+
+    override fun onDataSelected(
+        tag: String,
+        dataIds: List<Long>,
+        tagValues: List<RecordBase.Tag>,
+        selectValueOnStartTagIds: List<Long>,
+    ) {
+        viewModel.editorDelegate.onDataSelected(tag, dataIds)
     }
 
     private fun setPreview() = params.preview?.let { preview ->
@@ -196,8 +214,6 @@ class ChangeRunningRecordFragment :
     }
 
     companion object {
-        private const val ARGS_PARAMS = "args_running_record_params"
-
         fun createBundle(data: ChangeRunningRecordFromScreen): Bundle = Bundle().apply {
             putParcelable(ARGS_PARAMS, data.params)
         }

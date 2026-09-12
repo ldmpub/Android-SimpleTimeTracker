@@ -1,9 +1,11 @@
 package com.example.util.simpletimetracker.feature_settings.interactor
 
+import com.example.util.simpletimetracker.core.mapper.DayOfWeekViewDataMapper
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.domain.widget.model.WidgetTransparencyPercent
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
 import com.example.util.simpletimetracker.feature_base_adapter.ViewHolderType
+import com.example.util.simpletimetracker.feature_base_adapter.dayOfWeek.DayOfWeekViewData
 import com.example.util.simpletimetracker.feature_settings.R
 import com.example.util.simpletimetracker.feature_settings.api.SettingsBlock
 import com.example.util.simpletimetracker.feature_settings.views.SettingsCheckboxWithRangeViewData.RangeViewData
@@ -24,6 +26,7 @@ import com.example.util.simpletimetracker.feature_settings.views.SettingsSpinner
 import com.example.util.simpletimetracker.feature_settings.views.SettingsSpinnerWithButtonViewData
 import com.example.util.simpletimetracker.feature_settings.views.SettingsTextViewData
 import com.example.util.simpletimetracker.feature_settings.views.SettingsTopViewData
+import com.example.util.simpletimetracker.feature_settings.views.SettingsWeekdaysViewData
 import com.example.util.simpletimetracker.navigation.params.screen.CardOrderDialogParams
 import javax.inject.Inject
 
@@ -31,6 +34,7 @@ class SettingsDisplayViewDataInteractor @Inject constructor(
     private val resourceRepo: ResourceRepo,
     private val settingsMapper: SettingsMapper,
     private val prefsInteractor: PrefsInteractor,
+    private val dayOfWeekViewDataMapper: DayOfWeekViewDataMapper,
 ) {
 
     suspend fun execute(
@@ -54,45 +58,10 @@ class SettingsDisplayViewDataInteractor @Inject constructor(
         )
 
         if (!isCollapsed) {
-            result += SettingsHintViewData(
-                block = SettingsBlock.DisplayUntrackedHint,
-                text = resourceRepo.getString(R.string.change_record_untracked_time_hint),
-                dividerIsVisible = false,
-                bottomSpaceIsVisible = false,
-            )
-            result += SettingsCheckboxViewData(
-                block = SettingsBlock.DisplayUntrackedInRecords,
-                title = resourceRepo.getString(R.string.settings_show_untracked_time),
-                subtitle = "",
-                isChecked = prefsInteractor.getShowUntrackedInRecords(),
-                bottomSpaceIsVisible = false,
-                dividerIsVisible = false,
-            )
-            result += SettingsCheckboxViewData(
-                block = SettingsBlock.DisplayUntrackedInStatistics,
-                title = resourceRepo.getString(R.string.settings_show_untracked_time_statistics),
-                subtitle = "",
-                isChecked = prefsInteractor.getShowUntrackedInStatistics(),
-                bottomSpaceIsVisible = false,
-                dividerIsVisible = false,
-            )
-            result += SettingsSelectorViewData(
-                block = SettingsBlock.DisplayUntrackedIgnoreShort,
-                title = resourceRepo.getString(R.string.settings_ignore_short_untracked),
-                subtitle = resourceRepo.getString(R.string.settings_ignore_short_untracked_hint),
-                selectedValue = loadIgnoreShortUntrackedViewData(),
-                bottomSpaceIsVisible = false,
-                dividerIsVisible = false,
-            )
-            val untrackedRangeViewData = loadUntrackedRangeViewData()
-            result += SettingsCheckboxWithRangeViewData(
-                blockCheckbox = SettingsBlock.DisplayUntrackedRangeCheckbox,
-                blockStart = SettingsBlock.DisplayUntrackedRangeStart,
-                blockEnd = SettingsBlock.DisplayUntrackedRangeEnd,
-                title = resourceRepo.getString(R.string.settings_untracked_range),
-                subtitle = resourceRepo.getString(R.string.settings_untracked_range_hint),
-                isChecked = untrackedRangeViewData is RangeViewData.Enabled,
-                range = untrackedRangeViewData,
+            result += SettingsTextViewData(
+                block = SettingsBlock.DisplayUntrackedOptions,
+                title = resourceRepo.getString(R.string.untracked_time_name),
+                subtitle = resourceRepo.getString(R.string.change_record_untracked_time_hint),
             )
             val showRecordsCalendar = prefsInteractor.getShowRecordsCalendar()
             result += SettingsCheckboxViewData(
@@ -274,6 +243,53 @@ class SettingsDisplayViewDataInteractor @Inject constructor(
 
         result += SettingsBottomViewData(
             block = SettingsBlock.DisplayBottom,
+        )
+
+        return result
+    }
+
+    suspend fun executeUntrackedOptions(): List<ViewHolderType> {
+        val result = mutableListOf<ViewHolderType>()
+
+        result += SettingsCheckboxViewData(
+            block = SettingsBlock.DisplayUntrackedInRecords,
+            title = resourceRepo.getString(R.string.settings_show_untracked_time),
+            subtitle = "",
+            isChecked = prefsInteractor.getShowUntrackedInRecords(),
+        )
+        result += SettingsCheckboxViewData(
+            block = SettingsBlock.DisplayUntrackedInStatistics,
+            title = resourceRepo.getString(R.string.settings_show_untracked_time_statistics),
+            subtitle = "",
+            isChecked = prefsInteractor.getShowUntrackedInStatistics(),
+        )
+        result += SettingsSelectorViewData(
+            block = SettingsBlock.DisplayUntrackedIgnoreShort,
+            title = resourceRepo.getString(R.string.settings_ignore_short_untracked),
+            subtitle = resourceRepo.getString(R.string.settings_ignore_short_untracked_hint),
+            selectedValue = loadIgnoreShortUntrackedViewData(),
+        )
+        val untrackedRangeViewData = loadUntrackedRangeViewData()
+        result += SettingsCheckboxWithRangeViewData(
+            blockCheckbox = SettingsBlock.DisplayUntrackedRangeCheckbox,
+            blockStart = SettingsBlock.DisplayUntrackedRangeStart,
+            blockEnd = SettingsBlock.DisplayUntrackedRangeEnd,
+            title = resourceRepo.getString(R.string.settings_untracked_range),
+            subtitle = resourceRepo.getString(R.string.settings_untracked_range_hint),
+            isChecked = untrackedRangeViewData is RangeViewData.Enabled,
+            range = untrackedRangeViewData,
+        )
+        result += SettingsWeekdaysViewData(
+            block = SettingsBlock.DisplayUntrackedDaysOfWeek,
+            title = resourceRepo.getString(R.string.settings_reminder_active_days),
+            subtitle = resourceRepo.getString(R.string.settings_untracked_days_hint),
+            items = dayOfWeekViewDataMapper.mapViewData(
+                selectedDaysOfWeek = prefsInteractor.getUntrackedDaysOfWeek(),
+                isDarkTheme = prefsInteractor.getDarkMode(),
+                firstDayOfWeek = prefsInteractor.getFirstDayOfWeek(),
+                width = DayOfWeekViewData.Width.MatchParent,
+                paddingHorizontalDp = 4,
+            ),
         )
 
         return result

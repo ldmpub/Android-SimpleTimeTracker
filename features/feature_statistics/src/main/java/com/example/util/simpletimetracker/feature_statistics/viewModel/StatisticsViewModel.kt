@@ -25,7 +25,6 @@ import com.example.util.simpletimetracker.navigation.Router
 import com.example.util.simpletimetracker.navigation.params.screen.ChartFilterDialogParams
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -66,11 +65,7 @@ class StatisticsViewModel @Inject constructor(
 
     fun onVisible() {
         isVisible = true
-        if (shift == 0) {
-            startUpdate()
-        } else {
-            updateStatistics()
-        }
+        startUpdate()
         updateAnimateChartParticles()
     }
 
@@ -130,6 +125,7 @@ class StatisticsViewModel @Inject constructor(
         chartFilterType: ChartFilterType,
         dataIds: List<Long>,
     ) = viewModelScope.launch {
+        if (!isVisible) return@launch
         prefsInteractor.setChartFilterType(chartFilterType)
         when (chartFilterType) {
             ChartFilterType.ACTIVITY -> prefsInteractor.setFilteredTypes(dataIds)
@@ -139,12 +135,14 @@ class StatisticsViewModel @Inject constructor(
     }
 
     fun onFilterClosed() {
+        if (!isVisible) return
         updateStatistics()
         isChartFilterOpened = false
         updateAnimateChartParticles()
     }
 
     fun onFilterOpened() {
+        if (!isVisible) return
         isChartFilterOpened = true
         updateAnimateChartParticles()
     }
@@ -171,6 +169,9 @@ class StatisticsViewModel @Inject constructor(
         }
         viewModelScope.launch {
             statisticsUpdateInteractor.rangeChanged.collect { if (isVisible) updateStatistics() }
+        }
+        viewModelScope.launch {
+            statisticsUpdateInteractor.dateTimeChanged.collect { if (isVisible) updateStatistics() }
         }
         viewModelScope.launch {
             statisticsUpdateInteractor.optionsVisible.collect {
@@ -221,8 +222,12 @@ class StatisticsViewModel @Inject constructor(
     }
 
     private fun startUpdate() {
+        timerJob?.cancel()
+        if (shift != 0) {
+            updateStatistics()
+            return
+        }
         timerJob = viewModelScope.launch {
-            timerJob?.cancelAndJoin()
             while (isActive) {
                 updateStatistics()
                 delay(TIMER_UPDATE)
@@ -231,9 +236,7 @@ class StatisticsViewModel @Inject constructor(
     }
 
     private fun stopUpdate() {
-        viewModelScope.launch {
-            timerJob?.cancelAndJoin()
-        }
+        timerJob?.cancel()
     }
 
     companion object {

@@ -1,23 +1,19 @@
 package com.example.util.simpletimetracker.feature_notification.recordType.interactor
 
-import com.example.util.simpletimetracker.core.ShouldCloseAfterOneTagInteractor
-import com.example.util.simpletimetracker.core.interactor.LoadPreselectedTagsInteractor
 import com.example.util.simpletimetracker.core.interactor.CompleteTypesStateInteractor
+import com.example.util.simpletimetracker.core.interactor.IsMultipleTagChoiceAvailableInteractor
 import com.example.util.simpletimetracker.core.interactor.RecordRepeatInteractor
-import com.example.util.simpletimetracker.domain.base.REPEAT_BUTTON_ITEM_ID
 import com.example.util.simpletimetracker.domain.extension.orZero
-import com.example.util.simpletimetracker.domain.record.interactor.AddRunningRecordMediator
 import com.example.util.simpletimetracker.domain.notifications.interactor.NotificationActivitySwitchInteractor
 import com.example.util.simpletimetracker.domain.notifications.interactor.NotificationTypeInteractor
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
-import com.example.util.simpletimetracker.domain.recordType.interactor.RecordTypeInteractor
+import com.example.util.simpletimetracker.domain.record.interactor.AddRunningRecordMediator
 import com.example.util.simpletimetracker.domain.record.interactor.RemoveRunningRecordMediator
 import com.example.util.simpletimetracker.domain.record.interactor.RunningRecordInteractor
 import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.recordTag.interactor.NeedTagValueSelectionInteractor
+import com.example.util.simpletimetracker.domain.recordType.interactor.RecordTypeInteractor
 import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager
-import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.APPLY_TAGS_ID
-import com.example.util.simpletimetracker.feature_notification.activitySwitch.manager.NotificationControlsManager.Companion.UNTAGGED_TAG_ID
 import com.example.util.simpletimetracker.feature_notification.core.TAG_VALUE_DECIMAL_DELIMITER
 import com.example.util.simpletimetracker.feature_notification.core.TAG_VALUE_MINUS_SIGN
 import kotlinx.coroutines.delay
@@ -34,8 +30,7 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
     private val completeTypesStateInteractor: CompleteTypesStateInteractor,
     private val needTagValueSelectionInteractor: NeedTagValueSelectionInteractor,
     private val prefsInteractor: PrefsInteractor,
-    private val loadPreselectedTagsInteractor: LoadPreselectedTagsInteractor,
-    private val shouldCloseAfterOneTagInteractor: ShouldCloseAfterOneTagInteractor,
+    private val isMultipleTagChoiceAvailableInteractor: IsMultipleTagChoiceAvailableInteractor,
 ) {
 
     suspend fun onActionActivityStop(
@@ -56,11 +51,6 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
         selectedTypeId: Long,
         typesShift: Int,
     ) {
-        if (selectedTypeId == REPEAT_BUTTON_ITEM_ID) {
-            recordRepeatInteractor.repeat()
-            return
-        }
-
         val started = addRunningRecordMediator.tryStartTimer(
             typeId = selectedTypeId,
             // Switch controls are updated separately right from here,
@@ -68,11 +58,10 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
             updateNotificationSwitch = false,
             commentInputAvailable = false, // TODO open activity? Or RemoteInput?
         ) {
-            val preselectedTags = loadPreselectedTagsInteractor.execute(selectedTypeId)
-                .map { RecordBase.Tag(tagId = it, numericValue = null) }
+            val preselectedTags = it.preselectedTags
+            val requiredValueSelectionTagIds = it.requiredValueSelectionTagIds
             val isMultipleTagAvailable = isMultipleTagChoiceAvailable(
                 selectedTypeId = selectedTypeId,
-                selectedTags = preselectedTags,
             )
 
             // Update to show tag selection.
@@ -83,8 +72,11 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
                 selectedTypeId = selectedTypeId,
                 isMultipleTagAvailable = isMultipleTagAvailable,
                 selectedTags = preselectedTags,
-                editingTagId = null,
+                editingTagId = requiredValueSelectionTagIds.firstOrNull { id ->
+                    isRequiredTagValueSelectionMissingValue(preselectedTags, id)
+                },
                 editingTagValueInput = null,
+                requiredValueSelectionTagIds = requiredValueSelectionTagIds,
             )
         }
         if (started) {
@@ -101,33 +93,66 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
         }
     }
 
-    suspend fun onActionTagClick(
+    suspend fun onActionRepeat() {
+        recordRepeatInteractor.repeat()
+    }
+
+    suspend fun onActionApplyTags(
         from: NotificationControlsManager.From,
         selectedTypeId: Long,
-        tagId: Long,
+        selectedTags: List<RecordBase.Tag>,
         typesShift: Int,
-        selectedTags: List<RecordBase.Tag> = emptyList(),
-        editingTagId: Long? = null,
-        editingTagValueInput: String? = null,
-        tagsShift: Int = 0,
-        isMultipleTagAvailable: Boolean,
     ) {
-        if (tagId == APPLY_TAGS_ID) {
-            startFromTagSelection(
+        startFromTagSelection(
+            from = from,
+            selectedTypeId = selectedTypeId,
+            selectedTags = selectedTags,
+            typesShift = typesShift,
+        )
+    }
+
+    suspend fun onActionClearTags(
+        from: NotificationControlsManager.From,
+        selectedTypeId: Long,
+        typesShift: Int,
+        tagsShift: Int,
+        isMultipleTagAvailable: Boolean,
+        requiredValueSelectionTagIds: List<Long>,
+    ) {
+        if (isMultipleTagAvailable) {
+            update(
                 from = from,
-                selectedTypeId = selectedTypeId,
-                selectedTags = selectedTags,
                 typesShift = typesShift,
+                tagsShift = tagsShift,
+                selectedTypeId = selectedTypeId,
+                isMultipleTagAvailable = true,
+                selectedTags = emptyList(), // Reset tags.
+                editingTagId = null,
+                editingTagValueInput = null,
+                requiredValueSelectionTagIds = requiredValueSelectionTagIds,
             )
-            return
-        }
-        if (tagId == UNTAGGED_TAG_ID) {
+        } else {
             startFromTagSelection(
                 from = from,
                 selectedTypeId = selectedTypeId,
                 selectedTags = emptyList(),
                 typesShift = typesShift,
             )
+        }
+    }
+
+    suspend fun onActionTagClick(
+        from: NotificationControlsManager.From,
+        selectedTypeId: Long,
+        tagId: Long,
+        typesShift: Int,
+        selectedTags: List<RecordBase.Tag>,
+        tagsShift: Int,
+        isMultipleTagAvailable: Boolean,
+        requiredValueSelectionTagIds: List<Long>,
+    ) {
+        if (!isMultipleTagAvailable && selectedTags.any { it.tagId == tagId }) {
+            // Disallow deselection for preselected tags.
             return
         }
 
@@ -143,6 +168,7 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
                 selectedTags = updatedTags,
                 editingTagId = null,
                 editingTagValueInput = null,
+                requiredValueSelectionTagIds = requiredValueSelectionTagIds,
             )
             return
         }
@@ -160,17 +186,14 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
                 isMultipleTagAvailable = isMultipleTagAvailable,
                 selectedTags = selectedTags,
                 editingTagId = tagId,
-                editingTagValueInput = getExistingTagValueInput(
-                    tagId = tagId,
-                    selectedTags = selectedTags,
-                    editingTagId = editingTagId,
-                    editingTagValueInput = editingTagValueInput,
-                ),
+                editingTagValueInput = null,
+                requiredValueSelectionTagIds = requiredValueSelectionTagIds,
             )
             return
         }
 
-        val updatedTags = selectedTags + RecordBase.Tag(
+        val updatedTags = selectedTags
+            .filterNot { it.tagId == tagId } + RecordBase.Tag(
             tagId = tagId,
             numericValue = null,
         )
@@ -183,6 +206,7 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
             typesShift = typesShift,
             tagsShift = tagsShift,
             isMultipleTagAvailable = isMultipleTagAvailable,
+            requiredValueSelectionTagIds = requiredValueSelectionTagIds,
         )
     }
 
@@ -192,26 +216,45 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
         tagId: Long,
         tagValue: String?,
         typesShift: Int,
-        selectedTags: List<RecordBase.Tag> = emptyList(),
-        tagsShift: Int = 0,
+        selectedTags: List<RecordBase.Tag>,
+        tagsShift: Int,
         isMultipleTagAvailable: Boolean,
+        requiredValueSelectionTagIds: List<Long>,
     ) {
-        val actualTagValue = parseTagValueInput(tagValue)
         val updatedTags = selectedTags
             .filterNot { it.tagId == tagId } + RecordBase.Tag(
             tagId = tagId,
-            numericValue = actualTagValue,
+            numericValue = parseTagValueInput(tagValue),
         )
-        maybeStartWithSelectedTags(
-            from = from,
-            selectedTypeId = selectedTypeId,
-            selectedTags = updatedTags,
-            editingTagId = null,
-            editingTagValueInput = null,
-            typesShift = typesShift,
-            tagsShift = tagsShift,
-            isMultipleTagAvailable = isMultipleTagAvailable,
-        )
+        val nextRequiredTagId = requiredValueSelectionTagIds.firstOrNull { id ->
+            isRequiredTagValueSelectionMissingValue(updatedTags, id)
+        }
+        if (tagId in requiredValueSelectionTagIds) {
+            // Ignore "close after one" if tag requires value.
+            update(
+                from = from,
+                typesShift = typesShift,
+                tagsShift = tagsShift,
+                selectedTypeId = selectedTypeId,
+                selectedTags = updatedTags,
+                editingTagId = nextRequiredTagId,
+                editingTagValueInput = null,
+                isMultipleTagAvailable = isMultipleTagAvailable,
+                requiredValueSelectionTagIds = requiredValueSelectionTagIds,
+            )
+        } else {
+            maybeStartWithSelectedTags(
+                from = from,
+                selectedTypeId = selectedTypeId,
+                selectedTags = updatedTags,
+                editingTagId = nextRequiredTagId,
+                editingTagValueInput = null,
+                typesShift = typesShift,
+                tagsShift = tagsShift,
+                isMultipleTagAvailable = isMultipleTagAvailable,
+                requiredValueSelectionTagIds = requiredValueSelectionTagIds,
+            )
+        }
     }
 
     suspend fun onRequestUpdate(
@@ -223,6 +266,7 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
         editingTagId: Long?,
         editingTagValueInput: String?,
         isMultipleTagAvailable: Boolean,
+        requiredValueSelectionTagIds: List<Long>,
     ) {
         update(
             from = from,
@@ -233,6 +277,7 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
             selectedTags = selectedTags,
             editingTagId = editingTagId,
             editingTagValueInput = editingTagValueInput,
+            requiredValueSelectionTagIds = requiredValueSelectionTagIds,
         )
     }
 
@@ -251,6 +296,7 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
             typeId = selectedTypeId,
             comment = "",
             tags = selectedTags,
+            useSelectedTags = true,
         )
     }
 
@@ -263,6 +309,7 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
         typesShift: Int,
         tagsShift: Int,
         isMultipleTagAvailable: Boolean,
+        requiredValueSelectionTagIds: List<Long>,
     ) {
         if (editingTagId == null && !isMultipleTagAvailable) {
             startFromTagSelection(
@@ -283,28 +330,8 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
             editingTagId = editingTagId,
             editingTagValueInput = editingTagValueInput,
             isMultipleTagAvailable = isMultipleTagAvailable,
+            requiredValueSelectionTagIds = requiredValueSelectionTagIds,
         )
-    }
-
-    private fun getExistingTagValueInput(
-        tagId: Long,
-        selectedTags: List<RecordBase.Tag>,
-        editingTagId: Long?,
-        editingTagValueInput: String?,
-    ): String? {
-        if (editingTagId == tagId) {
-            return editingTagValueInput
-        }
-        return selectedTags
-            .firstOrNull { it.tagId == tagId }
-            ?.numericValue
-            ?.let(::formatTagValueInput)
-    }
-
-    private fun formatTagValueInput(value: Double?): String? {
-        return value
-            ?.toString()
-            ?.replace('.', TAG_VALUE_DECIMAL_DELIMITER)
     }
 
     private suspend fun update(
@@ -320,6 +347,7 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
             selectedTags = emptyList(),
             editingTagId = null,
             editingTagValueInput = null,
+            requiredValueSelectionTagIds = emptyList(),
         )
     }
 
@@ -332,6 +360,7 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
         selectedTags: List<RecordBase.Tag>,
         editingTagId: Long?,
         editingTagValueInput: String?,
+        requiredValueSelectionTagIds: List<Long>,
     ) {
         when (from) {
             is NotificationControlsManager.From.ActivityNotification -> {
@@ -346,6 +375,7 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
                     editingTagId = editingTagId,
                     editingTagValueInput = editingTagValueInput,
                     isMultipleTagAvailable = isMultipleTagAvailable,
+                    requiredValueSelectionTagIds = requiredValueSelectionTagIds,
                 )
             }
             is NotificationControlsManager.From.ActivitySwitch -> {
@@ -357,12 +387,14 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
                     editingTagId = editingTagId,
                     editingTagValueInput = editingTagValueInput,
                     isMultipleTagAvailable = isMultipleTagAvailable,
+                    requiredValueSelectionTagIds = requiredValueSelectionTagIds,
                 )
             }
         }
     }
 
     private fun parseTagValueInput(value: String?): Double? {
+        // toDoubleOrNull need a dot as a separator.
         return value
             ?.replace(TAG_VALUE_DECIMAL_DELIMITER, '.')
             ?.replace(TAG_VALUE_MINUS_SIGN, '-')
@@ -371,13 +403,18 @@ class ActivityStartStopFromBroadcastInteractor @Inject constructor(
 
     private suspend fun isMultipleTagChoiceAvailable(
         selectedTypeId: Long,
-        selectedTags: List<RecordBase.Tag> = emptyList(),
     ): Boolean {
-        val shouldCloseAfterOne = shouldCloseAfterOneTagInteractor.execute(
+        return isMultipleTagChoiceAvailableInteractor.execute(
             typeId = selectedTypeId,
             closeAfterOne = prefsInteractor.getRecordTagSelectionCloseAfterOne(),
             excludedActivities = prefsInteractor.getCloseAfterOneTagExcludeActivities().toSet(),
         )
-        return selectedTags.isNotEmpty() || !shouldCloseAfterOne
+    }
+
+    private fun isRequiredTagValueSelectionMissingValue(
+        newTags: List<RecordBase.Tag>,
+        tagId: Long,
+    ): Boolean {
+        return newTags.any { it.tagId == tagId && it.numericValue == null }
     }
 }

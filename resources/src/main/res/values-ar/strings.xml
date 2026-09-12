@@ -14,7 +14,9 @@
     <string name="record_tag_hint">وسوم التتبع</string>
     <string name="record_tag_hint_short">الوسوم</string>
     <string name="nothing_selected">لم يحدد شيء</string>
-    <string name="something_selected">المحدد:</string>
+    <string name="something_selected">المحدد</string>
+    <string name="something_available">متاح</string>
+    <string name="something_preselected">محدد مسبقًا</string>
     <string name="select_all">اختر الكل</string>
     <string name="select_nothing">لا تختار شيئا</string>
     <string name="no_data">لايوجد بيانات</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">ستظهر الأهداف هنا</string>
+    <string name="all_goals_finished">اكتملت جميع الأهداف</string>
+    <string name="hide_finished_goals">إخفاء الأهداف المكتملة</string>
     <string name="goal_add_hint">قم بتحرير النشاط أو الفئة لتعيين هدف له</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">عين وسوم مختلفة للتمييز بين المتتبعات</string>
     <string name="categories_add_category">إضافة تصنيف</string>
     <string name="categories_add_record_tag">إضافة وسم التتبع</string>
+    <string name="categories_show_relations">عرض العلاقات</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>الفئات</b> تساعدك على تجميع الأنشطة ذات الصلة. على سبيل المثال:<br><br>
 • قد تتضمن فئة <custom-color-3>الإنتاجية</custom-color-3> أنشطة مثل <custom-color-3>القراءة</custom-color-3> و<custom-color-3>الصالة الرياضية</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">تم أرشفة الوسم</string>
     <string name="change_record_tag_default_hint">تم تعيينه بشكل افتراضي</string>
+    <string name="change_record_tag_type_general">مشترك</string>
     <string name="change_record_tag_type_general_hint">يمكن تعيينه إلى متتبعات أي نشاط</string>
     <string name="change_record_tag_type_typed_hint">لا يمكن تعيينه إلا لمتتبعات نشاط معين</string>
     <string name="change_record_tag_select_activity_hint">خذ اللون والرمز من النشاط</string>
@@ -142,6 +148,7 @@
     <string name="change_record_last_comments_hint">آخر التعليقات</string>
     <string name="change_record_favourite_comments_hint">المفضلة</string>
     <string name="change_record_favourite_comments_hint_long">التعليقات المفضلة</string>
+    <string name="change_record_favourite_activity_selection">المفضلة فقط للأنشطة المحددة</string>
     <string name="change_record_similar_comments_hint">تعليقات مماثلة</string>
     <string name="change_record_categories_empty">لم تضاف وسوم متتبعة</string>
     <string name="change_record_save">حفظ</string>
@@ -230,6 +237,8 @@
     <string name="change_complex_rule_removed">تمت إزالة القاعدة</string>
     <string name="change_complex_rule_choose_action">اختر الإجراء</string>
     <string name="change_complex_rule_choose_condition">اختر الشروط</string>
+    <string name="change_complex_tag_value_dialog_message">اختر وقت تعيين القيمة</string>
+    <string name="change_complex_tag_value_set_later">عند البدء</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">يعرض اقتراحات للنشاط التالي استنادًا إلى النشاط الحالي أو الأخير</string>
@@ -289,6 +298,7 @@
     <string name="records_all_sort_order">فرز التتبعات</string>
     <string name="records_all_sort_time_started">بدأ الوقت</string>
     <string name="records_all_sort_duration">مدة</string>
+    <string name="records_all_days_without_records">أيام بدون سجلات - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">لبدء التتبع ، أضف الأنشطة بالنقر فوق الزر %s أو استخدم الإعدادات المسبقة الافتراضية بالنقر فوق الزر %s</string>
@@ -309,7 +319,7 @@
     <string name="settings_display_title">إعدادات العرض</string>
     <string name="settings_additional_title">إعدادات إضافية</string>
     <string name="settings_notification_title">إعدادات الإشعار</string>
-    <string name="settings_backup_title">إعدادات النسخ الاحتياطي</string>
+    <string name="settings_backup_title">النسخ الاحتياطي</string>
     <string name="settings_export_title">التصدير والاستيراد</string>
     <string name="settings_sort_order">فرز الأنشطة</string>
     <string name="settings_sort_order_category">فرز الفئات</string>
@@ -327,6 +337,7 @@
     <string name="settings_show_untracked_time_statistics">إظهار الوقت الذي لم يتم تعقبه في الإحصائيات</string>
     <string name="settings_ignore_short_untracked">تجاهل الوقت القصير غير المتعقب</string>
     <string name="settings_ignore_short_untracked_hint">لا تعرض الوقت غير المتعقب والذي يكون أقصر من الوقت المحدد.</string>
+    <string name="settings_untracked_days_hint">احتسب الوقت غير المتتبَّع في الأيام المحددة فقط.</string>
     <string name="settings_untracked_range">النظاق الزمني لغير المتعقب</string>
     <string name="settings_untracked_range_hint">عرض الوقت غير المتتبع فقط ضمن النطاق المحدد.</string>
     <string name="settings_show_records_calendar">إظهار المتتبعات في عرض تقويم</string>
@@ -360,11 +371,14 @@
     <string name="settings_inactivity_reminder">إظهار تذكير الخمول</string>
     <string name="settings_inactivity_reminder_hint">أظهر اﻹشعار بعد الوقت المحدد في حال عدم تشغيل نشاط للتتبع.</string>
     <string name="settings_inactivity_reminder_recurrent">تكرار</string>
+    <string name="settings_reminder_active_days">الأيام النشطة</string>
     <string name="settings_activity_reminder">إظهار تذكير النشاط</string>
     <string name="settings_activity_reminder_hint">أظهر اﻹشعار بعد الوقت المحدد إذا كان نشاط التتبع مفعل.</string>
     <string name="settings_do_not_disturb">عدم اﻹزعاج</string>
     <string name="settings_notifications_system_settings">اعدادات النظام</string>
     <string name="settings_notifications_system_settings_hint">الصوت والاهتزاز والفلاش وغيرها</string>
+    <string name="settings_reminders_title">التذكيرات</string>
+    <string name="settings_reminders_hint">إدارة التذكيرات المجدولة</string>
     <string name="settings_ignore_short_records">تجاهل التتبعات القصيرة</string>
     <string name="settings_ignore_short_records_hint">لا تتبع الأنشطة اﻷقصر من الوقت المحدد.</string>
     <string name="settings_inactivity_reminder_disabled">غير مفعل</string>
@@ -527,6 +541,7 @@
     <string name="statistics_detail_record_time">وقت التتبع</string>
     <string name="statistics_detail_first_record">أول</string>
     <string name="statistics_detail_last_record">آخر</string>
+    <string name="statistics_detail_record_span">المدة</string>
     <string name="statistics_detail_time_since">منذ</string>
     <string name="statistics_detail_streaks">السللة</string>
     <string name="statistics_detail_streaks_longest">أطول</string>
@@ -549,6 +564,8 @@
     <string name="statistics_detail_goals_deficit">العجز</string>
     <string name="statistics_detail_tag_values_hint">قيم الوسوم</string>
     <string name="statistics_detail_tag_values_multiply_duration">اضرب بالمدة</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">املأ الفترات الفارغة بالبيانات السابقة</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">تكبير محور Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <item quantity="zero">تتبع</item>
@@ -673,6 +690,33 @@
     <string name="shortcut_navigation_records">المتتبعات</string>
     <string name="shortcut_navigation_statistics">اﻹحصائيات</string>
     <string name="shortcut_navigation_settings">اﻹعدادات</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">يوميًا</string>
+    <string name="reminders_schedule_weekly">أسبوعيًا</string>
+    <string name="reminders_schedule_one_time">مرة واحدة</string>
+    <string name="reminders_schedule_monthly">شهريًا</string>
+    <string name="reminders_schedule_hourly">كل ساعة</string>
+    <string name="reminders_condition_activity_not_tracked">عندما لا يتم تتبع النشاط اليوم</string>
+    <string name="activity_reminders_hint">يتجاوز إعداد تذكير النشاط العام</string>
+    <string name="activity_reminder_mode">وضع التذكير</string>
+    <string name="activity_reminder_mode_disabled">معطّل</string>
+    <string name="activity_reminder_mode_custom">مخصّص</string>
+    <string name="activity_reminder_disabled_summary">تم تعطيل التذكيرات لهذا النشاط</string>
+    <string name="activity_reminder_positive_duration_required">عيّن مدة تذكير أكبر من صفر</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">الرسالة</string>
+    <string name="change_reminder_schedule">الجدول</string>
+    <string name="change_reminder_day_of_month">يوم من الشهر</string>
+    <string name="change_reminder_interval">الفاصل الزمني</string>
+    <string name="change_reminder_condition">شرط العرض</string>
+    <string name="change_reminder_condition_always">دائمًا</string>
+    <string name="change_reminder_message_prefill">لا تنسَ القيام بـ %s.</string>
+    <string name="change_reminder_message_required">أدخل رسالة التذكير</string>
+    <string name="change_reminder_future_required">اختر وقتًا في المستقبل</string>
+    <string name="change_reminder_interval_required">عيّن فاصلاً زمنيًا أكبر من صفر</string>
+    <string name="change_reminder_removed">تمت إزالة التذكير</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">تحقق من اتصالك وحاول مرة أخرى</string>

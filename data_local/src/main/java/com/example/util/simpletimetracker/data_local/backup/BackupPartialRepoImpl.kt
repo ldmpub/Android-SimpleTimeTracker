@@ -42,6 +42,8 @@ import com.example.util.simpletimetracker.domain.recordTag.repo.RecordTypeToTagR
 import com.example.util.simpletimetracker.domain.backup.repo.BackupPartialRepo
 import com.example.util.simpletimetracker.domain.backup.model.ResultCode
 import com.example.util.simpletimetracker.domain.category.model.Category
+import com.example.util.simpletimetracker.domain.favourite.model.RecordTypeToFavouriteComment
+import com.example.util.simpletimetracker.domain.favourite.repo.RecordTypeToFavouriteCommentRepo
 import com.example.util.simpletimetracker.domain.record.model.RecordBase
 import com.example.util.simpletimetracker.domain.recordShortcut.model.RecordShortcut
 import com.example.util.simpletimetracker.domain.recordShortcut.repo.RecordShortcutRepo
@@ -65,6 +67,7 @@ class BackupPartialRepoImpl @Inject constructor(
     private val activityFilterRepo: ActivityFilterRepo,
     private val activitySuggestionRepo: ActivitySuggestionRepo,
     private val favouriteCommentRepo: FavouriteCommentRepo,
+    private val recordTypeToFavouriteCommentRepo: RecordTypeToFavouriteCommentRepo,
     private val favouriteColorRepo: FavouriteColorRepo,
     private val favouriteIconRepo: FavouriteIconRepo,
     private val recordTypeGoalRepo: RecordTypeGoalRepo,
@@ -88,6 +91,8 @@ class BackupPartialRepoImpl @Inject constructor(
             .values.getExistingValues().associate { it.id to it.id }.toMutableMap()
         val originalRecordShortcutIdToAddedId: MutableMap<Long, Long> = params.data.recordShortcuts
             .values.getExistingValues().associate { it.id to it.id }.toMutableMap()
+        val originalFavouriteCommentIdToAddedId: MutableMap<Long, Long> = params.data.favouriteComments
+            .values.getExistingValues().associate { it.id to it.id }.toMutableMap()
 
         params.data.types.values.getNotExistingValues().forEach { type ->
             val originalId = type.id
@@ -108,11 +113,17 @@ class BackupPartialRepoImpl @Inject constructor(
         }
         params.data.recordShortcuts.values.getNotExistingValues().forEach { recordShortcut ->
             val originalId = recordShortcut.id
-            val newTypeId = originalTypeIdToAddedId[recordShortcut.typeId]
-                ?: return@forEach
+            val newTarget = when (val target = recordShortcut.target) {
+                is RecordShortcut.Target.Record -> {
+                    val newTypeId = originalTypeIdToAddedId[target.typeId]
+                        ?: return@forEach
+                    target.copy(typeId = newTypeId)
+                }
+                is RecordShortcut.Target.Setting -> target
+            }
             val addedId = recordShortcut.copy(
                 id = 0,
-                typeId = newTypeId,
+                target = newTarget,
             ).let { recordShortcutRepo.add(it) }
             originalRecordShortcutIdToAddedId[originalId] = addedId
         }
@@ -192,9 +203,21 @@ class BackupPartialRepoImpl @Inject constructor(
             ).let { activityFilterRepo.add(it) }
         }
         params.data.favouriteComments.values.getNotExistingValues().forEach { favComment ->
-            favComment.copy(
+            val originalId = favComment.id
+            val addedId = favComment.copy(
                 id = 0,
             ).let { favouriteCommentRepo.add(it) }
+            originalFavouriteCommentIdToAddedId[originalId] = addedId
+        }
+        params.data.typeToFavouriteComment.getNotExistingValues().forEach { typeToComment ->
+            val newTypeId = originalTypeIdToAddedId[typeToComment.recordTypeId]
+                ?: return@forEach
+            val newCommentId = originalFavouriteCommentIdToAddedId[typeToComment.commentId]
+                ?: return@forEach
+            typeToComment.copy(
+                recordTypeId = newTypeId,
+                commentId = newCommentId,
+            ).let { recordTypeToFavouriteCommentRepo.add(it) }
         }
         params.data.favouriteColors.values.getNotExistingValues().forEach { favColor ->
             favColor.copy(
@@ -225,11 +248,11 @@ class BackupPartialRepoImpl @Inject constructor(
                 .mapNotNull { originalTypeIdToAddedId[it] }.toSet()
             val newCurrentTypeIds = rule.conditionCurrentTypeIds
                 .mapNotNull { originalTypeIdToAddedId[it] }.toSet()
-            val newAssignTagIds = rule.actionAssignTagIds
-                .mapNotNull { originalTagIdToAddedId[it] }.toSet()
+            val newAssignTagValues = rule.actionAssignTagValues
+                .mapNotNull { originalTagIdToAddedId[it.tagId]?.let { newId -> it.copy(tagId = newId) } }
             rule.copy(
                 id = 0,
-                actionAssignTagIds = newAssignTagIds,
+                actionAssignTagValues = newAssignTagValues,
                 conditionStartingTypeIds = newStartingTypeIds,
                 conditionCurrentTypeIds = newCurrentTypeIds,
             ).takeIf {
@@ -276,7 +299,13 @@ class BackupPartialRepoImpl @Inject constructor(
             .map { it.copy(tags = emptyList()) }
         val recordShortcuts: MutableList<RecordShortcut> = mutableListOf()
         val recordShortcutsCurrent: List<RecordShortcut> = recordShortcutRepo.getAll()
-            .map { it.copy(tags = emptyList()) }
+            .map {
+                val target = when (val value = it.target) {
+                    is RecordShortcut.Target.Record -> value.copy(tags = emptyList())
+                    is RecordShortcut.Target.Setting -> value
+                }
+                it.copy(target = target)
+            }
         val categories: MutableList<Category> = mutableListOf()
         val categoriesCurrent: List<Category> = categoryRepo.getAll()
         val typeToCategory: MutableList<RecordTypeCategory> = mutableListOf()
@@ -295,6 +324,8 @@ class BackupPartialRepoImpl @Inject constructor(
         val activityFiltersCurrent: List<ActivityFilter> = activityFilterRepo.getAll()
         val favouriteComments: MutableList<FavouriteComment> = mutableListOf()
         val favouriteCommentsCurrent: List<FavouriteComment> = favouriteCommentRepo.getAll()
+        val typeToFavouriteComment: MutableList<RecordTypeToFavouriteComment> = mutableListOf()
+        val typeToFavouriteCommentCurrent: List<RecordTypeToFavouriteComment> = recordTypeToFavouriteCommentRepo.getAll()
         val favouriteColors: MutableList<FavouriteColor> = mutableListOf()
         val favouriteColorsCurrent: List<FavouriteColor> = favouriteColorRepo.getAll()
         val favouriteIcon: MutableList<FavouriteIcon> = mutableListOf()
@@ -334,6 +365,7 @@ class BackupPartialRepoImpl @Inject constructor(
                 typeToDefaultTag = typeToDefaultTag::add,
                 activityFilters = activityFilters::add,
                 favouriteComments = favouriteComments::add,
+                typeToFavouriteComment = typeToFavouriteComment::add,
                 favouriteColors = favouriteColors::add,
                 favouriteIcon = favouriteIcon::add,
                 goals = goals::add,
@@ -359,9 +391,14 @@ class BackupPartialRepoImpl @Inject constructor(
         }
 
         val (newRecordShortcuts, originalRecordShortcutIdToExistingId) = recordShortcuts.mapNotNull { item ->
-            val newTypeId = originalTypeIdToExistingId[item.typeId]
-                ?: return@mapNotNull null
-            item.copy(typeId = newTypeId)
+            when (val target = item.target) {
+                is RecordShortcut.Target.Record -> {
+                    val newTypeId = originalTypeIdToExistingId[target.typeId]
+                        ?: return@mapNotNull null
+                    item.copy(target = target.copy(typeId = newTypeId))
+                }
+                is RecordShortcut.Target.Setting -> item
+            }
         }.let {
             mapToHolder(it, recordShortcutsCurrent)
         }
@@ -459,8 +496,21 @@ class BackupPartialRepoImpl @Inject constructor(
             mapToHolder(it, activityFiltersCurrent)
         }.list
 
-        val newFavouriteComments = favouriteComments.let {
+        val (newFavouriteComments, originalFavouriteCommentIdToExistingId) = favouriteComments.let {
             mapToHolder(it, favouriteCommentsCurrent)
+        }
+
+        val newTypeToFavouriteComment = typeToFavouriteComment.mapNotNull { item ->
+            val newTypeId = originalTypeIdToExistingId[item.recordTypeId]
+                ?: return@mapNotNull null
+            val newCommentId = originalFavouriteCommentIdToExistingId[item.commentId]
+                ?: return@mapNotNull null
+            item.copy(
+                recordTypeId = newTypeId,
+                commentId = newCommentId,
+            )
+        }.let {
+            mapToHolder(it, typeToFavouriteCommentCurrent)
         }.list
 
         val newFavouriteColors = favouriteColors.let {
@@ -492,10 +542,10 @@ class BackupPartialRepoImpl @Inject constructor(
                 .mapNotNull { originalTypeIdToExistingId[it] }.toSet()
             val newCurrentTypeIds = item.conditionCurrentTypeIds
                 .mapNotNull { originalTypeIdToExistingId[it] }.toSet()
-            val newAssignTagIds = item.actionAssignTagIds
-                .mapNotNull { originalTagIdToExistingId[it] }.toSet()
+            val newAssignTagValues = item.actionAssignTagValues
+                .mapNotNull { originalTagIdToExistingId[it.tagId]?.let { newId -> it.copy(tagId = newId) } }
             item.copy(
-                actionAssignTagIds = newAssignTagIds,
+                actionAssignTagValues = newAssignTagValues,
                 conditionStartingTypeIds = newStartingTypeIds,
                 conditionCurrentTypeIds = newCurrentTypeIds,
             ).takeIf {
@@ -542,14 +592,20 @@ class BackupPartialRepoImpl @Inject constructor(
         }
         val newRecordShortcutsWithTags = newRecordShortcuts.map { record ->
             val thisTags = newRecordShortcutToTagMap[record.data.id].orEmpty().map { it.data }
-            val newData = record.data.copy(
-                tags = thisTags.map {
-                    RecordBase.Tag(
-                        tagId = it.recordTagId,
-                        numericValue = it.recordTagNumericValue,
-                    )
-                },
-            )
+            val target = record.data.target
+            val newData = if (target is RecordShortcut.Target.Record) {
+                val newTarget = target.copy(
+                    tags = thisTags.map {
+                        RecordBase.Tag(
+                            tagId = it.recordTagId,
+                            numericValue = it.recordTagNumericValue,
+                        )
+                    },
+                )
+                record.data.copy(target = newTarget)
+            } else {
+                record.data
+            }
             record.copy(data = newData)
         }
 
@@ -566,6 +622,7 @@ class BackupPartialRepoImpl @Inject constructor(
             typeToDefaultTag = newTypeToDefaultTag,
             activityFilters = newActivityFilters.associateBy { it.data.id },
             favouriteComments = newFavouriteComments.associateBy { it.data.id },
+            typeToFavouriteComment = newTypeToFavouriteComment,
             favouriteColors = newFavouriteColors.associateBy { it.data.id },
             favouriteIcon = newFavouriteIcon.associateBy { it.data.id },
             goals = newGoals.associateBy { it.data.id },
@@ -602,6 +659,7 @@ class BackupPartialRepoImpl @Inject constructor(
             is RecordTypeToDefaultTag -> IdData<RecordTypeToDefaultTag>({ this }, { 0 })
             is ActivityFilter -> IdData<ActivityFilter>({ copy(id = it) }, { id })
             is FavouriteComment -> IdData<FavouriteComment>({ copy(id = it) }, { id })
+            is RecordTypeToFavouriteComment -> IdData<RecordTypeToFavouriteComment>({ this }, { 0 })
             is FavouriteColor -> IdData<FavouriteColor>({ copy(id = it) }, { id })
             is FavouriteIcon -> IdData<FavouriteIcon>({ copy(id = it) }, { id })
             is RecordTypeGoal -> IdData<RecordTypeGoal>({ copy(id = it) }, { id })

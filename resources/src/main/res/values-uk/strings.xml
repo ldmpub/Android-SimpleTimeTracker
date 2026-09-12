@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Теги записів</string>
     <string name="record_tag_hint_short">Теги</string>
     <string name="nothing_selected">Нічого не обрано</string>
-    <string name="something_selected">Обрано:</string>
+    <string name="something_selected">Обрано</string>
+    <string name="something_available">Доступні</string>
+    <string name="something_preselected">Попередньо вибрано</string>
     <string name="select_all">Обрати все</string>
     <string name="select_nothing">Нічого не обирати</string>
     <string name="no_data">Немає даних</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Цілі будуть показані тут</string>
+    <string name="all_goals_finished">Усі цілі завершено</string>
+    <string name="hide_finished_goals">Приховати завершені цілі</string>
     <string name="goal_add_hint">Відредагуйте активність або категорію, щоб призначити їй ціль</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Призначте різні теги записам, щоб розрізняти їх</string>
     <string name="categories_add_category">Додати категорію</string>
     <string name="categories_add_record_tag">Додати тег запису</string>
+    <string name="categories_show_relations">Показати зв\'язки</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>Категорії</b> допомагають групувати пов’язані активності. Наприклад:<br><br>
 • Категорія <custom-color-3>Продуктивність</custom-color-3> може включати <custom-color-3>Читання</custom-color-3> та <custom-color-3>Спортзал</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Тег переміщено до архіву</string>
     <string name="change_record_tag_default_hint">Призначено за замовчуванням</string>
+    <string name="change_record_tag_type_general">Загальний</string>
     <string name="change_record_tag_type_general_hint">Може бути призначено записам будь-якої актівності</string>
     <string name="change_record_tag_type_typed_hint">Можна призначити лише записам певної активності</string>
     <string name="change_record_tag_select_activity_hint">Взяти колір та іконку з активності</string>
@@ -142,6 +148,7 @@
     <string name="change_record_last_comments_hint">Останні коментарі</string>
     <string name="change_record_favourite_comments_hint">Обрані</string>
     <string name="change_record_favourite_comments_hint_long">Обрані коментарі</string>
+    <string name="change_record_favourite_activity_selection">Обране лише для вибраних активностей</string>
     <string name="change_record_similar_comments_hint">Подібні коментарі</string>
     <string name="change_record_categories_empty">Теги для записів не додані</string>
     <string name="change_record_save">Зберегти</string>
@@ -230,6 +237,8 @@
     <string name="change_complex_rule_removed">Правило видалено</string>
     <string name="change_complex_rule_choose_action">Виберіть дію</string>
     <string name="change_complex_rule_choose_condition">Виберіть умови</string>
+    <string name="change_complex_tag_value_dialog_message">Виберіть, коли встановити значення</string>
+    <string name="change_complex_tag_value_set_later">Під час запуску</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Показує пропозиції щодо наступної дії на основі поточної чи останньої дії</string>
@@ -289,6 +298,7 @@
     <string name="records_all_sort_order">Сортувати записи</string>
     <string name="records_all_sort_time_started">Початок</string>
     <string name="records_all_sort_duration">Тривалість</string>
+    <string name="records_all_days_without_records">Днів без записів — %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">Щоб розпочати відстеження, додайте дії, натиснувши кнопку %s, або використайте стандартні налаштування, натиснувши кнопку %s</string>
@@ -309,7 +319,7 @@
     <string name="settings_display_title">Налаштування перегляду</string>
     <string name="settings_additional_title">Додаткові налаштування</string>
     <string name="settings_notification_title">Налаштування сповіщень</string>
-    <string name="settings_backup_title">Налаштування резервного копіювання</string>
+    <string name="settings_backup_title">Резервне копіювання</string>
     <string name="settings_export_title">Експорт та імпорт</string>
     <string name="settings_sort_order">Сортувати активності</string>
     <string name="settings_sort_order_category">Сортувати категорії</string>
@@ -327,6 +337,7 @@
     <string name="settings_show_untracked_time_statistics">Показувати невідстежений час у статистиці</string>
     <string name="settings_ignore_short_untracked">Ігнорувати короткий невідстежуваний час</string>
     <string name="settings_ignore_short_untracked_hint">Не показувати невідстежуваний час, який коротший за вказаний час.</string>
+    <string name="settings_untracked_days_hint">Враховувати невідстежений час лише у вибрані дні.</string>
     <string name="settings_untracked_range">Невідстежуваний діапазон</string>
     <string name="settings_untracked_range_hint">Показувати невідстежений час лише в межах вибраного діапазону.</string>
     <string name="settings_show_records_calendar">Показувати записи в календарі</string>
@@ -360,11 +371,14 @@
     <string name="settings_inactivity_reminder">Показувати нагадування про бездіяльність</string>
     <string name="settings_inactivity_reminder_hint">Показувати сповіщення через вказаний час, якщо таймери не запущені.</string>
     <string name="settings_inactivity_reminder_recurrent">Рецидивуючий</string>
+    <string name="settings_reminder_active_days">Активні дні</string>
     <string name="settings_activity_reminder">Показати нагадування про активність</string>
     <string name="settings_activity_reminder_hint">Показувати сповіщення після вказаного часу, якщо таймери запущено.</string>
     <string name="settings_do_not_disturb">Не турбувати</string>
     <string name="settings_notifications_system_settings">Налаштування системи</string>
     <string name="settings_notifications_system_settings_hint">Звук, вібрація, спалах та інше</string>
+    <string name="settings_reminders_title">Нагадування</string>
+    <string name="settings_reminders_hint">Керування запланованими нагадуваннями</string>
     <string name="settings_ignore_short_records">Ігнорувати короткі записи</string>
     <string name="settings_ignore_short_records_hint">Не відстежувати дії, які коротші за вказаний час.</string>
     <string name="settings_inactivity_reminder_disabled">Вимкнено</string>
@@ -527,6 +541,7 @@
     <string name="statistics_detail_record_time">Час запису</string>
     <string name="statistics_detail_first_record">Перший</string>
     <string name="statistics_detail_last_record">Останній</string>
+    <string name="statistics_detail_record_span">Період</string>
     <string name="statistics_detail_time_since">Час, що минув</string>
     <string name="statistics_detail_streaks">Серія</string>
     <string name="statistics_detail_streaks_longest">Найдовша</string>
@@ -549,6 +564,8 @@
     <string name="statistics_detail_goals_deficit">Дефіцит</string>
     <string name="statistics_detail_tag_values_hint">Значення тегів</string>
     <string name="statistics_detail_tag_values_multiply_duration">Помножити на тривалість</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Заповнювати порожні періоди попередніми даними</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Масштабувати вісь Y</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">Записів</item>-->
@@ -673,6 +690,33 @@
     <string name="shortcut_navigation_records">Записи</string>
     <string name="shortcut_navigation_statistics">Статистика</string>
     <string name="shortcut_navigation_settings">Налаштування</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Щодня</string>
+    <string name="reminders_schedule_weekly">Щотижня</string>
+    <string name="reminders_schedule_one_time">Один раз</string>
+    <string name="reminders_schedule_monthly">Щомісяця</string>
+    <string name="reminders_schedule_hourly">Щогодини</string>
+    <string name="reminders_condition_activity_not_tracked">Якщо активність сьогодні не відстежувалася</string>
+    <string name="activity_reminders_hint">Перевизначає загальне налаштування нагадувань про активність</string>
+    <string name="activity_reminder_mode">Режим нагадування</string>
+    <string name="activity_reminder_mode_disabled">Вимкнено</string>
+    <string name="activity_reminder_mode_custom">Власні налаштування</string>
+    <string name="activity_reminder_disabled_summary">Нагадування для цієї активності вимкнено</string>
+    <string name="activity_reminder_positive_duration_required">Установіть тривалість нагадування більше нуля</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Повідомлення</string>
+    <string name="change_reminder_schedule">Розклад</string>
+    <string name="change_reminder_day_of_month">День місяця</string>
+    <string name="change_reminder_interval">Інтервал</string>
+    <string name="change_reminder_condition">Умова показу</string>
+    <string name="change_reminder_condition_always">Завжди</string>
+    <string name="change_reminder_message_prefill">Не забудьте виконати %s.</string>
+    <string name="change_reminder_message_required">Введіть текст нагадування</string>
+    <string name="change_reminder_future_required">Виберіть час у майбутньому</string>
+    <string name="change_reminder_interval_required">Установіть інтервал, більший за нуль</string>
+    <string name="change_reminder_removed">Нагадування видалено</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Перевірте підключення та повторіть спробу</string>

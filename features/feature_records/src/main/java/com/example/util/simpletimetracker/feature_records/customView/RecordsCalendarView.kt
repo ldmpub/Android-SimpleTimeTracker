@@ -71,10 +71,14 @@ class RecordsCalendarView @JvmOverloads constructor(
     // End of attrs
 
     private var isScaling: Boolean = false
+    private var isSwiping: Boolean = false
     private var scaleFactor: Float = 1f
     private var lastScaleFactor: Float = 1f
     private var panFactor: Float = 0f
     private var lastPanFactor: Float = 0f
+    private var swipeStartOffset: Float = 0f
+    private var swipeStartPanFactor: Float = 0f
+    private var shouldRebaseSwipeAfterScaleStop: Boolean = false
     private var legendTextWidth: Float = 0f
     private var legendTextHeight: Float = 0f
     private var legendTopTextHeight: Float = 0f
@@ -175,6 +179,7 @@ class RecordsCalendarView @JvmOverloads constructor(
     )
     private val swipeDetector = SwipeDetector(
         context = context,
+        onSlideStart = ::onEventSwipeStart,
         onSlide = ::onEventSwipe,
         onSlideStop = ::onEventSwipeStop,
     )
@@ -820,6 +825,7 @@ class RecordsCalendarView @JvmOverloads constructor(
                         timeStarted = "07:35",
                         timeFinished = "11:58",
                         duration = "5h 23m 3s",
+                        durationTotal = "",
                         iconId = RecordTypeIcon.Image(R.drawable.unknown),
                         color = Color.RED,
                         comment = "Comment $it",
@@ -931,6 +937,7 @@ class RecordsCalendarView @JvmOverloads constructor(
 
     private fun onEventScaleStart() {
         isScaling = true
+        if (isSwiping) lastPanFactor = panFactor
     }
 
     private fun onEventScaleChanged(newScale: Float) {
@@ -944,10 +951,18 @@ class RecordsCalendarView @JvmOverloads constructor(
     }
 
     private fun onEventScaleStop() {
-        parent.requestDisallowInterceptTouchEvent(false)
+        parent.requestDisallowInterceptTouchEvent(isSwiping)
         lastScaleFactor = scaleFactor
         lastPanFactor = panFactor
         isScaling = false
+        shouldRebaseSwipeAfterScaleStop = isSwiping
+    }
+
+    private fun onEventSwipeStart() {
+        isSwiping = true
+        shouldRebaseSwipeAfterScaleStop = false
+        swipeStartOffset = 0f
+        swipeStartPanFactor = panFactor
     }
 
     @Suppress("UNUSED_PARAMETER")
@@ -956,15 +971,23 @@ class RecordsCalendarView @JvmOverloads constructor(
         direction: SwipeDetector.Direction,
         event: MotionEvent,
     ) {
-        if (!direction.isHorizontal() && !isScaling) {
-            parent.requestDisallowInterceptTouchEvent(true)
-            panFactor = lastPanFactor + offset
-            coercePan()
-            invalidate()
+        if (direction.isHorizontal() || isScaling) return
+        // Keep swipe baseline in sync with active pinch to avoid handoff jumps.
+        if (shouldRebaseSwipeAfterScaleStop) {
+            shouldRebaseSwipeAfterScaleStop = false
+            swipeStartOffset = offset
+            swipeStartPanFactor = panFactor
+            return
         }
+        parent.requestDisallowInterceptTouchEvent(true)
+        panFactor = swipeStartPanFactor + (offset - swipeStartOffset)
+        coercePan()
+        invalidate()
     }
 
     private fun onEventSwipeStop() {
+        isSwiping = false
+        shouldRebaseSwipeAfterScaleStop = false
         if (isScaling) return
         parent.requestDisallowInterceptTouchEvent(false)
         lastPanFactor = panFactor

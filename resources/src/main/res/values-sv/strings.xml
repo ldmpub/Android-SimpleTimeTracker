@@ -14,7 +14,9 @@
     <string name="record_tag_hint">Händelsetaggar</string>
     <string name="record_tag_hint_short">Taggar</string>
     <string name="nothing_selected">Inget valt</string>
-    <string name="something_selected">Vald:</string>
+    <string name="something_selected">Vald</string>
+    <string name="something_available">Tillgängliga</string>
+    <string name="something_preselected">Förvalt</string>
     <string name="select_all">Välj alla</string>
     <string name="select_nothing">Välj ingenting</string>
     <string name="no_data">Inga data</string>
@@ -94,6 +96,8 @@
 
     <!--  Goals  -->
     <string name="no_goals_exist">Målen kommer att visas här</string>
+    <string name="all_goals_finished">Alla mål är slutförda</string>
+    <string name="hide_finished_goals">Dölj slutförda mål</string>
     <string name="goal_add_hint">Redigera aktivitet eller kategori för att tilldela mål</string>
 
     <!--  Categories  -->
@@ -103,6 +107,7 @@
     <string name="categories_record_hint">Ge händelser olika taggar för att skilja dem åt</string>
     <string name="categories_add_category">Lägg till kategori</string>
     <string name="categories_add_record_tag">Lägg till händelsetagg</string>
+    <string name="categories_show_relations">Visa relationer</string>
     <string name="categories_and_tags_hint"><![CDATA[
 <b>Kategorier</b> hjälper dig att gruppera relaterade aktiviteter. Till exempel:<br><br>
 • Kategorin <custom-color-3>Produktiv</custom-color-3> kan inkludera <custom-color-3>Läsning</custom-color-3> och <custom-color-3>Gym</custom-color-3>.<br><br>
@@ -123,6 +128,7 @@ Detta gör att du kan se hur mycket tid du spenderar på produktiva kontra icke-
     <!--  Change record tag  -->
     <string name="change_record_tag_archived">Tagg arkiverad</string>
     <string name="change_record_tag_default_hint">Tilldelad som standard</string>
+    <string name="change_record_tag_type_general">Allmän</string>
     <string name="change_record_tag_type_general_hint">Kan tilldelas händelse oavsett aktivitetstyp</string>
     <string name="change_record_tag_type_typed_hint">Kan endast tilldelas händelse av särskild aktivitet</string>
     <string name="change_record_tag_select_activity_hint">Ta färg och ikon från aktivitet</string>
@@ -142,6 +148,7 @@ Detta gör att du kan se hur mycket tid du spenderar på produktiva kontra icke-
     <string name="change_record_last_comments_hint">Tidigare kommentarer</string>
     <string name="change_record_favourite_comments_hint">Favorit</string>
     <string name="change_record_favourite_comments_hint_long">Favoritkommentarer</string>
+    <string name="change_record_favourite_activity_selection">Favorit endast för valda aktiviteter</string>
     <string name="change_record_similar_comments_hint">Liknande kommentarer</string>
     <string name="change_record_categories_empty">Ingen händelsetagg vald</string>
     <string name="change_record_save">Spara</string>
@@ -230,6 +237,8 @@ Detta gör att du kan se hur mycket tid du spenderar på produktiva kontra icke-
     <string name="change_complex_rule_removed">Regel borttagen</string>
     <string name="change_complex_rule_choose_action">Välj åtgärd</string>
     <string name="change_complex_rule_choose_condition">Välj villkor</string>
+    <string name="change_complex_tag_value_dialog_message">Välj när värdet ska anges</string>
+    <string name="change_complex_tag_value_set_later">Vid start</string>
 
     <!--  Activity suggestions  -->
     <string name="activity_suggestions_hint">Visar förslag för nästa aktivitet baserat på aktuell eller senaste aktivitet</string>
@@ -289,6 +298,7 @@ Detta gör att du kan se hur mycket tid du spenderar på produktiva kontra icke-
     <string name="records_all_sort_order">Sortera händelser</string>
     <string name="records_all_sort_time_started">Starttid</string>
     <string name="records_all_sort_duration">Varaktighet</string>
+    <string name="records_all_days_without_records">Dagar utan registreringar - %s</string>
 
     <!--  Running records  -->
     <string name="running_records_types_empty">För att börja spåra, lägg till aktiviteter genom att klicka på %s-knappen eller använd standardförinställningar genom att klicka på %s-knappen</string>
@@ -309,7 +319,7 @@ Detta gör att du kan se hur mycket tid du spenderar på produktiva kontra icke-
     <string name="settings_display_title">Bildskärmsinställningar</string>
     <string name="settings_additional_title">Ytterligare inställningar</string>
     <string name="settings_notification_title">Aviseringsinställningar</string>
-    <string name="settings_backup_title">Säkerhetskopieringsinställningar</string>
+    <string name="settings_backup_title">Säkerhetskopiering</string>
     <string name="settings_export_title">Exportera och importera</string>
     <string name="settings_sort_order">Sortera aktiviteter efter</string>
     <string name="settings_sort_order_category">Sortera kategorier</string>
@@ -327,6 +337,7 @@ Detta gör att du kan se hur mycket tid du spenderar på produktiva kontra icke-
     <string name="settings_show_untracked_time_statistics">Visa okategoriserad tid i statistiken</string>
     <string name="settings_ignore_short_untracked">Ignorera kort ospårad tid</string>
     <string name="settings_ignore_short_untracked_hint">Visa inte ospårad tid som är kortare än den angivna tiden.</string>
+    <string name="settings_untracked_days_hint">Räkna ospårad tid endast på de valda dagarna.</string>
     <string name="settings_untracked_range">Ospårad räckvidd</string>
     <string name="settings_untracked_range_hint">Visa ospårad tid endast inom det valda intervallet.</string>
     <string name="settings_show_records_calendar">Visa händelser i kalendervy</string>
@@ -360,11 +371,14 @@ Detta gör att du kan se hur mycket tid du spenderar på produktiva kontra icke-
     <string name="settings_inactivity_reminder">Visa inaktivitetspåminnelse</string>
     <string name="settings_inactivity_reminder_hint">Visa avisering efter angiven tid av inaktivitet.</string>
     <string name="settings_inactivity_reminder_recurrent">Återkommande</string>
+    <string name="settings_reminder_active_days">Aktiva dagar</string>
     <string name="settings_activity_reminder">Visa aktivitetspåminnelse</string>
     <string name="settings_activity_reminder_hint">Visa meddelande efter angiven tid om timers körs.</string>
     <string name="settings_do_not_disturb">Stör inte</string>
     <string name="settings_notifications_system_settings">Systeminställningar</string>
     <string name="settings_notifications_system_settings_hint">Ljud, vibrationer, blixt och annat</string>
+    <string name="settings_reminders_title">Påminnelser</string>
+    <string name="settings_reminders_hint">Hantera schemalagda påminnelser</string>
     <string name="settings_ignore_short_records">Ignorera kortvariga händelser</string>
     <string name="settings_ignore_short_records_hint">Ignorera händelser som är kortare än den angivna tidslängden.</string>
     <string name="settings_inactivity_reminder_disabled">Inaktiverad</string>
@@ -527,6 +541,7 @@ Exempel:<br/>
     <string name="statistics_detail_record_time">Händelsetid</string>
     <string name="statistics_detail_first_record">Första</string>
     <string name="statistics_detail_last_record">Senaste</string>
+    <string name="statistics_detail_record_span">Tidsspann</string>
     <string name="statistics_detail_time_since">Tid sedan</string>
     <string name="statistics_detail_streaks">Serier</string>
     <string name="statistics_detail_streaks_longest">Längsta</string>
@@ -549,6 +564,8 @@ Exempel:<br/>
     <string name="statistics_detail_goals_deficit">Underskott</string>
     <string name="statistics_detail_tag_values_hint">Taggvärden</string>
     <string name="statistics_detail_tag_values_multiply_duration">Multiplicera med varaktighet</string>
+    <string name="statistics_detail_tag_values_fill_empty_periods">Fyll tomma perioder med tidigare data</string>
+    <string name="statistics_detail_tag_values_zoom_y_axis">Zooma Y-axeln</string>
 
     <plurals name="statistics_detail_times_tracked">
         <!--        <item quantity="zero">händelser</item>-->
@@ -673,6 +690,33 @@ Exempel:<br/>
     <string name="shortcut_navigation_records">Händelser</string>
     <string name="shortcut_navigation_statistics">Statistik</string>
     <string name="shortcut_navigation_settings">Inställningar</string>
+
+    <!--  Reminders  -->
+    <string name="reminders_schedule_daily">Dagligen</string>
+    <string name="reminders_schedule_weekly">Varje vecka</string>
+    <string name="reminders_schedule_one_time">En gång</string>
+    <string name="reminders_schedule_monthly">Månadsvis</string>
+    <string name="reminders_schedule_hourly">Varje timme</string>
+    <string name="reminders_condition_activity_not_tracked">När aktiviteten inte har spårats idag</string>
+    <string name="activity_reminders_hint">Åsidosätter den globala inställningen för aktivitetspåminnelser</string>
+    <string name="activity_reminder_mode">Påminnelseläge</string>
+    <string name="activity_reminder_mode_disabled">Inaktiverad</string>
+    <string name="activity_reminder_mode_custom">Anpassad</string>
+    <string name="activity_reminder_disabled_summary">Påminnelser är inaktiverade för den här aktiviteten</string>
+    <string name="activity_reminder_positive_duration_required">Ange en påminnelsetid som är större än noll</string>
+
+    <!--  Change reminders  -->
+    <string name="change_reminder_message">Meddelande</string>
+    <string name="change_reminder_schedule">Schema</string>
+    <string name="change_reminder_day_of_month">Dag i månaden</string>
+    <string name="change_reminder_interval">Intervall</string>
+    <string name="change_reminder_condition">Visningsvillkor</string>
+    <string name="change_reminder_condition_always">Alltid</string>
+    <string name="change_reminder_message_prefill">Glöm inte att göra %s.</string>
+    <string name="change_reminder_message_required">Ange ett påminnelsemeddelande</string>
+    <string name="change_reminder_future_required">Välj en tid i framtiden</string>
+    <string name="change_reminder_interval_required">Ange ett intervall större än noll</string>
+    <string name="change_reminder_removed">Påminnelsen har tagits bort</string>
 
     <!--  Wear  -->
     <string name="wear_loading_error">Kontrollera din anslutning och försök igen</string>

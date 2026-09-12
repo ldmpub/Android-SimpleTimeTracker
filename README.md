@@ -115,19 +115,26 @@
     │   ├── feature_change_record             # Edit record screen.
     │   ├── feature_change_record_tag         # Edit tag screen.
     │   ├── feature_change_record_type        # Edit type screen.
+    │   ├── feature_change_reminder           # Edit reminder screen.
     │   ├── feature_change_running_record     # Edit timer screen.
+    │   ├── feature_change_shortcut           # Edit shortcut screen.
+    │   ├── feature_color_selection           # Delegate for color selection.
+    │   ├── feature_comment_selection         # Delegate for comment selection.
     │   ├── feature_complex_rules             # Screen for complex rules list.
     │   ├── feature_date_edit                 # Data edit screen.
     │   ├── feature_dialogs                   # Dialogs.
     │   ├── feature_goals                     # Separate screen for goals.
+    │   ├── feature_icon_selection            # Delegate for icon selection.
     │   ├── feature_main                      # Main screen with tabs.
     │   ├── feature_notification              # Notifications.
     │   ├── feature_pomodoro                  # Pomodoro mode.
     │   ├── feature_records                   # One of main tabs, records list.
     │   ├── feature_records_all               # Screen showing all records.
     │   ├── feature_records_filter            # Dialog for records filters.
+    │   ├── feature_reminders                 # Screen showing the reminder list.
     │   ├── feature_running_records           # One of main tabs, timers.
     │   ├── feature_settings                  # One of main tabs, settings.
+    │   ├── feature_shortcuts                 # Screen for all shortcuts.
     │   ├── feature_statistics                # One of main tabs, statistics.
     │   ├── feature_statistics_detail         # Screen showing detailed statistics.
     │   ├── feature_suggestions               # Screen for activity suggestions.

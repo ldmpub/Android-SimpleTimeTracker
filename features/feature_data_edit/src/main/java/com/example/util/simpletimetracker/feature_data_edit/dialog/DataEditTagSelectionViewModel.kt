@@ -98,12 +98,13 @@ class DataEditTagSelectionViewModel @Inject constructor(
         recordTagViewDataInteractor.getViewData(
             selectedTags = selectedIds,
             typeIds = extra.typeIds,
-            showAllTags = false,
             multipleChoiceAvailable = true,
-            showAddButton = false,
+            showBigEmptyHint = false,
+            showHint = false,
             showArchived = true,
-            showUntaggedButton = false,
-            showAllTagsButton = false,
+            searchText = "",
+            fromSearchChange = false,
+            buttons = emptyList(),
         ).data.let(result::addAll)
 
         return result

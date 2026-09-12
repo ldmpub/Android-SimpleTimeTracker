@@ -30,6 +30,10 @@
     <string name="settings_french_language" translatable="false">Français</string>
     <string name="settings_french_tag" translatable="false">fr</string>
 
+    <string name="settings_galician_translators" translatable="false">ninjum</string>
+    <string name="settings_galician_language" translatable="false">Galego</string>
+    <string name="settings_galician_tag" translatable="false">gl</string>
+
     <string name="settings_hebrew_translators" translatable="false">codokie</string>
     <string name="settings_hebrew_language" translatable="false">עברית</string>
     <string name="settings_hebrew_tag" translatable="false">iw</string>
@@ -65,6 +69,10 @@
     <string name="settings_swedish_translators" translatable="false">Rasmus Sehlin</string>
     <string name="settings_swedish_language" translatable="false">Svenska</string>
     <string name="settings_swedish_tag" translatable="false">sv</string>
+
+    <string name="settings_tamil_translators" translatable="false">Spacechase</string>
+    <string name="settings_tamil_language" translatable="false">தமிழ்</string>
+    <string name="settings_tamil_tag" translatable="false">ta</string>
 
     <string name="settings_turkish_translators" translatable="false">Evren Çakan</string>
     <string name="settings_turkish_language" translatable="false">Türkçe</string>
