@@ -33,9 +33,11 @@ class GoalViewDataMapper @Inject constructor(
         dailyCurrent: GetCurrentRecordsDurationInteractor.Result?,
         goalsVisible: Boolean,
         durationFormat: DurationFormat,
+        useMilitaryTime: Boolean,
     ): GoalTimeViewData {
         val noGoal = GoalTimeViewData(
             text = "",
+            targetAt = "",
             state = GoalTimeViewData.Subtype.Hidden,
         )
         if (goal == null || goal.value <= 0L || !goalsVisible) {
@@ -85,7 +87,7 @@ class GoalViewDataMapper @Inject constructor(
             "$typeString $formatted"
         }
 
-        val state = when {
+        val targetAt = if (\n            !reached &&\n            goal.type is RecordTypeGoal.Type.Duration &&\n            goal.subtype is RecordTypeGoal.Subtype.Goal\n        ) {\n            resourceRepo.getString(\n                R.string.running_records_target_at,\n                timeMapper.formatTime(\n                    time = System.currentTimeMillis() + valueLeft,\n                    useMilitaryTime = useMilitaryTime,\n                    showSeconds = false,\n                ),\n            )\n        } else {\n            \"\"\n        }\n\n        val state = when {
             reached && goal.subtype is RecordTypeGoal.Subtype.Goal -> GoalTimeViewData.Subtype.Goal
             reached && goal.subtype is RecordTypeGoal.Subtype.Limit -> GoalTimeViewData.Subtype.Limit
             else -> GoalTimeViewData.Subtype.Hidden
@@ -93,6 +95,7 @@ class GoalViewDataMapper @Inject constructor(
 
         return GoalTimeViewData(
             text = durationLeftString,
+            targetAt = targetAt,
             state = state,
         )
     }
