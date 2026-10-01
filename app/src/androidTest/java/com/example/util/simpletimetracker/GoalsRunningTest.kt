@@ -6,6 +6,7 @@ import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.util.simpletimetracker.GoalsTestUtils.checkRunningGoal
 import com.example.util.simpletimetracker.GoalsTestUtils.checkRunningMark
+import com.example.util.simpletimetracker.GoalsTestUtils.checkRunningTargetAt
 import com.example.util.simpletimetracker.GoalsTestUtils.checkNoRunningGoal
 import com.example.util.simpletimetracker.GoalsTestUtils.durationInSeconds
 import com.example.util.simpletimetracker.feature_change_record.R
@@ -67,11 +68,13 @@ class GoalsRunningTest : BaseUiTest() {
         // Session goal not finished
         scrollTo(sessionGoalNotFinished)
         checkRunningGoal(sessionGoalNotFinished, "$sessionGoal 9$minuteString")
+        checkRunningTargetAt(sessionGoalNotFinished, isVisible = true)
         checkRunningMark(sessionGoalNotFinished, isVisible = false)
 
         // Session goal finished
         scrollTo(sessionGoalFinished)
         checkRunningGoal(sessionGoalFinished, sessionGoal)
+        checkRunningTargetAt(sessionGoalFinished, isVisible = false)
         checkRunningMark(sessionGoalFinished, isVisible = true)
     }
 
@@ -126,21 +129,25 @@ class GoalsRunningTest : BaseUiTest() {
         // Goal time not finished
         scrollTo(goalTimeNotFinished)
         checkRunningGoal(goalTimeNotFinished, "$dailyGoal 4$minuteString")
+        checkRunningTargetAt(goalTimeNotFinished, isVisible = true)
         checkRunningMark(goalTimeNotFinished, isVisible = false)
 
         // Goal time finished
         scrollTo(goalTimeFinished)
         checkRunningGoal(goalTimeFinished, dailyGoal)
+        checkRunningTargetAt(goalTimeFinished, isVisible = false)
         checkRunningMark(goalTimeFinished, isVisible = true)
 
         // Goal count not finished
         scrollTo(goalCountNotFinished)
         checkRunningGoal(goalCountNotFinished, "$dailyGoal 3")
+        checkRunningTargetAt(goalCountNotFinished, isVisible = false)
         checkRunningMark(goalCountNotFinished, isVisible = false)
 
         // Goal count finished
         scrollTo(goalCountFinished)
         checkRunningGoal(goalCountFinished, dailyGoal)
+        checkRunningTargetAt(goalCountFinished, isVisible = false)
         checkRunningMark(goalCountFinished, isVisible = true)
     }
 
