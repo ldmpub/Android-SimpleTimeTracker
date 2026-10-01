@@ -593,6 +593,7 @@ Example:<br/>
     <string name="notification_activity_text">Are you still doing: %s?</string>
     <string name="notification_goal_time_description">goal reached</string>
     <string name="notification_limit_time_description">limit reached</string>
+    <string name="running_records_target_at">Target at: %s</string>
     <string name="notification_time_started">Started at %s</string>
     <string name="notification_time_ended">Finished at %s</string>
     <string name="notification_record_type_stop">Stop</string>
