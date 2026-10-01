@@ -54,7 +54,9 @@ fun RunningRecordView.bindState(
         itemTimerTotal = item.timerTotal
     }
     if (rebind || updates.contains(ViewData.UPDATE_GOAL_TIME).orFalse()) {
-        itemGoalTime = item.goalTime.text
+        itemGoalTime = listOf(item.goalTime.text, item.goalTime.targetAt)
+            .filter { it.isNotEmpty() }
+            .joinToString(separator = "\n")
         itemGoalTimeCheck = when (item.goalTime.state) {
             is Subtype.Hidden -> CheckState.HIDDEN
             is Subtype.Goal -> CheckState.GOAL_REACHED
