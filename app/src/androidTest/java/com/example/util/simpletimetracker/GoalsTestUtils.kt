@@ -203,6 +203,17 @@ object GoalsTestUtils {
         ).let(::checkViewIsDisplayed)
     }
 
+    fun checkRunningTargetAt(typeName: String, isVisible: Boolean) {
+        allOf(
+            isDescendantOfA(withId(R.id.viewRunningRecordItem)),
+            hasSibling(withText(typeName)),
+            withId(R.id.tvRunningRecordItemGoalTime),
+            withSubstring("Target at:"),
+        ).let {
+            if (isVisible) checkViewIsDisplayed(it) else checkViewIsNotDisplayed(it)
+        }
+    }
+
     fun checkNoRunningGoal(typeName: String) {
         allOf(
             isDescendantOfA(withId(R.id.viewRunningRecordItem)),
