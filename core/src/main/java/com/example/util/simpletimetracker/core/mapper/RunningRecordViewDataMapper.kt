@@ -126,6 +126,7 @@ class RunningRecordViewDataMapper @Inject constructor(
             dailyCurrent = dailyCurrent,
             goalsVisible = goalsVisible,
             durationFormat = durationFormat,
+            useMilitaryTime = useMilitaryTime,
         )
 
         fun getDailyGoal() = goalViewDataMapper.mapForTimer(
@@ -134,6 +135,7 @@ class RunningRecordViewDataMapper @Inject constructor(
             dailyCurrent = dailyCurrent,
             goalsVisible = goalsVisible,
             durationFormat = durationFormat,
+            useMilitaryTime = useMilitaryTime,
         )
 
         return when {
