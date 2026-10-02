@@ -87,7 +87,24 @@ class GoalViewDataMapper @Inject constructor(
             "$typeString $formatted"
         }
 
-        val targetAt = if (\n            !reached &&\n            goal.type is RecordTypeGoal.Type.Duration &&\n            goal.subtype is RecordTypeGoal.Subtype.Goal\n        ) {\n            resourceRepo.getString(\n                R.string.running_records_target_at,\n                timeMapper.formatTime(\n                    time = System.currentTimeMillis() + valueLeft,\n                    useMilitaryTime = useMilitaryTime,\n                    showSeconds = false,\n                ),\n            )\n        } else {\n            \"\"\n        }\n\n        val state = when {
+        val targetAt = if (
+            !reached &&
+            goal.type is RecordTypeGoal.Type.Duration &&
+            goal.subtype is RecordTypeGoal.Subtype.Goal
+        ) {
+            resourceRepo.getString(
+                R.string.running_activity_estimated_end_time,
+                timeMapper.formatTime(
+                    time = System.currentTimeMillis() + valueLeft,
+                    useMilitaryTime = useMilitaryTime,
+                    showSeconds = false,
+                ),
+            )
+        } else {
+            ""
+        }
+
+        val state = when {
             reached && goal.subtype is RecordTypeGoal.Subtype.Goal -> GoalTimeViewData.Subtype.Goal
             reached && goal.subtype is RecordTypeGoal.Subtype.Limit -> GoalTimeViewData.Subtype.Limit
             else -> GoalTimeViewData.Subtype.Hidden
