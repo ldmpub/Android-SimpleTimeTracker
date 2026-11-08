@@ -13,6 +13,8 @@ import com.example.util.simpletimetracker.feature_dialogs.api.DateTimeDialogList
 import com.example.util.simpletimetracker.feature_views.extension.onTabSelected
 import com.example.util.simpletimetracker.feature_views.extension.visible
 import com.example.util.simpletimetracker.core.mapper.TimeMapper
+import com.example.util.simpletimetracker.core.model.CalendarDate
+import com.example.util.simpletimetracker.core.model.CalendarTime
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.core.utils.fragmentArgumentDelegate
 import com.example.util.simpletimetracker.domain.prefs.interactor.PrefsInteractor
@@ -24,7 +26,6 @@ import com.example.util.simpletimetracker.navigation.params.screen.DateTimeDialo
 import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import java.util.Calendar
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -52,7 +53,7 @@ class DateTimeDialogFragment :
         key = ARGS_PARAMS, default = DateTimeDialogParams(),
     )
     private var newTimestamp: Long = 0
-    private val calendar = Calendar.getInstance()
+    private var resultDelivered: Boolean = false
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -80,24 +81,13 @@ class DateTimeDialogFragment :
         _binding = null
     }
 
-    override fun onDateSet(year: Int, monthOfYear: Int, dayOfMonth: Int) {
-        calendar.timeInMillis = newTimestamp
-
-        calendar.set(Calendar.YEAR, year)
-        calendar.set(Calendar.MONTH, monthOfYear)
-        calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-
-        newTimestamp = calendar.timeInMillis
+    override fun onDateSet(date: CalendarDate) {
+        newTimestamp = timeMapper.replaceDate(newTimestamp, date)
     }
 
     override fun onTimeSet(hourOfDay: Int, minute: Int, seconds: Int) {
-        calendar.timeInMillis = newTimestamp
-
-        calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
-        calendar.set(Calendar.MINUTE, minute)
-        calendar.set(Calendar.SECOND, seconds)
-
-        newTimestamp = calendar.timeInMillis
+        val time = CalendarTime(hour = hourOfDay, minute = minute, second = seconds)
+        newTimestamp = timeMapper.replaceTime(newTimestamp, time)
     }
 
     private fun initUi() {
@@ -108,12 +98,12 @@ class DateTimeDialogFragment :
 
     private fun initUx() {
         binding.btnDateTimeDialogPositive.setOnClickListener {
+            if (resultDelivered) return@setOnClickListener
             timeDialogFragment?.getSelectedTime()?.let { (hour, minute, seconds) ->
                 onTimeSet(hour, minute, seconds)
             }
-            dateDialogFragment?.getSelectedDate()?.let { (year, month, day) ->
-                onDateSet(year, month, day)
-            }
+            dateDialogFragment?.getSelectedDate()?.let(::onDateSet)
+            resultDelivered = true
             dateTimeDialogListeners.forEach {
                 // Drop milliseconds.
                 it.onDateTimeSet((newTimestamp / 1000) * 1000, params.tag)

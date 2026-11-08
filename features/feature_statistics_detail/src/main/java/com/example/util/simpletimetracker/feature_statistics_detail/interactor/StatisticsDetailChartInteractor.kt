@@ -2,6 +2,8 @@ package com.example.util.simpletimetracker.feature_statistics_detail.interactor
 
 import com.example.util.simpletimetracker.core.extension.setToStartOfDay
 import com.example.util.simpletimetracker.core.extension.setWeekToFirstDay
+import com.example.util.simpletimetracker.core.extension.shiftTimeStamp
+import com.example.util.simpletimetracker.core.extension.shift
 import com.example.util.simpletimetracker.core.mapper.ColorMapper
 import com.example.util.simpletimetracker.core.mapper.TimeMapper
 import com.example.util.simpletimetracker.domain.daysOfWeek.model.DayOfWeek
@@ -35,10 +37,13 @@ import com.example.util.simpletimetracker.feature_statistics_detail.viewData.Sta
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.Calendar
+import java.util.Locale
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.roundToLong
+import android.icu.util.Calendar as IcuCalendar
 
 class StatisticsDetailChartInteractor @Inject constructor(
     private val timeMapper: TimeMapper,
@@ -361,22 +366,27 @@ class StatisticsDetailChartInteractor @Inject constructor(
         firstDayOfWeek: DayOfWeek,
         startOfDayShift: Long,
         useMonthDayTimeFormat: Boolean,
+        timestamp: Long = System.currentTimeMillis(),
     ): List<ChartBarDataRange> {
         val customRangeGroupings = compositeData.customRangeGroupings
         val appliedChartGrouping = compositeData.appliedChartGrouping
         val currentChartLength = compositeData.appliedChartLength
 
+        // Choose the logical period here; grouping functions shift the boundaries later.
+        val logicalNow = System.currentTimeMillis().shiftTimeStamp(-startOfDayShift)
         val startDate = when (rangeLength) {
             is RangeLength.Day,
             is RangeLength.Week,
             is RangeLength.Month,
             is RangeLength.Year,
             is RangeLength.Last,
-            is RangeLength.Custom,
             -> timeMapper.getRangeStartAndEnd(
+                rangeLength, rangePosition, firstDayOfWeek, 0, logicalNow,
+            ).timeEnded - 1
+            is RangeLength.Custom -> timeMapper.getRangeStartAndEnd(
                 rangeLength, rangePosition, firstDayOfWeek, 0,
             ).timeEnded - 1
-            is RangeLength.All -> System.currentTimeMillis()
+            is RangeLength.All -> logicalNow
         }
 
         val numberOfGroups: Int = when (rangeLength) {
@@ -391,6 +401,10 @@ class StatisticsDetailChartInteractor @Inject constructor(
             is RangeLength.Year -> when (appliedChartGrouping) {
                 ChartGrouping.DAILY ->
                     timeMapper.getActualMaximum(startDate, Calendar.DAY_OF_YEAR, firstDayOfWeek)
+                // TODO WEEK_OF_YEAR's maximum is a week number, not the number of intersecting weeks.
+                // With Monday first and one minimal day, 2024 has 53 buckets but a maximum of 52,
+                // so generating backwards omits the first week. Count configured week starts from
+                // on/before the nominal period start to before its end, including partial edge weeks.
                 ChartGrouping.WEEKLY ->
                     timeMapper.getActualMaximum(startDate, Calendar.WEEK_OF_YEAR, firstDayOfWeek)
                 else -> 12
@@ -465,20 +479,24 @@ class StatisticsDetailChartInteractor @Inject constructor(
         val calendar = Calendar.getInstance()
 
         return (numberOfDays - 1 downTo 0).map { shift ->
-            calendar.apply {
-                timeInMillis = startDate
-                setToStartOfDay()
-            }
+            calendar.timeInMillis = startDate
+            // Normalize the anchor too: crossing a date-line change can otherwise select the wrong day.
+            calendar.setToStartOfDay()
             calendar.add(Calendar.DATE, -shift)
+            // Normalize each boundary after date arithmetic: a skipped midnight can become 01:00.
+            calendar.setToStartOfDay()
 
             val legend = timeMapper.formatShortDay(calendar.timeInMillis, useMonthDayTimeFormat)
             val rangeStart = calendar.timeInMillis
-            val rangeEnd = calendar.apply { add(Calendar.DATE, 1) }.timeInMillis
+            val rangeEnd = calendar.apply {
+                add(Calendar.DATE, 1)
+                setToStartOfDay()
+            }.timeInMillis
 
             ChartBarDataRange(
                 legend = legend,
-                rangeStart = rangeStart + startOfDayShift,
-                rangeEnd = rangeEnd + startOfDayShift,
+                rangeStart = calendar.shiftTimeStamp(rangeStart, startOfDayShift),
+                rangeEnd = calendar.shiftTimeStamp(rangeEnd, startOfDayShift),
             )
         }
     }
@@ -500,15 +518,19 @@ class StatisticsDetailChartInteractor @Inject constructor(
             }
             calendar.setWeekToFirstDay()
             calendar.add(Calendar.DATE, -shift * 7)
+            calendar.setToStartOfDay()
 
             val legend = timeMapper.formatShortMonth(calendar.timeInMillis)
             val rangeStart = calendar.timeInMillis
-            val rangeEnd = calendar.apply { add(Calendar.DATE, 7) }.timeInMillis
+            val rangeEnd = calendar.apply {
+                add(Calendar.DATE, 7)
+                setToStartOfDay()
+            }.timeInMillis
 
             ChartBarDataRange(
                 legend = legend,
-                rangeStart = rangeStart + startOfDayShift,
-                rangeEnd = rangeEnd + startOfDayShift,
+                rangeStart = calendar.shiftTimeStamp(rangeStart, startOfDayShift),
+                rangeEnd = calendar.shiftTimeStamp(rangeEnd, startOfDayShift),
             )
         }
     }
@@ -518,24 +540,26 @@ class StatisticsDetailChartInteractor @Inject constructor(
         numberOfMonths: Int,
         startOfDayShift: Long,
     ): List<ChartBarDataRange> {
-        val calendar = Calendar.getInstance()
+        val calendar = timeMapper.newCalendar()
 
         return (numberOfMonths - 1 downTo 0).map { shift ->
-            calendar.apply {
-                timeInMillis = startDate
-                setToStartOfDay()
-            }
-            calendar.set(Calendar.DAY_OF_MONTH, 1)
-            calendar.add(Calendar.MONTH, -shift)
+            calendar.timeInMillis = startDate
+            calendar.setToStartOfDay()
+            calendar.set(IcuCalendar.DAY_OF_MONTH, 1)
+            calendar.add(IcuCalendar.MONTH, -shift)
+            calendar.setToStartOfDay()
 
             val legend = timeMapper.formatShortMonth(calendar.timeInMillis)
             val rangeStart = calendar.timeInMillis
-            val rangeEnd = calendar.apply { add(Calendar.MONTH, 1) }.timeInMillis
+            val rangeEnd = calendar.apply {
+                add(IcuCalendar.MONTH, 1)
+                setToStartOfDay()
+            }.timeInMillis
 
             ChartBarDataRange(
                 legend = legend,
-                rangeStart = rangeStart + startOfDayShift,
-                rangeEnd = rangeEnd + startOfDayShift,
+                rangeStart = calendar.shiftTimeStamp(rangeStart, startOfDayShift),
+                rangeEnd = calendar.shiftTimeStamp(rangeEnd, startOfDayShift),
             )
         }
     }
@@ -545,24 +569,26 @@ class StatisticsDetailChartInteractor @Inject constructor(
         numberOfYears: Int,
         startOfDayShift: Long,
     ): List<ChartBarDataRange> {
-        val calendar = Calendar.getInstance()
+        val calendar = timeMapper.newCalendar()
 
         return (numberOfYears - 1 downTo 0).map { shift ->
-            calendar.apply {
-                timeInMillis = startDate
-                setToStartOfDay()
-            }
-            calendar.set(Calendar.DAY_OF_YEAR, 1)
-            calendar.add(Calendar.YEAR, -shift)
+            calendar.timeInMillis = startDate
+            calendar.setToStartOfDay()
+            calendar.set(IcuCalendar.DAY_OF_YEAR, 1)
+            calendar.add(IcuCalendar.YEAR, -shift)
+            calendar.setToStartOfDay()
 
             val legend = timeMapper.formatShortYear(calendar.timeInMillis)
             val rangeStart = calendar.timeInMillis
-            val rangeEnd = calendar.apply { add(Calendar.YEAR, 1) }.timeInMillis
+            val rangeEnd = calendar.apply {
+                add(IcuCalendar.YEAR, 1)
+                setToStartOfDay()
+            }.timeInMillis
 
             ChartBarDataRange(
                 legend = legend,
-                rangeStart = rangeStart + startOfDayShift,
-                rangeEnd = rangeEnd + startOfDayShift,
+                rangeStart = calendar.shiftTimeStamp(rangeStart, startOfDayShift),
+                rangeEnd = calendar.shiftTimeStamp(rangeEnd, startOfDayShift),
             )
         }
     }
@@ -573,6 +599,7 @@ class StatisticsDetailChartInteractor @Inject constructor(
         firstDayOfWeek: DayOfWeek,
     ): List<Pair<ChartGrouping, Int>> {
         val range = rangeLength.range
+        val calendar = Calendar.getInstance(TimeZone.getDefault(), Locale.ROOT)
         val result = mutableListOf<Pair<ChartGrouping, Int>>()
         val allChartGroupings = listOf(
             ChartGrouping.DAILY,
@@ -594,6 +621,7 @@ class StatisticsDetailChartInteractor @Inject constructor(
                 toTime = range.timeEnded - 1, // end of day is beginning on next one, shift back.
                 range = currentRangeLength,
                 firstDayOfWeek = firstDayOfWeek,
+                calendar = calendar,
             )
 
             when {

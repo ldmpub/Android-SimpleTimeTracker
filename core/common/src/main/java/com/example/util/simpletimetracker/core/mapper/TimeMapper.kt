@@ -1,82 +1,275 @@
 package com.example.util.simpletimetracker.core.mapper
 
+import android.annotation.SuppressLint
+import android.icu.text.DateFormatSymbols
+import android.icu.text.DateTimePatternGenerator
+import android.icu.util.ULocale
 import com.example.util.simpletimetracker.core.common.R
 import com.example.util.simpletimetracker.core.extension.setToStartOfDay
 import com.example.util.simpletimetracker.core.extension.setWeekToFirstDay
 import com.example.util.simpletimetracker.core.extension.shift
+import com.example.util.simpletimetracker.core.model.CalendarDate
+import com.example.util.simpletimetracker.core.model.CalendarTime
 import com.example.util.simpletimetracker.core.provider.LocaleProvider
+import com.example.util.simpletimetracker.core.provider.TimeZoneProvider
 import com.example.util.simpletimetracker.core.repo.BaseResourceRepo
 import com.example.util.simpletimetracker.domain.base.CurrentTimestampProvider
 import com.example.util.simpletimetracker.domain.base.DurationFormat
+import com.example.util.simpletimetracker.domain.calendar.CalendarTypeProvider
+import com.example.util.simpletimetracker.domain.calendar.model.CalendarType
 import com.example.util.simpletimetracker.domain.daysOfWeek.model.DayOfWeek
 import com.example.util.simpletimetracker.domain.extension.orZero
 import com.example.util.simpletimetracker.domain.extension.padDuration
 import com.example.util.simpletimetracker.domain.extension.rotateLeft
 import com.example.util.simpletimetracker.domain.record.model.Range
 import com.example.util.simpletimetracker.domain.statistics.model.RangeLength
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.math.abs
+import android.icu.text.SimpleDateFormat as IcuSimpleDateFormat
+import android.icu.util.Calendar as IcuCalendar
+import android.icu.util.TimeZone as IcuTimeZone
 
 class TimeMapper @Inject constructor(
     localeProvider: LocaleProvider,
     private val resourceRepo: BaseResourceRepo,
     private val currentTimestampProvider: CurrentTimestampProvider,
+    private val calendarTypeProvider: CalendarTypeProvider,
+    private val timeZoneProvider: TimeZoneProvider,
 ) {
 
     private val locale: Locale by lazy { localeProvider.get() }
 
-    private val timeFormat by lazy { SimpleDateFormat("h:mm a", locale) }
-    private val timeFormatWithSeconds by lazy { SimpleDateFormat("h:mm:ss a", locale) }
-    private val timeFormatMilitary by lazy { SimpleDateFormat("HH:mm", locale) }
-    private val timeFormatMilitaryWithSeconds by lazy { SimpleDateFormat("HH:mm:ss", locale) }
+    private val timeFormat = "h:mm a"
+    private val timeFormatWithSeconds = "h:mm:ss a"
+    private val timeFormatMilitary = "HH:mm"
+    private val timeFormatMilitaryWithSeconds = "HH:mm:ss"
 
-    private val dateFormat by lazy { SimpleDateFormat("MMM d", locale) }
+    private val dateFormat = "MMM d"
 
-    private val dateTimeFormat by lazy { SimpleDateFormat("MMM d h:mm a", locale) }
-    private val dateTimeFormatWithSeconds by lazy { SimpleDateFormat("MMM d h:mm:ss a", locale) }
-    private val dateTimeFormatMilitary by lazy { SimpleDateFormat("MMM d HH:mm", locale) }
-    private val dateTimeFormatMilitaryWithSeconds by lazy { SimpleDateFormat("MMM d HH:mm:ss", locale) }
+    private val dateTimeFormat = "MMM d h:mm a"
+    private val dateTimeFormatWithSeconds = "MMM d h:mm:ss a"
+    private val dateTimeFormatMilitary = "MMM d HH:mm"
+    private val dateTimeFormatMilitaryWithSeconds = "MMM d HH:mm:ss"
 
-    private val dateTimeYearFormat by lazy { SimpleDateFormat("MMM d yyyy h:mm a", locale) }
-    private val dateTimeYearFormatMilitary by lazy { SimpleDateFormat("MMM d yyyy HH:mm", locale) }
+    private val dateTimeYearFormat = "MMM d yyyy h:mm a"
+    private val dateTimeYearFormatMilitary = "MMM d yyyy HH:mm"
 
-    private val dayDateYearFormat by lazy { SimpleDateFormat("E, MMM d yyyy", locale) }
-    private val dateYearFormat by lazy { SimpleDateFormat("MMM d yyyy", locale) }
-    private val shortDayFormatMMDD by lazy { SimpleDateFormat("MM.dd", locale) }
-    private val shortDayFormatDDMM by lazy { SimpleDateFormat("dd.MM", locale) }
-    private val shortMonthFormat by lazy { SimpleDateFormat("MMM", locale) }
-    private val shortYearFormat by lazy { SimpleDateFormat("yy", locale) }
+    private val dayDateYearFormat = "E, MMM d yyyy"
+    private val dateYearFormat = "MMM d yyyy"
+    private val shortDayFormatMMDD = "MM.dd"
+    private val shortDayFormatDDMM = "dd.MM"
+    private val shortMonthFormat = "MMM"
+    private val shortYearFormat = "yy"
 
-    private val dayTitleFormat by lazy { SimpleDateFormat("E, MMM d", locale) }
-    private val weekTitleFormat by lazy { SimpleDateFormat("MMM d", locale) }
-    private val monthTitleFormat by lazy { SimpleDateFormat("MMMM", locale) }
-    private val yearTitleFormat by lazy { SimpleDateFormat("yyyy", locale) }
+    private val dayTitleFormat = "E, MMM d"
+    private val weekTitleFormat = "MMM d"
+    private val monthTitleFormat = "MMMM"
+    private val yearTitleFormat = "yyyy"
+
+    private val dayDatePattern by lazy {
+        DateTimePatternGenerator.getInstance(calendarLocale())
+            .getBestPattern("EMMMd")
+    }
+    private val monthYearPattern by lazy {
+        DateTimePatternGenerator.getInstance(calendarLocale())
+            .getBestPattern("yMMMM")
+    }
+    private val narrowDayOfWeekNames by lazy {
+        DateFormatSymbols(calendarLocale())
+            .getWeekdays(DateFormatSymbols.FORMAT, DateFormatSymbols.NARROW)
+    }
+
+    // Locale and calendar selection changes restart the app, so only the pattern varies.
+    private val calendarFormats = mutableMapOf<String, IcuSimpleDateFormat>()
 
     private val lock = Any()
+
+    fun formatDayOfMonth(
+        timestamp: Long,
+        padded: Boolean,
+    ): String {
+        return formatCalendarField(timestamp, if (padded) "dd" else "d")
+    }
+
+    fun formatYear(
+        timestamp: Long,
+    ): String {
+        return formatCalendarField(timestamp, yearTitleFormat)
+    }
+
+    private fun calendarLocale(): ULocale {
+        val keyword = when (calendarTypeProvider.get()) {
+            CalendarType.GREGORIAN -> "gregorian"
+            CalendarType.PERSIAN -> "persian"
+        }
+        return ULocale.forLocale(locale).setKeywordValue("calendar", keyword)
+    }
+
+    fun newCalendar(
+        timeZone: TimeZone = timeZoneProvider.get(),
+    ): IcuCalendar {
+        return IcuCalendar.getInstance(
+            IcuTimeZone.getTimeZone(timeZone.id),
+            calendarLocale(),
+        )
+    }
+
+    fun toCalendarDate(
+        timestamp: Long,
+    ): CalendarDate {
+        return newCalendar().apply { timeInMillis = timestamp }
+            .toCalendarDate()
+    }
+
+    private fun IcuCalendar.toCalendarDate(): CalendarDate {
+        return CalendarDate(
+            year = get(IcuCalendar.YEAR),
+            month = get(IcuCalendar.MONTH) + 1,
+            day = get(IcuCalendar.DAY_OF_MONTH),
+        )
+    }
+
+    fun toTimestamp(
+        date: CalendarDate,
+    ): Long {
+        return newCalendar().apply {
+            clear()
+            set(date.year, date.month - 1, date.day)
+        }.timeInMillis
+    }
+
+    fun replaceDate(
+        timestamp: Long,
+        date: CalendarDate,
+    ): Long {
+        return newCalendar().apply {
+            timeInMillis = timestamp
+            set(IcuCalendar.DAY_OF_MONTH, 1)
+            set(date.year, date.month - 1, date.day)
+        }.timeInMillis
+    }
+
+    fun replaceTime(
+        timestamp: Long,
+        time: CalendarTime,
+    ): Long {
+        return newCalendar().apply {
+            timeInMillis = timestamp
+            set(Calendar.HOUR_OF_DAY, time.hour)
+            set(Calendar.MINUTE, time.minute)
+            set(Calendar.SECOND, time.second)
+        }.timeInMillis
+    }
+
+    /** Returns a half-open reporting period containing [timestamp]. */
+    fun getPeriodRange(
+        timestamp: Long,
+        rangeLength: RangeLength,
+        firstDayOfWeek: DayOfWeek,
+        startOfDayShift: Long,
+        shift: Int = 0,
+    ): Range {
+        require(
+            rangeLength is RangeLength.Day || rangeLength is RangeLength.Week ||
+                rangeLength is RangeLength.Month || rangeLength is RangeLength.Year,
+        ) { "Unsupported reporting period: $rangeLength" }
+        val timeZone: TimeZone = timeZoneProvider.get()
+        val anchor = Calendar.getInstance(timeZone, Locale.ROOT).apply {
+            timeInMillis = timestamp
+            shift(-startOfDayShift)
+        }
+        if (rangeLength is RangeLength.Day || rangeLength is RangeLength.Week) {
+            val days = if (rangeLength is RangeLength.Week) 7 else 1
+            val weekStart = toCalendarDayOfWeek(firstDayOfWeek)
+            anchor.apply {
+                this.firstDayOfWeek = weekStart
+                if (rangeLength is RangeLength.Week) setWeekToFirstDay()
+                setToStartOfDay()
+            }
+            val start = anchor.timeInMillis
+            val end = anchor.apply { add(Calendar.DATE, days) }.timeInMillis
+            return shiftPeriodRange(start, end, startOfDayShift, timeZone)
+        }
+        val date = toCalendarDate(anchor.timeInMillis)
+        // Work on civil fields independently of DST, then resolve each boundary locally.
+        val nominal = newCalendar(TimeZone.getTimeZone("UTC")).apply {
+            clear()
+            set(date.year, date.month - 1, date.day)
+        }
+        val field = when (rangeLength) {
+            is RangeLength.Month -> {
+                nominal.set(IcuCalendar.DAY_OF_MONTH, 1)
+                IcuCalendar.MONTH
+            }
+            is RangeLength.Year -> {
+                nominal.set(IcuCalendar.DAY_OF_MONTH, 1)
+                nominal.set(IcuCalendar.MONTH, 0)
+                IcuCalendar.YEAR
+            }
+            else -> error("Unsupported reporting period: $rangeLength")
+        }
+        nominal.add(field, shift)
+        val start = toTimestamp(nominal.toCalendarDate())
+        nominal.add(field, 1)
+        val end = toTimestamp(nominal.toCalendarDate())
+        return shiftPeriodRange(start, end, startOfDayShift, timeZone)
+    }
+
+    private fun shiftPeriodRange(
+        start: Long,
+        end: Long,
+        startOfDayShift: Long,
+        timeZone: TimeZone,
+    ): Range {
+        // Resolve each boundary's own DST offset, including the rollback for a gap.
+        return Range(
+            Calendar.getInstance(timeZone, Locale.ROOT).apply { timeInMillis = start }
+                .shift(startOfDayShift).timeInMillis,
+            Calendar.getInstance(timeZone, Locale.ROOT).apply { timeInMillis = end }
+                .shift(startOfDayShift).timeInMillis,
+        )
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    private fun formatCalendarField(
+        timestamp: Long,
+        pattern: String,
+    ): String = synchronized(lock) {
+        val timeZone: TimeZone = timeZoneProvider.get()
+        return calendarFormats.getOrPut(pattern) {
+            IcuSimpleDateFormat(pattern, calendarLocale()).apply {
+                calendar = newCalendar(timeZone)
+            }
+        }.apply {
+            if (this.timeZone.id != timeZone.id) {
+                this.timeZone = IcuTimeZone.getTimeZone(timeZone.id)
+            }
+        }.format(java.util.Date(timestamp))
+    }
 
     // 12:21
     fun formatTime(
         time: Long,
         useMilitaryTime: Boolean,
         showSeconds: Boolean,
-    ): String = synchronized(lock) {
-        return if (useMilitaryTime) {
+    ): String {
+        val pattern = if (useMilitaryTime) {
             if (showSeconds) timeFormatMilitaryWithSeconds else timeFormatMilitary
         } else {
             if (showSeconds) timeFormatWithSeconds else timeFormat
-        }.formatInCurrentTimeZone(time)
+        }
+        return formatCalendarField(time, pattern)
     }
 
     // Mar 11
     fun formatDate(
         time: Long,
-    ): String = synchronized(lock) {
-        return dateFormat.formatInCurrentTimeZone(time)
+    ): String {
+        return formatCalendarField(time, dateFormat)
     }
 
     // Mar 11 12:21
@@ -84,50 +277,53 @@ class TimeMapper @Inject constructor(
         time: Long,
         useMilitaryTime: Boolean,
         showSeconds: Boolean,
-    ): String = synchronized(lock) {
-        return if (useMilitaryTime) {
+    ): String {
+        val pattern = if (useMilitaryTime) {
             if (showSeconds) dateTimeFormatMilitaryWithSeconds else dateTimeFormatMilitary
         } else {
             if (showSeconds) dateTimeFormatWithSeconds else dateTimeFormat
-        }.formatInCurrentTimeZone(time)
+        }
+        return formatCalendarField(time, pattern)
     }
 
     // Mar 12 2021 12:21
-    fun formatDateTimeYear(time: Long, useMilitaryTime: Boolean): String = synchronized(lock) {
-        return if (useMilitaryTime) {
-            dateTimeYearFormatMilitary
-        } else {
-            dateTimeYearFormat
-        }.formatInCurrentTimeZone(time)
+    fun formatDateTimeYear(time: Long, useMilitaryTime: Boolean): String {
+        val pattern = if (useMilitaryTime) dateTimeYearFormatMilitary else dateTimeYearFormat
+        return formatCalendarField(time, pattern)
     }
 
     // Mar 12 2021
-    fun formatDateYear(time: Long): String = synchronized(lock) {
-        return dateYearFormat.formatInCurrentTimeZone(time)
+    fun formatDateYear(time: Long): String {
+        return formatCalendarField(time, dateYearFormat)
     }
 
     // Tue, Mar 12 2021
-    fun formatDayDateYear(time: Long): String = synchronized(lock) {
-        return dayDateYearFormat.formatInCurrentTimeZone(time)
+    fun formatDayDateYear(time: Long): String {
+        return formatCalendarField(time, dayDateYearFormat)
+    }
+
+    fun formatDayDate(time: Long): String {
+        return formatCalendarField(time, dayDatePattern)
+    }
+
+    fun formatMonthYear(time: Long): String {
+        return formatCalendarField(time, monthYearPattern)
     }
 
     // 12.03
-    fun formatShortDay(time: Long, useMonthDayTimeFormat: Boolean): String = synchronized(lock) {
-        if (useMonthDayTimeFormat) {
-            return shortDayFormatMMDD.formatInCurrentTimeZone(time)
-        } else {
-            return shortDayFormatDDMM.formatInCurrentTimeZone(time)
-        }
+    fun formatShortDay(time: Long, useMonthDayTimeFormat: Boolean): String {
+        val pattern = if (useMonthDayTimeFormat) shortDayFormatMMDD else shortDayFormatDDMM
+        return formatCalendarField(time, pattern)
     }
 
     // Mar
-    fun formatShortMonth(time: Long): String = synchronized(lock) {
-        return shortMonthFormat.formatInCurrentTimeZone(time)
+    fun formatShortMonth(time: Long): String {
+        return formatCalendarField(time, shortMonthFormat)
     }
 
     // 21
-    fun formatShortYear(time: Long): String = synchronized(lock) {
-        return shortYearFormat.formatInCurrentTimeZone(time)
+    fun formatShortYear(time: Long): String {
+        return formatCalendarField(time, shortYearFormat)
     }
 
     fun toTimestampShifted(
@@ -136,18 +332,17 @@ class TimeMapper @Inject constructor(
         startOfDayShift: Long = 0,
     ): Long {
         val calendarStep = when (range) {
-            is RangeLength.Day -> Calendar.DAY_OF_YEAR
-            is RangeLength.Week -> Calendar.WEEK_OF_YEAR
-            is RangeLength.Month -> Calendar.MONTH
-            is RangeLength.Year -> Calendar.YEAR
+            is RangeLength.Day -> IcuCalendar.DAY_OF_YEAR
+            is RangeLength.Week -> IcuCalendar.WEEK_OF_YEAR
+            is RangeLength.Month -> IcuCalendar.MONTH
+            is RangeLength.Year -> IcuCalendar.YEAR
             is RangeLength.All -> return 0
             is RangeLength.Custom -> return 0
             is RangeLength.Last -> return 0
         }
-
-        return Calendar.getInstance()
+        return newCalendar()
             .apply {
-                timeInMillis = System.currentTimeMillis()
+                timeInMillis = currentTimestampProvider.get()
                 shift(-startOfDayShift)
                 add(calendarStep, rangesFromToday)
             }
@@ -159,13 +354,25 @@ class TimeMapper @Inject constructor(
         toTime: Long,
         range: RangeLength,
         firstDayOfWeek: DayOfWeek,
-        calendar: Calendar = Calendar.getInstance(),
+        calendar: Calendar = Calendar.getInstance(timeZoneProvider.get()),
     ): Long {
         val calendarStep = when (range) {
             is RangeLength.Day -> Calendar.DAY_OF_YEAR
             is RangeLength.Week -> Calendar.WEEK_OF_YEAR
-            is RangeLength.Month -> Calendar.MONTH
-            is RangeLength.Year -> Calendar.YEAR
+            is RangeLength.Month,
+            is RangeLength.Year,
+            -> {
+                // Month/year boundaries depend on the selected calendar (Gregorian or Persian).
+                // Count period boundaries using its fields; both calendars have 12 months per year.
+                val fromDate = toCalendarDate(fromTime)
+                val toDate = toCalendarDate(toTime)
+                val years = toDate.year.toLong() - fromDate.year
+                return if (range is RangeLength.Month) {
+                    years * 12 + toDate.month - fromDate.month
+                } else {
+                    years
+                }
+            }
             is RangeLength.All -> return 0
             is RangeLength.Custom -> return 0
             is RangeLength.Last -> return 0
@@ -181,18 +388,12 @@ class TimeMapper @Inject constructor(
             calendar.get(calendarStep)
         }
 
-        if (calendarStep == Calendar.MONTH) result++
-
         calendar.timeInMillis = fromTime
         result -= if (calendarStep == Calendar.WEEK_OF_YEAR && isFirstWeekOfNextYear(calendar)) {
             calendar.getActualMaximum(Calendar.WEEK_OF_YEAR) + 1
         } else {
             calendar.get(calendarStep)
         }
-        if (calendarStep == Calendar.MONTH) result--
-
-        if (calendarStep == Calendar.YEAR) return result
-
         val yearInFuture: Int
         val shiftDirection: Int
         if (toTime < fromTime) {
@@ -207,7 +408,6 @@ class TimeMapper @Inject constructor(
 
         while (calendar.get(Calendar.YEAR) != yearInFuture) {
             result -= shiftDirection * calendar.getActualMaximum(calendarStep)
-            if (calendarStep == Calendar.MONTH) result -= shiftDirection
             calendar.add(Calendar.YEAR, 1)
         }
 
@@ -259,6 +459,10 @@ class TimeMapper @Inject constructor(
             0 -> resourceRepo.getString(R.string.title_this_year)
             else -> toYearDateTitle(yearsFromToday, startOfDayShift)
         }
+    }
+
+    fun toNarrowDayOfWeekName(dayOfWeek: DayOfWeek): String {
+        return narrowDayOfWeekNames[toCalendarDayOfWeek(dayOfWeek)]
     }
 
     fun toShortDayOfWeekName(dayOfWeek: DayOfWeek): String {
@@ -362,32 +566,39 @@ class TimeMapper @Inject constructor(
         return res
     }
 
+    /** Returns the requested reporting range relative to [referenceTimestamp], defaulting to the current instant. */
     fun getRangeStartAndEnd(
         rangeLength: RangeLength,
         shift: Int,
         firstDayOfWeek: DayOfWeek,
         startOfDayShift: Long,
+        referenceTimestamp: Long = currentTimestampProvider.get(),
     ): Range {
+        when (rangeLength) {
+            is RangeLength.Month,
+            is RangeLength.Year,
+            -> {
+                return getPeriodRange(
+                    timestamp = referenceTimestamp,
+                    rangeLength = rangeLength,
+                    firstDayOfWeek = firstDayOfWeek,
+                    startOfDayShift = startOfDayShift,
+                    shift = shift,
+                )
+            }
+            else -> Unit
+        }
+
         val dayOfWeek = toCalendarDayOfWeek(firstDayOfWeek)
         val rangeStart: Long
         val rangeEnd: Long
-        val calendar = Calendar.getInstance().apply {
+        val calendar = Calendar.getInstance(Locale.ROOT).apply {
             this.firstDayOfWeek = dayOfWeek
-            timeInMillis = currentTimestampProvider.get()
+            timeInMillis = referenceTimestamp
 
             shift(-startOfDayShift)
-            when (rangeLength) {
-                is RangeLength.Week -> setWeekToFirstDay()
-                is RangeLength.Month -> set(Calendar.DAY_OF_MONTH, 1)
-                is RangeLength.Year -> set(Calendar.DAY_OF_YEAR, 1)
-                else -> {
-                    // Do nothing
-                }
-            }
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
+            if (rangeLength is RangeLength.Week) setWeekToFirstDay()
+            setToStartOfDay()
             shift(startOfDayShift)
         }
 
@@ -404,32 +615,11 @@ class TimeMapper @Inject constructor(
                 rangeEnd = calendar.apply { add(Calendar.DATE, 7) }.timeInMillis
             }
 
-            is RangeLength.Month -> {
-                calendar.apply {
-                    shift(-startOfDayShift)
-                    add(Calendar.MONTH, shift)
-                    shift(+startOfDayShift)
-                }
-                rangeStart = calendar.timeInMillis
-                rangeEnd = calendar.apply {
-                    shift(-startOfDayShift)
-                    add(Calendar.MONTH, 1)
-                    shift(startOfDayShift)
-                }.timeInMillis
-            }
-
-            is RangeLength.Year -> {
-                calendar.apply {
-                    shift(-startOfDayShift)
-                    add(Calendar.YEAR, shift)
-                    shift(startOfDayShift)
-                }
-                rangeStart = calendar.timeInMillis
-                rangeEnd = calendar.apply {
-                    shift(-startOfDayShift)
-                    add(Calendar.YEAR, 1)
-                    shift(startOfDayShift)
-                }.timeInMillis
+            is RangeLength.Month,
+            is RangeLength.Year,
+            -> {
+                // Already handled.
+                return Range(0, 0)
             }
 
             is RangeLength.All -> {
@@ -462,13 +652,17 @@ class TimeMapper @Inject constructor(
         return Range(rangeStart, rangeEnd)
     }
 
+    /**
+     * [firstDayOfWeek] can affect week fields such as WEEK_OF_MONTH and WEEK_OF_YEAR,
+     * though current callers only request day fields.
+     */
     fun getActualMaximum(
         startDate: Long,
         field: Int,
         firstDayOfWeek: DayOfWeek,
     ): Int {
         val dayOfWeek = toCalendarDayOfWeek(firstDayOfWeek)
-        return Calendar.getInstance()
+        return newCalendar()
             .apply { timeInMillis = startDate }
             .apply { this.firstDayOfWeek = dayOfWeek }
             .getActualMaximum(field)
@@ -560,7 +754,7 @@ class TimeMapper @Inject constructor(
         daysFromToday: Int,
         startOfDayShift: Long,
     ): Long {
-        val calendar = Calendar.getInstance()
+        val calendar = Calendar.getInstance(timeZoneProvider.get())
 
         calendar.apply {
             // Shifted by startOfDayShift, so that for example:
@@ -577,17 +771,17 @@ class TimeMapper @Inject constructor(
     fun toDayDateTitle(
         daysFromToday: Int,
         startOfDayShift: Long,
-    ): String = synchronized(lock) {
+    ): String {
         val calendar = toDayDateTimestamp(daysFromToday, startOfDayShift)
-        return dayTitleFormat.formatInCurrentTimeZone(calendar)
+        return formatCalendarField(calendar, dayTitleFormat)
     }
 
     fun toDayShortDateTitle(
         daysFromToday: Int,
         startOfDayShift: Long,
-    ): String = synchronized(lock) {
+    ): String {
         val calendar = toDayDateTimestamp(daysFromToday, startOfDayShift)
-        return weekTitleFormat.formatInCurrentTimeZone(calendar)
+        return formatCalendarField(calendar, weekTitleFormat)
     }
 
     fun toWeekDateTimestamp(
@@ -595,7 +789,7 @@ class TimeMapper @Inject constructor(
         startOfDayShift: Long,
         firstDayOfWeek: DayOfWeek,
     ): Pair<Long, Long> {
-        val calendar = Calendar.getInstance()
+        val calendar = Calendar.getInstance(timeZoneProvider.get())
         val dayOfWeek = toCalendarDayOfWeek(firstDayOfWeek)
 
         calendar.apply {
@@ -615,57 +809,65 @@ class TimeMapper @Inject constructor(
         weeksFromToday: Int,
         startOfDayShift: Long,
         firstDayOfWeek: DayOfWeek,
-    ): String = synchronized(lock) {
+    ): String {
         val (rangeStart, rangeEnd) = toWeekDateTimestamp(weeksFromToday, startOfDayShift, firstDayOfWeek)
-        return weekTitleFormat.formatInCurrentTimeZone(rangeStart) +
-            " - " + weekTitleFormat.formatInCurrentTimeZone(rangeEnd)
+        return formatCalendarField(rangeStart, weekTitleFormat) +
+            " - " + formatCalendarField(rangeEnd, weekTitleFormat)
     }
 
     fun toMonthDateTimestamp(
         monthsFromToday: Int,
         startOfDayShift: Long,
     ): Long {
-        val calendar = Calendar.getInstance()
-
-        return calendar.apply {
-            timeInMillis = currentTimestampProvider.get()
-            shift(-startOfDayShift)
-            add(Calendar.MONTH, monthsFromToday)
-        }.timeInMillis
+        return toCalendarDateTimestamp(
+            amount = monthsFromToday,
+            startOfDayShift = startOfDayShift,
+            field = IcuCalendar.MONTH,
+        )
     }
 
     fun toMonthDateTitle(
         monthsFromToday: Int,
         startOfDayShift: Long,
-    ): String = synchronized(lock) {
+    ): String {
         val calendar = toMonthDateTimestamp(monthsFromToday, startOfDayShift)
-        return monthTitleFormat.formatInCurrentTimeZone(calendar)
+        return formatCalendarField(calendar, monthTitleFormat)
     }
 
     fun toYearDateTimestamp(
         yearsFromToday: Int,
         startOfDayShift: Long,
     ): Long {
-        val calendar = Calendar.getInstance()
-
-        return calendar.apply {
-            timeInMillis = currentTimestampProvider.get()
-            shift(-startOfDayShift)
-            add(Calendar.YEAR, yearsFromToday)
-        }.timeInMillis
+        return toCalendarDateTimestamp(
+            amount = yearsFromToday,
+            startOfDayShift = startOfDayShift,
+            field = IcuCalendar.YEAR,
+        )
     }
 
     fun toYearDateTitle(
         yearsFromToday: Int,
         startOfDayShift: Long,
-    ): String = synchronized(lock) {
+    ): String {
         val calendar = toYearDateTimestamp(yearsFromToday, startOfDayShift)
-        return yearTitleFormat.formatInCurrentTimeZone(calendar)
+        return formatCalendarField(calendar, yearTitleFormat)
+    }
+
+    private fun toCalendarDateTimestamp(
+        amount: Int,
+        startOfDayShift: Long,
+        field: Int,
+    ): Long {
+        return newCalendar().apply {
+            timeInMillis = currentTimestampProvider.get()
+            shift(-startOfDayShift)
+            add(field, amount)
+        }.timeInMillis
     }
 
     fun getStartOfDayTimeStamp(
         timestamp: Long = System.currentTimeMillis(),
-        calendar: Calendar = Calendar.getInstance(),
+        calendar: Calendar = Calendar.getInstance(timeZoneProvider.get()),
     ): Long {
         return calendar.apply {
             timeInMillis = timestamp
@@ -770,14 +972,6 @@ class TimeMapper @Inject constructor(
     private fun isFirstWeekOfNextYear(calendar: Calendar): Boolean {
         return calendar.get(Calendar.WEEK_OF_YEAR) == 1 &&
             calendar.get(Calendar.MONTH) == calendar.getActualMaximum(Calendar.MONTH)
-    }
-
-    private fun SimpleDateFormat.formatInCurrentTimeZone(time: Long): String {
-        val currentTimeZone = TimeZone.getDefault()
-        if (timeZone.id != currentTimeZone.id) {
-            timeZone = currentTimeZone
-        }
-        return format(time)
     }
 
     data class DateTime(

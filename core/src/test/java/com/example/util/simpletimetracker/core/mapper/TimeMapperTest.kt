@@ -1,3 +1,5 @@
+@file:Suppress("TYPE_INTERSECTION_AS_REIFIED_WARNING")
+
 package com.example.util.simpletimetracker.core.mapper
 
 import com.example.util.simpletimetracker.core.R
@@ -9,11 +11,13 @@ import com.example.util.simpletimetracker.core.mapper.TimeMapperTest.Subject.loc
 import com.example.util.simpletimetracker.core.mapper.TimeMapperTest.Subject.minuteInMs
 import com.example.util.simpletimetracker.core.mapper.TimeMapperTest.Subject.resourceRepo
 import com.example.util.simpletimetracker.core.mapper.TimeMapperTest.Subject.secondInMs
+import com.example.util.simpletimetracker.core.mapper.TimeMapperTest.Subject.timeZoneProvider
 import com.example.util.simpletimetracker.domain.base.CurrentTimestampProvider
 import com.example.util.simpletimetracker.core.provider.LocaleProvider
+import com.example.util.simpletimetracker.core.provider.MutableCalendarTypeProvider
+import com.example.util.simpletimetracker.core.provider.TimeZoneProvider
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.domain.base.DurationFormat
-import org.junit.After
 import org.junit.AfterClass
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -24,6 +28,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
+import org.robolectric.RobolectricTestRunner
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
@@ -32,6 +37,9 @@ import java.util.concurrent.TimeUnit
 class TimeMapperTest {
 
     private object Subject {
+        val timeZoneProvider: TimeZoneProvider = Mockito.mock(TimeZoneProvider::class.java).apply {
+            `when`(get()).thenReturn(TimeZone.getTimeZone("UTC"))
+        }
         val resourceRepo: ResourceRepo = Mockito.mock(ResourceRepo::class.java)
         val currentTimestampProvider: CurrentTimestampProvider = Mockito.mock(CurrentTimestampProvider::class.java)
         val localeProvider: LocaleProvider = Mockito.mock(LocaleProvider::class.java)
@@ -49,20 +57,13 @@ class TimeMapperTest {
         }
     }
 
+    @RunWith(RobolectricTestRunner::class)
     class FormatTimeTimeZoneChangeTest {
-
-        private lateinit var timeZoneDefault: TimeZone
 
         @Before
         fun before() {
-            timeZoneDefault = TimeZone.getDefault()
-            TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+            `when`(timeZoneProvider.get()).thenReturn(TimeZone.getTimeZone("UTC"))
             `when`(localeProvider.get()).thenReturn(Locale.US)
-        }
-
-        @After
-        fun after() {
-            TimeZone.setDefault(timeZoneDefault)
         }
 
         @Test
@@ -71,6 +72,8 @@ class TimeMapperTest {
                 localeProvider = localeProvider,
                 resourceRepo = resourceRepo,
                 currentTimestampProvider = currentTimestampProvider,
+                calendarTypeProvider = MutableCalendarTypeProvider(),
+                timeZoneProvider = timeZoneProvider,
             )
 
             assertEquals(
@@ -78,7 +81,7 @@ class TimeMapperTest {
                 subject.formatTime(time = 0, useMilitaryTime = false, showSeconds = false),
             )
 
-            TimeZone.setDefault(TimeZone.getTimeZone("GMT+03:00"))
+            `when`(timeZoneProvider.get()).thenReturn(TimeZone.getTimeZone("GMT+03:00"))
 
             assertEquals(
                 "3:00 AM",
@@ -106,6 +109,8 @@ class TimeMapperTest {
                 localeProvider = localeProvider,
                 resourceRepo = resourceRepo,
                 currentTimestampProvider = currentTimestampProvider,
+                calendarTypeProvider = MutableCalendarTypeProvider(),
+                timeZoneProvider = timeZoneProvider,
             )
 
             assertEquals(
@@ -170,6 +175,8 @@ class TimeMapperTest {
                 localeProvider = localeProvider,
                 resourceRepo = resourceRepo,
                 currentTimestampProvider = currentTimestampProvider,
+                calendarTypeProvider = MutableCalendarTypeProvider(),
+                timeZoneProvider = timeZoneProvider,
             )
 
             assertEquals(
@@ -234,6 +241,8 @@ class TimeMapperTest {
                 localeProvider = localeProvider,
                 resourceRepo = resourceRepo,
                 currentTimestampProvider = currentTimestampProvider,
+                calendarTypeProvider = MutableCalendarTypeProvider(),
+                timeZoneProvider = timeZoneProvider,
             )
 
             assertEquals(
@@ -298,6 +307,8 @@ class TimeMapperTest {
                 localeProvider = localeProvider,
                 resourceRepo = resourceRepo,
                 currentTimestampProvider = currentTimestampProvider,
+                calendarTypeProvider = MutableCalendarTypeProvider(),
+                timeZoneProvider = timeZoneProvider,
             )
 
             assertEquals(
@@ -376,6 +387,8 @@ class TimeMapperTest {
                 localeProvider = localeProvider,
                 resourceRepo = resourceRepo,
                 currentTimestampProvider = currentTimestampProvider,
+                calendarTypeProvider = MutableCalendarTypeProvider(),
+                timeZoneProvider = timeZoneProvider,
             )
 
             assertEquals(

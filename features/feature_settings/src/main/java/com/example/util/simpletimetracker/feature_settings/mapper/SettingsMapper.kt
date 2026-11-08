@@ -5,8 +5,10 @@ import com.example.util.simpletimetracker.core.extension.shiftTimeStamp
 import com.example.util.simpletimetracker.core.interactor.LanguageInteractor
 import com.example.util.simpletimetracker.core.mapper.FileExportDateTimeFormatMapper
 import com.example.util.simpletimetracker.core.mapper.TimeMapper
+import com.example.util.simpletimetracker.core.model.CalendarDate
 import com.example.util.simpletimetracker.core.repo.ResourceRepo
 import com.example.util.simpletimetracker.domain.base.DurationFormat
+import com.example.util.simpletimetracker.domain.calendar.model.CalendarType
 import com.example.util.simpletimetracker.domain.fileExport.ExportDateTimeFormat
 import com.example.util.simpletimetracker.domain.darkMode.model.DarkMode
 import com.example.util.simpletimetracker.domain.daysOfWeek.mapper.DaysInCalendarMapper
@@ -22,6 +24,7 @@ import com.example.util.simpletimetracker.feature_settings.api.CardOrderViewData
 import com.example.util.simpletimetracker.feature_settings.api.SettingsCardOrderMapper
 import com.example.util.simpletimetracker.feature_settings.model.CustomizeOptionsMenuListItem
 import com.example.util.simpletimetracker.feature_settings.viewData.AutomaticSaveIntervalViewData
+import com.example.util.simpletimetracker.feature_settings.viewData.CalendarTypeViewData
 import com.example.util.simpletimetracker.feature_settings.viewData.DarkModeViewData
 import com.example.util.simpletimetracker.feature_settings.viewData.DaysInCalendarViewData
 import com.example.util.simpletimetracker.feature_settings.viewData.DurationFormatViewData
@@ -72,6 +75,11 @@ class SettingsMapper @Inject constructor(
         DaysInCalendar.FIVE,
         DaysInCalendar.SEVEN,
         DaysInCalendar.WEEK,
+    )
+
+    private val calendarTypeList: List<CalendarType> = listOf(
+        CalendarType.GREGORIAN,
+        CalendarType.PERSIAN,
     )
 
     private val widgetTransparencyList: List<WidgetTransparencyPercent> = listOf(
@@ -163,6 +171,19 @@ class SettingsMapper @Inject constructor(
 
     fun toDaysInCalendar(position: Int): DaysInCalendar {
         return daysInCalendarList.getOrElse(position) { daysInCalendarList.first() }
+    }
+
+    fun toCalendarTypeViewData(currentValue: CalendarType): CalendarTypeViewData {
+        return CalendarTypeViewData(
+            items = calendarTypeList
+                .map(::toCalendarTypeName)
+                .map(CustomSpinner::CustomSpinnerTextItem),
+            selectedPosition = toPosition(currentValue),
+        )
+    }
+
+    fun toCalendarType(position: Int): CalendarType {
+        return calendarTypeList.getOrElse(position) { calendarTypeList.first() }
     }
 
     fun toWidgetTransparencyViewData(currentValue: WidgetTransparencyPercent): WidgetTransparencyViewData {
@@ -362,10 +383,8 @@ class SettingsMapper @Inject constructor(
     }
 
     fun toUseMonthDayTimeHint(useMonthDay: Boolean): String {
-        val hintTime = Calendar.getInstance().apply {
-            set(Calendar.DAY_OF_MONTH, 13)
-            set(Calendar.MONTH, 6)
-        }.timeInMillis
+        val year = timeMapper.toCalendarDate(System.currentTimeMillis()).year
+        val hintTime = timeMapper.toTimestamp(CalendarDate(year = year, month = 7, day = 13))
 
         return timeMapper.formatShortDay(
             time = hintTime,
@@ -466,6 +485,17 @@ class SettingsMapper @Inject constructor(
         } else {
             daysInCalendarMapper.mapDaysCount(daysInCalendar).toString()
         }
+    }
+
+    private fun toPosition(calendarType: CalendarType): Int {
+        return calendarTypeList.indexOf(calendarType).takeUnless { it == -1 }.orZero()
+    }
+
+    private fun toCalendarTypeName(calendarType: CalendarType): String {
+        return when (calendarType) {
+            CalendarType.GREGORIAN -> R.string.calendar_gregorian
+            CalendarType.PERSIAN -> R.string.calendar_persian
+        }.let(resourceRepo::getString)
     }
 
     private fun toPosition(widgetTransparency: WidgetTransparencyPercent): Int {

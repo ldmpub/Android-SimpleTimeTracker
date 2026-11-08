@@ -262,6 +262,10 @@ This allows you to see how much time you\'re spending on productive versus unpro
     <string name="date_time_dialog_date">Date</string>
     <string name="date_time_dialog_time">Time</string>
     <string name="date_time_dialog_seconds">Seconds</string>
+    <string name="date_picker_previous">Previous</string>
+    <string name="date_picker_next">Next</string>
+    <string name="date_picker_select">Select</string>
+    <string name="date_picker_selected">Selected</string>
 
     <string name="card_size_default">Default width</string>
     <string name="card_size_hint">Number of cards in a row</string>
@@ -397,6 +401,9 @@ This allows you to see how much time you\'re spending on productive versus unpro
     <string name="settings_language">Language</string>
     <string name="settings_use_military_time">Use 24-hour format</string>
     <string name="settings_use_monthday_time">Use Month/Day date format</string>
+    <string name="settings_calendar">Calendar</string>
+    <string name="calendar_gregorian">Gregorian</string>
+    <string name="calendar_persian">Persian (Solar Hijri)</string>
     <string name="settings_duration_format">Duration format</string>
     <string name="settings_duration_format_proportional">Proportional</string>
     <string name="settings_show_seconds">Show seconds</string>
